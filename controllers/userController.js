@@ -1,9 +1,11 @@
 import userModel from "./../models/userModel.js";
 import jwt from "jsonwebtoken";
 import path from "path";
-import {__dirname, __filename} from "./../config/esModuleScope.js"
+import { __dirname, __filename } from "./../config/esModuleScope.js";
 import sendMail from "./../utils/sendMail.js";
-import ejs from "ejs"
+import ejs from "ejs";
+import { log } from "../utils/log.js";
+import chalk from "chalk";
 
 //user registeration
 export const registerUser = async (req, res) => {
@@ -12,7 +14,7 @@ export const registerUser = async (req, res) => {
         console.log(firstName, lastName, email, password);
         const isEmailExist = await userModel.findOne({ email });
         if (isEmailExist) {
-            console.log(false, "email already");
+            console.log(false, "user email alreay exist");
             return res
                 .status(400)
                 .json({ success: false, message: "Email alreay exists" });
@@ -55,7 +57,7 @@ export const registerUser = async (req, res) => {
             });
         }
     } catch (error) {
-        console.log(error)
+        console.log(error);
         return res
             .status(400)
             .json({ success: false, message: "error while registering user" });
@@ -76,5 +78,53 @@ export const createActivationToken = (user) => {
     return { activationToken, activationCode };
 };
 
+//user activativation
+export const activateUser = async (req, res) => {
+    try {
+        const { activationCode: recievedActivationCode, activationToken } =
+            req.body;
 
-//user activativatgion
+        const { activationCode, user } = jwt.verify(
+            activationToken,
+            process.env.ACTIVATION_CODE_SECRET
+        );
+
+        if (recievedActivationCode !== activationCode) {
+            console.assert(false, "activation tokens dont match");
+            return res.status(400).json({
+                success: false,
+                message: "activation code dont match, try again",
+            });
+        }
+
+        const { firstName, lastName, email, password } = user;
+
+        const existUser = await userModel.findOne({ email });
+        if (existUser) {
+            console.assert(false, `user email already exist in database`);
+            return res.status(400).json({
+                success: false,
+                message: "user(email) already exist, please login",
+            });
+        }
+
+        const newUser = await userModel.create({
+            firstName,
+            lastName,
+            email,
+            password,
+            isVerified: true
+        });
+
+        return res
+            .status(201)
+            .json({ success: true, message: "user activated sucessfully" });
+    } catch (error) {
+        log(chalk.yellow(error.message));
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while activating your account",
+        });
+    }
+};

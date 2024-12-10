@@ -15,7 +15,7 @@ const userSchema = new Schema(
             required: [true, "Please enter your email"],
             validate: {
                 validator: function (email) {
-                    return emailRegex.text(email);
+                    return emailRegex.test(email);
                 },
                 message: "Invalid email",
             },
@@ -37,7 +37,7 @@ const userSchema = new Schema(
     { timeseries: true }
 );
 
-userSchema.pre("save", async function () {
+userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) {
         return next();
     }
