@@ -1,6 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors"
+import userRouter from "./routes/userRouter.js"
 
 const app = express();
 app.use(express.json())
@@ -10,6 +11,8 @@ app.use(cors())
 app.get("/test", (req, res)=>{
     res.status(200).json({success: true, message: "API is working"})
 })
+
+app.use("/api", userRouter)
 
 //todo: global catch for production
 

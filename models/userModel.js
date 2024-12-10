@@ -27,7 +27,7 @@ const userSchema = new Schema(
             minLength: [6, "Password must be at least 6 characters"],
             select: false,
         },
-        avatarURL: Strings,
+        avatarURL: String,
         role: { type: String, default: "user" },
         isVerified: { type: Boolean, default: false },
         coursesBought: [{ courseId: String }],
