@@ -5,6 +5,7 @@ import {__dirname, __filename} from "./../config/esModuleScope.js"
 import sendMail from "./../utils/sendMail.js";
 import ejs from "ejs"
 
+//user registeration
 export const registerUser = async (req, res) => {
     try {
         const { firstName, lastName, email, password } = req.body;
@@ -74,3 +75,6 @@ export const createActivationToken = (user) => {
 
     return { activationToken, activationCode };
 };
+
+
+//user activativatgion
