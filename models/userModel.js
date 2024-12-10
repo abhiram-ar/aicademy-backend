@@ -31,6 +31,8 @@ const userSchema = new Schema(
         role: { type: String, default: "user" },
         isVerified: { type: Boolean, default: false },
         coursesBought: [{ courseId: String }],
+        blocked: Boolean,
+        
     },
     { timeseries: true }
 );
@@ -43,8 +45,8 @@ userSchema.pre("save", async function () {
     next();
 });
 
-userSchema.methods.coomparePassword = async function (entredPassword) {
-    return await bcrypt.compare(entredPassword, this.password);
+userSchema.methods.comparePassword = async function (entredPassword) {
+    return await bcrypt.compare(enterdPassword, this.password);
 };
 
 const userModel = mongoose.model("User", userSchema);
