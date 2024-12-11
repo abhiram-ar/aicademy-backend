@@ -32,7 +32,7 @@ export const isAuthenticated = (req, res, next) => {
 export const authorizedRoles = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user?.role || "")) {
-            logWarning(`'${req.user?.role}' dont have the permission to access this resource: ${req.url}`)
+            logWarning(`Role: '${req.user?.role}' dont have the permission to access this resource: ${req.url}`)
             return res
                 .status(403)
                 .json({
