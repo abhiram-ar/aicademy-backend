@@ -31,7 +31,7 @@ const userSchema = new Schema(
         role: { type: String, default: "user" },
         isVerified: { type: Boolean, default: false },
         coursesBought: [{ courseId: String }],
-        blocked: Boolean,
+        isBlocked: {type: Boolean, default: false},
     },
     { timestamps: true }
 );
