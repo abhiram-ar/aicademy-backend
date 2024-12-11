@@ -4,9 +4,10 @@ import path from "path";
 import { __dirname, __filename } from "./../config/esModuleScope.js";
 import sendMail from "./../utils/sendMail.js";
 import ejs from "ejs";
-import { log } from "../utils/log.js";
+import { log, logErrorMessage, logWarning, logSuccess } from "../utils/log.js";
 import chalk from "chalk";
-
+import { createAccessToken, createRefershToken } from "./../utils/jwt.js";
+import sessionModel from "./../models/sessionModel.js";
 //user registeration
 export const registerUser = async (req, res) => {
     try {
@@ -113,7 +114,7 @@ export const activateUser = async (req, res) => {
             lastName,
             email,
             password,
-            isVerified: true
+            isVerified: true,
         });
 
         return res
@@ -125,6 +126,115 @@ export const activateUser = async (req, res) => {
         res.status(400).json({
             success: false,
             message: "error while activating your account",
+        });
+    }
+};
+
+//login user
+export const loginUser = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            logWarning("login: no email or password");
+            return res.status(400).json({
+                success: false,
+                message: "Please enter email and password",
+            });
+        }
+
+        const user = await userModel.findOne({ email }).select("+password");
+        if (!user) {
+            logWarning("login: invalid email, didnt find user in DB");
+            return res
+                .status(400)
+                .json({ success: false, message: "Invalid email or password" });
+        }
+
+        const isPasswordMatch = await user.comparePassword(password);
+        if (!isPasswordMatch) {
+            logWarning("login: password don't match");
+            return res
+                .status(400)
+                .json({ success: false, message: "Invaid password" });
+        }
+
+        const tokenPayload = {
+            userId: user._id,
+            username: user.firstName,
+            role: user.role,
+        };
+
+        console.log(tokenPayload);
+
+        const accessToken = createAccessToken(tokenPayload);
+        const refreshToken = createRefershToken(tokenPayload);
+
+        //save refreshtoken in session DB
+        await sessionModel.create({
+            userId: user._id,
+            email: user.email,
+            refreshToken,
+        });
+        res.cookie("refreshJWT", refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+            maxAge: 60 * 60 * 1000, //1hr
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "login successful",
+            token: accessToken,
+        });
+    } catch (error) {
+        logErrorMessage("error while logging user");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res
+            .status(400)
+            .json({ success: false, message: "login failed" });
+    }
+};
+
+//logout user
+export const logout = async (req, res) => {
+    try {
+        const { refreshJWT } = req.cookies;
+        if (!refreshJWT) {
+            logWarning("logout: cannot find refresh token in cookies");
+            return res.status(204).send()
+        }
+
+        let result = await sessionModel.deleteOne({ refreshToken: refreshJWT });
+
+        res.clearCookie("refreshJWT", {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+        });
+
+        if (result.deletedCount === 0) {
+            logWarning("logout: No session to delete");
+            return res
+                .status(200)
+                .json({
+                    success: true,
+                    message:
+                        "cannot find session to logout, client is requested to clear the cookie",
+                });
+        }
+        res.status(200).json({
+            success: true,
+            message: "user logged out successfully",
+        });
+    } catch (error) {
+        logErrorMessage("error while logging out user");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            messsage: "error while logging out user",
         });
     }
 };
