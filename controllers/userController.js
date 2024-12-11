@@ -163,9 +163,7 @@ export const loginUser = async (req, res) => {
             username: user.firstName,
             role: user.role,
         };
-
-        console.log(tokenPayload);
-
+        
         const accessToken = createAccessToken(tokenPayload);
         const refreshToken = createRefershToken(tokenPayload);
 
