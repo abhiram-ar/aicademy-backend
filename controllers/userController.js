@@ -113,7 +113,7 @@ export const activateUser = async (req, res) => {
             lastName,
             email,
             password,
-            isVerified: true
+            isVerified: true,
         });
 
         return res
@@ -126,5 +126,45 @@ export const activateUser = async (req, res) => {
             success: false,
             message: "error while activating your account",
         });
+    }
+};
+
+//login user
+const loginUser = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            log(chalk.yellow("login: no email or password"));
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message: "Please enter email and password",
+                });
+        }
+
+        const user = userModel.findOne({ email }).select("+password");
+        if (!user) {
+            log(chalk.yellow("login: invalid email, didnt find user in DB"));
+            return res
+                .status(400)
+                .json({ success: false, message: "Invalid email or password" });
+        }
+
+        const isPasswordMatch = await user.comparePassword(password);
+        if (!isPasswordMatch) {
+            return res
+                .status(400)
+                .json({ success: false, message: "Invaid password" });
+        }
+
+        return res.status(200).json({success: true, message: "login successful"})
+
+    } catch (error) {
+        console.log("error while logging user", chalk.yellow(error.message));
+        console.log(error);
+        return res
+            .status(400)
+            .json({ success: false, message: "login failed" });
     }
 };
