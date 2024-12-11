@@ -163,7 +163,7 @@ export const loginUser = async (req, res) => {
             username: user.firstName,
             role: user.role,
         };
-        
+
         const accessToken = createAccessToken(tokenPayload);
         const refreshToken = createRefershToken(tokenPayload);
 
@@ -195,13 +195,83 @@ export const loginUser = async (req, res) => {
     }
 };
 
+//get new accessToken - refersh token
+export const updateAccessToken = async (req, res) => {
+    const { refreshJWT } = req.cookies;
+    if (!refreshJWT) {
+        logWarning("updateAccesToken: cannot find refersh token in cookies");
+        return res
+            .status(401)
+            .json({ success: false, message: "No refresh token in cookies" });
+    }
+
+    jwt.verify(
+        refreshJWT,
+        process.env.REFRESH_TOKEN_SECRET,
+        async (error, decoded) => {
+            if (error) {
+                logErrorMessage("error while verifying refresh token");
+                logErrorMessage(error.message);
+                return res.status(400).json({
+                    success: false,
+                    message: "error while verifying refresh token",
+                });
+            }
+
+            const sessionDetails = await sessionModel.findOne({
+                refreshToken: refreshJWT,
+            });
+            console.log(sessionDetails);
+
+            if (!sessionDetails) {
+                logWarning(
+                    "refresh token does not exist in DB, requesting client to clear cookies"
+                );
+                res.clearCookie("refreshJWT", {
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: "Lax",
+                });
+                return res.status(403).json({
+                    success: false,
+                    message: "User session does't exist anymore",
+                });
+            }
+
+            const userDetails = await userModel.findById(decoded.userId);
+            if (userDetails.isBlocked) {
+                logWarning("user is blocked, cannot create new access token");
+                logWarning("requesting client to clear cookies");
+                res.clearCookie("refreshJWT", {
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: "Lax",
+                });
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "User is blocked. Cannot create new access token, requested to clear cookie",
+                });
+            }
+
+            const newAccessToken = createAccessToken({
+                userId: userDetails._id,
+                username: userDetails.firstName,
+                role: "user",
+            });
+
+            res.status(200).json(newAccessToken);
+        }
+    );
+};
+
 //logout user
 export const logout = async (req, res) => {
     try {
         const { refreshJWT } = req.cookies;
         if (!refreshJWT) {
             logWarning("logout: cannot find refresh token in cookies");
-            return res.status(204).send()
+            return res.status(204).send();
         }
 
         let result = await sessionModel.deleteOne({ refreshToken: refreshJWT });
@@ -214,13 +284,11 @@ export const logout = async (req, res) => {
 
         if (result.deletedCount === 0) {
             logWarning("logout: No session to delete");
-            return res
-                .status(200)
-                .json({
-                    success: true,
-                    message:
-                        "cannot find session to logout, client is requested to clear the cookie",
-                });
+            return res.status(200).json({
+                success: true,
+                message:
+                    "cannot find session to logout, client is requested to clear the cookie",
+            });
         }
         res.status(200).json({
             success: true,
