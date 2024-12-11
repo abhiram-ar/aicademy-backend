@@ -4,8 +4,10 @@ import path from "path";
 import { __dirname, __filename } from "./../config/esModuleScope.js";
 import sendMail from "./../utils/sendMail.js";
 import ejs from "ejs";
-import { log } from "../utils/log.js";
+import { log, logErrorMessage, logWarning } from "../utils/log.js";
 import chalk from "chalk";
+import { createAccessToken, createRefershToken } from "./../utils/jwt.js";
+import sessionModel from "./../models/sessionModel.js";
 
 //user registeration
 export const registerUser = async (req, res) => {
@@ -130,22 +132,20 @@ export const activateUser = async (req, res) => {
 };
 
 //login user
-const loginUser = async (req, res) => {
+export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            log(chalk.yellow("login: no email or password"));
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message: "Please enter email and password",
-                });
+            logWarning("login: no email or password");
+            return res.status(400).json({
+                success: false,
+                message: "Please enter email and password",
+            });
         }
 
-        const user = userModel.findOne({ email }).select("+password");
+        const user = await userModel.findOne({ email }).select("+password");
         if (!user) {
-            log(chalk.yellow("login: invalid email, didnt find user in DB"));
+            logWarning("login: invalid email, didnt find user in DB");
             return res
                 .status(400)
                 .json({ success: false, message: "Invalid email or password" });
@@ -153,15 +153,47 @@ const loginUser = async (req, res) => {
 
         const isPasswordMatch = await user.comparePassword(password);
         if (!isPasswordMatch) {
+            logWarning("login: password don't match");
             return res
                 .status(400)
                 .json({ success: false, message: "Invaid password" });
         }
 
-        return res.status(200).json({success: true, message: "login successful"})
+        const tokenPayload = {
+            userId: user._id,
+            username: user.firstName,
+            role: user.role,
+        };
 
+        console.log(tokenPayload);
+
+        const accessToken = createAccessToken(tokenPayload);
+        const refreshToken = createRefershToken(tokenPayload);
+        
+        //save refreshtoken in session DB
+        await sessionModel.create({
+            userId: user._id,
+            email: user.email,
+            refreshToken,
+        });
+        res.cookie("refreshJWT", refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+            maxAge: 60 * 60 * 1000, //1hr
+        });
+
+
+        return res
+            .status(200)
+            .json({
+                success: true,
+                message: "login successful",
+                token: accessToken,
+            });
     } catch (error) {
-        console.log("error while logging user", chalk.yellow(error.message));
+        logErrorMessage("error while logging user");
+        logErrorMessage(error.message);
         console.log(error);
         return res
             .status(400)
