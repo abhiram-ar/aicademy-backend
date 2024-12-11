@@ -221,7 +221,6 @@ export const updateAccessToken = async (req, res) => {
             const sessionDetails = await sessionModel.findOne({
                 refreshToken: refreshJWT,
             });
-            console.log(sessionDetails);
 
             if (!sessionDetails) {
                 logWarning(
