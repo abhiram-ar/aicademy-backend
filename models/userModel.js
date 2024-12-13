@@ -23,14 +23,14 @@ const userSchema = new Schema(
         password: {
             type: String,
             required: [true, "Please enter your password"],
-            minLength: [6, "Password must be at least 6 characters"],
+            minLength: [8, "Password must be at least 8 characters"],
             select: false,
         },
         avatarURL: String,
         role: { type: String, default: "user" },
         isVerified: { type: Boolean, default: false },
         coursesBought: [{ courseId: String }],
-        isBlocked: {type: Boolean, default: false},
+        isBlocked: { type: Boolean, default: false },
     },
     { timestamps: true }
 );
