@@ -150,6 +150,15 @@ export const loginUser = async (req, res) => {
                 .json({ success: false, message: "Invalid email or password" });
         }
 
+        if (user.isBlocked) {
+                logWarning("user is blocked, cannot login");
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "User is blocked. Contact admin",
+                });
+            }
+
         const isPasswordMatch = await user.comparePassword(password);
         if (!isPasswordMatch) {
             logWarning("login: password don't match");
@@ -184,6 +193,12 @@ export const loginUser = async (req, res) => {
             success: true,
             message: "login successful",
             token: accessToken,
+            user: {
+                _id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email
+            }
         });
     } catch (error) {
         logErrorMessage("error while logging user");
