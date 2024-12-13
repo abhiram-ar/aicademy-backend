@@ -94,7 +94,7 @@ export const activateUser = async (req, res) => {
             console.assert(false, "activation tokens dont match");
             return res.status(400).json({
                 success: false,
-                message: "activation code dont match, try again",
+                message: "OTP dont match, try again",
             });
         }
 
@@ -105,7 +105,7 @@ export const activateUser = async (req, res) => {
             console.assert(false, `user email already exist in database`);
             return res.status(400).json({
                 success: false,
-                message: "user(email) already exist, please login",
+                message: "email already exist, please login",
             });
         }
 
