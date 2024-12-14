@@ -111,3 +111,17 @@ export const activateAccount = async (req, res) => {
         });
     }
 };
+
+export const onboading = (req, res) => {
+    try {
+        res.status(200).json({ success: true, messsage: "test" });
+    } catch (error) {
+        logErrorMessage("error while teacher onboarding");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while on boarding",
+        });
+    }
+};
