@@ -94,7 +94,7 @@ export const activateUser = async (req, res) => {
             console.assert(false, "activation tokens dont match");
             return res.status(400).json({
                 success: false,
-                message: "activation code dont match, try again",
+                message: "OTP dont match, try again",
             });
         }
 
@@ -105,7 +105,7 @@ export const activateUser = async (req, res) => {
             console.assert(false, `user email already exist in database`);
             return res.status(400).json({
                 success: false,
-                message: "user(email) already exist, please login",
+                message: "email already exist, please login",
             });
         }
 
@@ -150,6 +150,15 @@ export const loginUser = async (req, res) => {
                 .json({ success: false, message: "Invalid email or password" });
         }
 
+        if (user.isBlocked) {
+                logWarning("user is blocked, cannot login");
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "User is blocked. Contact admin",
+                });
+            }
+
         const isPasswordMatch = await user.comparePassword(password);
         if (!isPasswordMatch) {
             logWarning("login: password don't match");
@@ -184,6 +193,12 @@ export const loginUser = async (req, res) => {
             success: true,
             message: "login successful",
             token: accessToken,
+            user: {
+                _id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email
+            }
         });
     } catch (error) {
         logErrorMessage("error while logging user");
