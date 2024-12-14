@@ -5,7 +5,7 @@ import {
     register,
     login,
 } from "./../controllers/teacherAuthControllers.js";
-import { upload } from "../config/multer.js";
+import { upload } from "../middlewares/upload.multer.js";
 
 const teacherRouter = express.Router();
 
