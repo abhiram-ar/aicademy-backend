@@ -16,16 +16,18 @@ const storage = multer.diskStorage({
 
 // File filter to validate file types
 const fileFilter = (req, file, cb) => {
-
     const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
 
     if (allowedTypes.includes(file.mimetype)) {
         cb(null, true); // Accept the file
     } else {
-        cb(new Error("Invalid file type. Only JPEG, PNG, and PDF are allowed"), false);
+        cb(
+            new Error("Invalid file type. Only JPEG, PNG, and PDF are allowed"),
+            false
+        );
     }
 };
 
-const limits = 10 * 1024 * 1024 //maximum filesize
+const limits = 10 * 1024 * 1024; //maximum filesize
 
-export const upload = multer({ storage, fileFilter, limits});
+export const upload = multer({ storage, fileFilter, limits });
