@@ -1,8 +1,9 @@
 import teacherModel from "./../models/teacherModel.js";
 import { logErrorMessage, logWarning } from "../utils/log.js";
-import { createActivationToken } from "./../utils/jwt.js";
+import { createActivationToken, createAccessToken, createRefershToken } from "./../utils/jwt.js";
 import sendMail from "../utils/sendMail.js";
 import jwt from "jsonwebtoken";
+import sessionModel from "../models/sessionModel.js";
 
 export const register = async (req, res) => {
     try {
@@ -97,6 +98,7 @@ export const activateAccount = async (req, res) => {
             password,
             isVerified: true,
         });
+        console.log(newTeacher);
 
         return res.status(201).json({
             success: true,
@@ -108,7 +110,92 @@ export const activateAccount = async (req, res) => {
         res.status(400).json({
             success: false,
             message: "error while activating your account",
+            data: {
+                teacher: {
+                    _id: newTeacher._id,
+                    email: newTeacher.email,
+                    isApproved: false,
+                },
+            },
         });
+    }
+};
+
+export const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            logWarning("login: no email or password");
+            return res.status(400).json({
+                success: false,
+                message: "Please enter email and password",
+            });
+        }
+
+        const teacher = await teacherModel.findOne({ email }).select("+password");
+        if (!teacher) {
+            logWarning("login: invalid email, didnt find teacher in DB");
+            return res
+                .status(400)
+                .json({ success: false, message: "Invalid email or password" });
+        }
+
+        if (teacher.isBlocked) {
+            logWarning("teacher is blocked, cannot login");
+            return res.status(403).json({
+                success: false,
+                message: "teacher is blocked. Contact admin",
+            });
+        }
+
+        const isPasswordMatch = await teacher.comparePassword(password);
+        if (!isPasswordMatch) {
+            logWarning("login: password don't match");
+            return res
+                .status(400)
+                .json({ success: false, message: "Invaid password" });
+        }
+
+        const tokenPayload = {
+            teacherId: teacher._id,
+            username: teacher.firstName,
+            role: teacher.role,
+            isApproved: teacher.isApproved
+        };
+
+        const accessToken = createAccessToken(tokenPayload);
+        const refreshToken = createRefershToken(tokenPayload);
+
+        //save refreshtoken in session DB
+        await sessionModel.create({
+            userIdId: teacher._id,
+            email: teacher.email,
+            refreshToken,
+        });
+        res.cookie("refreshJWT", refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+            maxAge: 60 * 60 * 1000, //1hr
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "login successful",
+            token: accessToken,
+            teacher: {
+                _id: teacher._id,
+                firstName: teacher.firstName,
+                email: teacher.email,
+            },
+        });
+    } catch (error) {
+        logErrorMessage("error while logging teacher");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res
+            .status(400)
+            .json({ success: false, message: "login failed" });
     }
 };
 
