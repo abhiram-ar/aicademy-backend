@@ -178,6 +178,7 @@ export const loginUser = async (req, res) => {
 
         //save refreshtoken in session DB
         await sessionModel.create({
+            role:"user",
             userId: user._id,
             email: user.email,
             refreshToken,
