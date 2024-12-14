@@ -82,8 +82,8 @@ export const activateAccount = async (req, res) => {
 
         const { firstName, lastName, email, password } = teacher;
 
-        const existUser = await teacherModel.findOne({ email });
-        if (existUser) {
+        const existTeacher = await teacherModel.findOne({ email });
+        if (existTeacher) {
             logWarning(`teacher email already exist in database`);
             return res.status(400).json({
                 success: false,
@@ -98,7 +98,6 @@ export const activateAccount = async (req, res) => {
             password,
             isVerified: true,
         });
-        console.log(newTeacher);
 
         return res.status(201).json({
             success: true,
@@ -160,7 +159,6 @@ export const login = async (req, res) => {
             teacherId: teacher._id,
             username: teacher.firstName,
             role: teacher.role,
-            isApproved: teacher.isApproved
         };
 
         const accessToken = createAccessToken(tokenPayload);
@@ -168,7 +166,8 @@ export const login = async (req, res) => {
 
         //save refreshtoken in session DB
         await sessionModel.create({
-            userIdId: teacher._id,
+            role: "teacher",
+            userId: teacher._id,
             email: teacher.email,
             refreshToken,
         });
@@ -183,10 +182,12 @@ export const login = async (req, res) => {
             success: true,
             message: "login successful",
             token: accessToken,
+            role: teacher.role,
             teacher: {
                 _id: teacher._id,
                 firstName: teacher.firstName,
                 email: teacher.email,
+                isApproved: teacher.isApproved
             },
         });
     } catch (error) {
