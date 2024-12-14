@@ -4,6 +4,7 @@ import cors from "cors";
 import userRouter from "./routes/userRouter.js";
 import morgan from "morgan";
 import {isAuthenticated, authorizedRoles} from "./middlewares/auth.js";
+import teacherRouter from "./routes/teacherRouter.js";
 
 const app = express();
 app.use(express.json());
@@ -20,6 +21,7 @@ app.get("/test", isAuthenticated, authorizedRoles("admin", "user"), (req, res) =
 });
 
 app.use("/api/user", userRouter);
+app.use("/api/teacher", teacherRouter )
 
 //todo: global catch for production
 

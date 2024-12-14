@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { emailRegex } from "../utils/validators";
+import { emailRegex } from "../utils/validators.js";
 import bcrypt from "bcrypt";
 
 const teacherSchema = new mongoose.Schema(
@@ -31,7 +31,7 @@ const teacherSchema = new mongoose.Schema(
         role: { type: String, default: "teacher" },
         isVerified: { type: Boolean, default: false },
         isApproved: { type: Boolean, default: false },
-        coursesCreated: [{ courseId: mongoose.Types.ObjectId, ref: "Course" }],
+        coursesCreated: [{ courseId: mongoose.Types.ObjectId }], //todo: add ref Course
         isBlocked: { type: Boolean, default: false },
 
         phoneNo: { type: Number },

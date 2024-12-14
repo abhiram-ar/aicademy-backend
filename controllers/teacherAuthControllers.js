@@ -1,7 +1,7 @@
-import { request, response } from "express";
-import teacherModel from "./teacherAuthControllers";
-import { logErrorMessage } from "../utils/log";
-import { createActivationToken } from "./userController";
+import teacherModel from "./../models/teacherModel.js";
+import { logErrorMessage } from "../utils/log.js";
+import { createActivationToken } from "./../utils/jwt.js";
+import sendMail from "../utils/sendMail.js";
 
 export const register = async (req, res) => {
     try {
