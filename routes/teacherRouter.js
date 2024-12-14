@@ -3,8 +3,9 @@ import {
     activateAccount,
     onboading,
     register,
-    login
+    login,
 } from "./../controllers/teacherAuthControllers.js";
+import { upload } from "../config/multer.js";
 
 const teacherRouter = express.Router();
 
@@ -12,6 +13,14 @@ teacherRouter.post("/auth/register", register);
 teacherRouter.post("/auth/activate", activateAccount);
 teacherRouter.post("/auth/login", login);
 
-teacherRouter.post("/onboard", onboading)
+teacherRouter.post(
+    "/onboard",
+    upload.fields([
+        { name: "profilePic", maxCount: 1 },
+        {name:"legalNameProof",maxCount:1},
+        {name:"qualificationProof",maxCount:1}
+    ]),
+    onboading
+);
 
 export default teacherRouter;

@@ -203,6 +203,7 @@ export const login = async (req, res) => {
 export const onboading = (req, res) => {
     try {
         console.log(req.body)
+        console.log(req.files);
         res.status(200).json({ success: true, messsage: "test" });
     } catch (error) {
         logErrorMessage("error while teacher onboarding");
