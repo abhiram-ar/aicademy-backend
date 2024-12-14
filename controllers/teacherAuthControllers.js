@@ -1,7 +1,8 @@
 import teacherModel from "./../models/teacherModel.js";
-import { logErrorMessage } from "../utils/log.js";
+import { logErrorMessage, logWarning } from "../utils/log.js";
 import { createActivationToken } from "./../utils/jwt.js";
 import sendMail from "../utils/sendMail.js";
+import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
     try {
@@ -27,7 +28,7 @@ export const register = async (req, res) => {
 
         //data for email verification
         const data = { name: teacher.firstName, activationCode };
-        
+
         try {
             await sendMail({
                 email: teacher.email,
@@ -55,6 +56,58 @@ export const register = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "erroe while registering user",
+        });
+    }
+};
+
+//teacehr activativation
+export const activateAccount = async (req, res) => {
+    try {
+        const { activationCode: recievedActivationCode, activationToken } =
+            req.body;
+
+        const { activationCode, userCredentials: teacher } = jwt.verify(
+            activationToken,
+            process.env.ACTIVATION_CODE_SECRET
+        );
+
+        if (recievedActivationCode !== activationCode) {
+            logWarning("activation tokens dont match");
+            return res.status(400).json({
+                success: false,
+                message: "OTP dont match, try again",
+            });
+        }
+
+        const { firstName, lastName, email, password } = teacher;
+
+        const existUser = await teacherModel.findOne({ email });
+        if (existUser) {
+            logWarning(`teacher email already exist in database`);
+            return res.status(400).json({
+                success: false,
+                message: "email already exist, please login",
+            });
+        }
+
+        const newTeacher = await teacherModel.create({
+            firstName,
+            lastName,
+            email,
+            password,
+            isVerified: true,
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "teacher activated sucessfully, now admin verification",
+        });
+    } catch (error) {
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while activating your account",
         });
     }
 };

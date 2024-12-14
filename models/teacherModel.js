@@ -9,7 +9,7 @@ const teacherSchema = new mongoose.Schema(
             required: [true, "Please enter your first name"],
         },
         lastName: String,
-        legalName: { type: String, required: true },
+        legalName: { type: String},
         email: {
             type: String,
             required: true,
