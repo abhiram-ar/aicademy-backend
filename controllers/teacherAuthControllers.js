@@ -1,9 +1,14 @@
 import teacherModel from "./../models/teacherModel.js";
 import { logErrorMessage, logWarning } from "../utils/log.js";
-import { createActivationToken, createAccessToken, createRefershToken } from "./../utils/jwt.js";
+import {
+    createActivationToken,
+    createAccessToken,
+    createRefershToken,
+} from "./../utils/jwt.js";
 import sendMail from "../utils/sendMail.js";
 import jwt from "jsonwebtoken";
 import sessionModel from "../models/sessionModel.js";
+import cloudinary from "./../config/cloudinary.js";
 
 export const register = async (req, res) => {
     try {
@@ -131,7 +136,9 @@ export const login = async (req, res) => {
             });
         }
 
-        const teacher = await teacherModel.findOne({ email }).select("+password");
+        const teacher = await teacherModel
+            .findOne({ email })
+            .select("+password");
         if (!teacher) {
             logWarning("login: invalid email, didnt find teacher in DB");
             return res
@@ -187,7 +194,7 @@ export const login = async (req, res) => {
                 _id: teacher._id,
                 firstName: teacher.firstName,
                 email: teacher.email,
-                isApproved: teacher.isApproved
+                isApproved: teacher.isApproved,
             },
         });
     } catch (error) {
@@ -200,10 +207,27 @@ export const login = async (req, res) => {
     }
 };
 
-export const onboading = (req, res) => {
+export const onboading = async (req, res) => {
     try {
-        console.log(req.body)
-        console.log(req.files);
+        console.log(req.body);
+
+        const uploadProfilePic =  cloudinary.uploader.upload(
+            req.files.profilePic[0].path,
+            { asset_folder: `onboading-details/${req.user?._id || ""}` }
+        );
+        const uploadLegalNameProof =  cloudinary.uploader.upload(
+            req.files.legalNameProof[0].path,
+            { asset_folder: `onboading-details/${req.user?._id || ""}` }
+        );
+        const uploadQualificationProof =  cloudinary.uploader.upload(
+            req.files.qualificationProof[0].path,
+            { asset_folder: `onboading-details/${req.user?._id || ""}` }
+        );
+
+        const uploadFiles = await Promise.all([uploadProfilePic, uploadLegalNameProof, uploadQualificationProof])
+
+        console.log(uploadFiles);
+
         res.status(200).json({ success: true, messsage: "test" });
     } catch (error) {
         logErrorMessage("error while teacher onboarding");
