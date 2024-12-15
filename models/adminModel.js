@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
-import { emailRegex } from "../utils/validators";
+import { emailRegex } from "../utils/validators.js";
 import bcrypt from "bcrypt";
 
-
-const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS) || 10
+const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS) || 10;
 
 const adminSchema = new mongoose.Schema(
     {
@@ -31,6 +30,7 @@ const adminSchema = new mongoose.Schema(
         },
         avatarURL: String,
         role: { type: String, default: "admin" },
+        isActive: { type: Boolean, default: false },
         lastLogin: { type: Date },
     },
     { timestamps: true }

@@ -5,6 +5,7 @@ import userRouter from "./routes/userRouter.js";
 import morgan from "morgan";
 import {isAuthenticated, authorizedRoles} from "./middlewares/auth.js";
 import teacherRouter from "./routes/teacherRouter.js";
+import adminRouter from "./routes/adminRouter.js"
 
 const app = express();
 app.use(express.json());
@@ -22,6 +23,7 @@ app.get("/test", isAuthenticated, authorizedRoles("admin", "user"), (req, res) =
 
 app.use("/api/user", userRouter);
 app.use("/api/teacher", teacherRouter )
+app.use("/api/admin", adminRouter)
 
 //todo: global catch for production
 
