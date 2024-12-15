@@ -2,7 +2,7 @@ import adminModel from "../models/adminModel.js";
 import { logErrorMessage, logWarning } from "../utils/log.js";
 import { createAccessToken, createRefershToken } from "../utils/jwt.js";
 import sessionModel from "../models/sessionModel.js";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
     try {
@@ -177,16 +177,14 @@ export const updateAccessToken = async (req, res) => {
                         "admin is inactive. Cannot create new access token, requested to clear cookie",
                 });
             }
-            
+
             const newAccessToken = createAccessToken({
                 adminId: admin._id,
                 username: admin.firstName,
                 role: admin.role,
             });
 
-
-
-            res.status(200).json(newAccessToken);
+            return res.status(200).json(newAccessToken);
         }
     );
 };
@@ -218,15 +216,15 @@ export const logout = async (req, res) => {
         }
         res.status(200).json({
             success: true,
-            message: "teacher logged out successfully",
+            message: "admin logged out successfully",
         });
     } catch (error) {
-        logErrorMessage("error while logging out teacher");
+        logErrorMessage("error while logging out admin");
         logErrorMessage(error.message);
         console.log(error);
         res.status(400).json({
             success: false,
-            messsage: "error while logging out teacher",
+            messsage: "error while logging out admin",
         });
     }
 };
