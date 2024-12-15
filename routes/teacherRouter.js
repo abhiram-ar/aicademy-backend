@@ -4,6 +4,7 @@ import {
     onboading,
     register,
     login,
+    updateAccessToken
 } from "./../controllers/teacherAuthControllers.js";
 import { upload } from "../middlewares/upload.multer.js";
 import { isAuthenticated } from "../middlewares/auth.js";
@@ -13,6 +14,7 @@ const teacherRouter = express.Router();
 teacherRouter.post("/auth/register", register);
 teacherRouter.post("/auth/activate", activateAccount);
 teacherRouter.post("/auth/login", login);
+teacherRouter.post("/auth/refresh", updateAccessToken)
 
 teacherRouter.post(
     "/onboard",

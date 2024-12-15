@@ -332,7 +332,7 @@ export const updateAccessToken = async (req, res) => {
                 });
                 return res.status(403).json({
                     success: false,
-                    message: "User session does't exist anymore",
+                    message: "teacher session does't exist anymore",
                 });
             }
 
