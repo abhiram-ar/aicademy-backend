@@ -168,7 +168,10 @@ export const login = async (req, res) => {
             role: teacher.role,
         };
 
-        const accessToken = createAccessToken(tokenPayload);
+        const accessToken = createAccessToken({
+            ...tokenPayload,
+            isApproved: teacher.isApproved,
+        });
         const refreshToken = createRefershToken(tokenPayload);
 
         //save refreshtoken in session DB
@@ -207,7 +210,6 @@ export const login = async (req, res) => {
     }
 };
 
-
 // teacher onboarding - admin approval request
 export const onboading = async (req, res) => {
     try {
@@ -221,10 +223,13 @@ export const onboading = async (req, res) => {
         if (teacher.isApproved === "success") {
             return res
                 .status(400)
-                .json({ success: false, message: "user already approved/onboarded" });
+                .json({
+                    success: false,
+                    message: "user already approved/onboarded",
+                });
         }
 
-        console.log(req.body)
+        console.log(req.body);
         const uploadProfilePic = cloudinary.uploader.upload(
             req.files.profilePic[0].path,
             { asset_folder: `onboading-details/${req.user?.teacherId || ""}` }
@@ -273,14 +278,11 @@ export const onboading = async (req, res) => {
         console.log(teacher);
 
         await teacher.save();
-        return res
-            .status(201)
-            .json({
-                success: true,
-                message:
-                    "Onboading details send for verification.This can take a while.Please check your mail regularly for updates",
-            });
-
+        return res.status(201).json({
+            success: true,
+            message:
+                "Onboading details send for verification.This can take a while.Please check your mail regularly for updates",
+        });
     } catch (error) {
         logErrorMessage("error while teacher onboarding");
         logErrorMessage(error.message);
@@ -291,7 +293,6 @@ export const onboading = async (req, res) => {
         });
     }
 };
-
 
 //get new accessToken - refersh token
 export const updateAccessToken = async (req, res) => {
@@ -337,7 +338,9 @@ export const updateAccessToken = async (req, res) => {
 
             const teacher = await teacherModel.findById(decoded.teacherId);
             if (teacher.isBlocked) {
-                logWarning("teacher is blocked, cannot create new access token");
+                logWarning(
+                    "teacher is blocked, cannot create new access token"
+                );
                 logWarning("requesting client to clear cookies");
                 res.clearCookie("refreshJWT", {
                     httpOnly: true,
@@ -355,11 +358,10 @@ export const updateAccessToken = async (req, res) => {
                 teacherId: teacher._id,
                 username: teacherModel.firstName,
                 role: teacher.role,
-                isApproved: teacher.isApproved
+                isApproved: teacher.isApproved,
             });
 
             res.status(200).json(newAccessToken);
         }
     );
 };
-
