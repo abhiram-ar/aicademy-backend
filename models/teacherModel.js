@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { plugin } from "mongoose";
 import { emailRegex } from "../utils/validators.js";
 import bcrypt from "bcrypt";
 
@@ -9,7 +9,6 @@ const teacherSchema = new mongoose.Schema(
             required: [true, "Please enter your first name"],
         },
         lastName: String,
-        legalName: { type: String},
         email: {
             type: String,
             required: true,
@@ -30,18 +29,22 @@ const teacherSchema = new mongoose.Schema(
         avatarURL: String,
         role: { type: String, default: "teacher" },
         isVerified: { type: Boolean, default: false },
-        isApproved: { type: Boolean, default: false },
         coursesCreated: [{ courseId: mongoose.Types.ObjectId }], //todo: add ref Course
         isBlocked: { type: Boolean, default: false },
 
-        phoneNo: { type: Number },
+        isApproved: { type: Boolean, default: false },
+        profilePic: {url: String, public_id: String},
+        legalName: { type: String },
+        legalNameProof: { url: String, public_id: String },
         country: String,
+
+        phoneNo: { type: Number },
         biography: String,
 
         education: String,
         college: String,
         qualification: String,
-        qualificationProof: String,
+        qualificationProof: { url: String, public_id: String },
         remark: { type: String, select: false },
     },
     { timestamps: true }
