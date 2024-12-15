@@ -84,3 +84,59 @@ export const approveOnboarding = async (req, res) => {
         });
     }
 };
+
+export const rejectOnboarding = async (req, res) => {
+    try {
+        const { teacherId } = req.body;
+        if (!teacherId) {
+            logWarning("teacherId is required for reject onboarding");
+            return res
+                .status(404)
+                .json({ success: false, message: "teacherId not provided" });
+        }
+
+        const teacher = await teacherModel.findById(teacherId);
+
+        if (teacher.isApproved === "rejected") {
+            logWarning("teacher is already rejected");
+            return res.status(200).json({
+                success: true,
+                message: "teacher is already rejected",
+            });
+        }
+
+        teacher.isApproved = "rejected";
+        await teacher.save();
+
+        try {
+            await sendMail({
+                email: teacher.email,
+                subject: "AIcademy onboarding",
+                template: "onboardingRejected.ejs",
+                data: { firstName: teacher.firstName },
+            });
+        } catch (error) {
+            logErrorMessage("error while sending onboarding rejected mail");
+            console.log(error);
+            teacher.isApproved = "pending";
+            await teacher.save();
+            return res.status(500).json({
+                success: false,
+                message: `failed to send onboard rejected mail to ${teacher.email}`,
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "teacher onboarding rejected sucessfully",
+        });
+    } catch (error) {
+        logErrorMessage("error while rejecting the teacher onboarding");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while rejecteing the teacher onboarding",
+        });
+    }
+};

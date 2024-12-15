@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Application Rejected</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: black;
+                background-color: #f8f9fa;
+                margin: 0;
+                padding: 0;
+            }
+            .email-container {
+                max-width: 600px;
+                margin: 20px auto;
+                background: #fffbee;
+                border: 2px solid black;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .email-header {
+                background-color: #d12e2e;
+                color: black;
+                padding: 20px;
+                text-align: center;
+                border-bottom: 2px solid black;
+            }
+            .email-header h1 {
+                margin: 0;
+                font-size: 24px;
+            }
+            .email-body {
+                padding: 20px;
+            }
+            .email-body h2 {
+                margin-top: 0;
+                color: #b71c1c;
+            }
+            .email-footer {
+                background-color: #f1f1f1;
+                padding: 10px;
+                text-align: center;
+                font-size: 12px;
+                border-top: 1px solid black;
+                color: #989898;
+            }
+            .button {
+                display: inline-block;
+                margin-top: 20px;
+                padding: 10px 20px;
+                background-color: #efac0f;
+                color: black;
+                font-weight: bold;
+                text-decoration: none;
+                border-radius: 5px;
+                font-size: 16px;
+                border: 2px solid black;
+                box-shadow: 5px 5px 0px black;
+            }
+            .button:hover {
+                background-color: #b88f3b;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="email-container">
+            <div class="email-header">
+                <h1>AIcademy Application Update</h1>
+            </div>
+            <div class="email-body">
+                <h2>Dear <%= firstName %>,</h2>
+                <p>
+                    We regret to inform you that after careful review, your
+                    application to join our teaching community has not been
+                    approved at this time.
+                </p>
+                <p>
+                    Our review process considers a range of factors, including
+                    the provided information and required documentation.
+                    Unfortunately, we determined that your application did not
+                    meet our criteria.
+                </p>
+                <p>
+                    If you would like to improve your application, you are
+                    welcome to update your details and reapply. We encourage you
+                    to ensure that all required information is complete and
+                    accurate.
+                </p>
+                <p>
+                    Please feel free to reach out to our support team if you
+                    have any questions or need further guidance.
+                </p>
+                <a
+                    href="http://localhost:5173/"
+                    style="color: black"
+                    class="button"
+                    >Update Your Application</a
+                >
+            </div>
+            <div class="email-footer">
+                <p>
+                    &copy; <%= new Date().getFullYear() %> AIcademy. All rights
+                    reserved.
+                </p>
+            </div>
+        </div>
+    </body>
+</html>
