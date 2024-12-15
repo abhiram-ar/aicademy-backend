@@ -280,32 +280,6 @@ export const onboading = async (req, res) => {
                     "Onboading details send for verification.This can take a while.Please check your mail regularly for updates",
             });
 
-        //         {
-        //     asset_id: '1ed013876ef52c3cc4c9d6df5c83a99d',
-        //     public_id: 'oghhsc2oyshzbyasar5n',
-        //     version: 1734247709,
-        //     version_id: '6cf7d849b057d304f2a807508d7aae18',
-        //     signature: 'db835ef2b9b4aa069cd9cd8845e60e16fafee3a4',
-        //     width: 549,
-        //     height: 976,
-        //     format: 'jpg',
-        //     resource_type: 'image',
-        //     created_at: '2024-12-15T07:28:29Z',
-        //     tags: [],
-        //     bytes: 74270,
-        //     type: 'upload',
-        //     etag: '208940a03e91651dc262860702655939',
-        //     placeholder: false,
-        //     url: 'http://res.cloudinary.com/dzahlmbyl/image/upload/v1734247709/oghhsc2oyshzbyasar5n.jpg',
-        //     secure_url: 'https://res.cloudinary.com/dzahlmbyl/image/upload/v1734247709/oghhsc2oyshzbyasar5n.jpg',
-        //     asset_folder: 'onboading-details',
-        //     display_name: 'oghhsc2oyshzbyasar5n',
-        //     original_filename: '1734247706668-62-Goku phone case',
-        //     original_extension: 'jpeg',
-        //     api_key: '951656388719332'
-        //   },
-
-        res.status(200).json({ success: true, messsage: "test" });
     } catch (error) {
         logErrorMessage("error while teacher onboarding");
         logErrorMessage(error.message);
