@@ -210,22 +210,24 @@ export const login = async (req, res) => {
 export const onboading = async (req, res) => {
     try {
         console.log(req.body);
-
-        const uploadProfilePic =  cloudinary.uploader.upload(
+        const uploadProfilePic = cloudinary.uploader.upload(
             req.files.profilePic[0].path,
             { asset_folder: `onboading-details/${req.user?._id || ""}` }
         );
-        const uploadLegalNameProof =  cloudinary.uploader.upload(
+        const uploadLegalNameProof = cloudinary.uploader.upload(
             req.files.legalNameProof[0].path,
             { asset_folder: `onboading-details/${req.user?._id || ""}` }
         );
-        const uploadQualificationProof =  cloudinary.uploader.upload(
+        const uploadQualificationProof = cloudinary.uploader.upload(
             req.files.qualificationProof[0].path,
             { asset_folder: `onboading-details/${req.user?._id || ""}` }
         );
 
-        const uploadFiles = await Promise.all([uploadProfilePic, uploadLegalNameProof, uploadQualificationProof])
-
+        const uploadFiles = await Promise.all([
+            uploadProfilePic,
+            uploadLegalNameProof,
+            uploadQualificationProof,
+        ]);
         console.log(uploadFiles);
 
         res.status(200).json({ success: true, messsage: "test" });
