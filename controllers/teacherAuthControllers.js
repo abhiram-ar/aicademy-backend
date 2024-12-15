@@ -207,6 +207,8 @@ export const login = async (req, res) => {
     }
 };
 
+
+// teacher onboarding - admin approval request
 export const onboading = async (req, res) => {
     try {
         const teacher = await teacherModel.findById(req.user.teacherId);
@@ -222,18 +224,18 @@ export const onboading = async (req, res) => {
                 .json({ success: false, message: "user already approved/onboarded" });
         }
 
-        console.log(req.body);
+        console.log(req.body)
         const uploadProfilePic = cloudinary.uploader.upload(
             req.files.profilePic[0].path,
-            { asset_folder: `onboading-details/${req.user?._id || ""}` }
+            { asset_folder: `onboading-details/${req.user?.teacherId || ""}` }
         );
         const uploadLegalNameProof = cloudinary.uploader.upload(
             req.files.legalNameProof[0].path,
-            { asset_folder: `onboading-details/${req.user?._id || ""}` }
+            { asset_folder: `onboading-details/${req.user?.teacherId || ""}` }
         );
         const uploadQualificationProof = cloudinary.uploader.upload(
             req.files.qualificationProof[0].path,
-            { asset_folder: `onboading-details/${req.user?._id || ""}` }
+            { asset_folder: `onboading-details/${req.user?.teacherId || ""}` }
         );
 
         const uploadFiles = await Promise.all([
@@ -241,7 +243,6 @@ export const onboading = async (req, res) => {
             uploadLegalNameProof,
             uploadQualificationProof,
         ]);
-        console.log(uploadFiles);
 
         teacher.profilePic = {
             url: uploadFiles[0].url,
@@ -290,3 +291,75 @@ export const onboading = async (req, res) => {
         });
     }
 };
+
+
+//get new accessToken - refersh token
+export const updateAccessToken = async (req, res) => {
+    const { refreshJWT } = req.cookies;
+    if (!refreshJWT) {
+        logWarning("updateAccesToken: cannot find refersh token in cookies");
+        return res
+            .status(401)
+            .json({ success: false, message: "No refresh token in cookies" });
+    }
+
+    jwt.verify(
+        refreshJWT,
+        process.env.REFRESH_TOKEN_SECRET,
+        async (error, decoded) => {
+            if (error) {
+                logErrorMessage("error while verifying refresh token");
+                logErrorMessage(error.message);
+                return res.status(400).json({
+                    success: false,
+                    message: "error while verifying refresh token",
+                });
+            }
+
+            const sessionDetails = await sessionModel.findOne({
+                refreshToken: refreshJWT,
+            });
+
+            if (!sessionDetails) {
+                logWarning(
+                    "refresh token does not exist in DB, requesting client to clear cookies"
+                );
+                res.clearCookie("refreshJWT", {
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: "Lax",
+                });
+                return res.status(403).json({
+                    success: false,
+                    message: "User session does't exist anymore",
+                });
+            }
+
+            const teacher = await teacherModel.findById(decoded.teacherId);
+            if (teacher.isBlocked) {
+                logWarning("teacher is blocked, cannot create new access token");
+                logWarning("requesting client to clear cookies");
+                res.clearCookie("refreshJWT", {
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: "Lax",
+                });
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "teacher is blocked. Cannot create new access token, requested to clear cookie",
+                });
+            }
+
+            const newAccessToken = createAccessToken({
+                teacherId: teacher._id,
+                username: teacherModel.firstName,
+                role: teacher.role,
+                isApproved: teacher.isApproved
+            });
+
+            res.status(200).json(newAccessToken);
+        }
+    );
+};
+
