@@ -365,3 +365,45 @@ export const updateAccessToken = async (req, res) => {
         }
     );
 };
+
+
+//logout teacher
+export const logout = async (req, res) => {
+    try {
+        const { refreshJWT } = req.cookies;
+        if (!refreshJWT) {
+            logWarning("logout: cannot find refresh token in cookies");
+            return res.status(204).send();
+        }
+
+        let result = await sessionModel.deleteOne({ refreshToken: refreshJWT });
+
+        res.clearCookie("refreshJWT", {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+        });
+
+        if (result.deletedCount === 0) {
+            logWarning("logout: No session to delete");
+            return res.status(200).json({
+                success: true,
+                message:
+                    "cannot find session to logout, client is requested to clear the cookie",
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: "teacher logged out successfully",
+        });
+    } catch (error) {
+        logErrorMessage("error while logging out teacher");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            messsage: "error while logging out teacher",
+        });
+    }
+};
+

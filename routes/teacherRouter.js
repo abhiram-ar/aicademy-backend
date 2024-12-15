@@ -4,7 +4,8 @@ import {
     onboading,
     register,
     login,
-    updateAccessToken
+    updateAccessToken,
+    logout
 } from "./../controllers/teacherAuthControllers.js";
 import { upload } from "../middlewares/upload.multer.js";
 import { isAuthenticated } from "../middlewares/auth.js";
@@ -15,6 +16,7 @@ teacherRouter.post("/auth/register", register);
 teacherRouter.post("/auth/activate", activateAccount);
 teacherRouter.post("/auth/login", login);
 teacherRouter.post("/auth/refresh", updateAccessToken)
+teacherRouter.post("/auth/logout", logout)
 
 teacherRouter.post(
     "/onboard",
