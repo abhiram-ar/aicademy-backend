@@ -32,8 +32,12 @@ const teacherSchema = new mongoose.Schema(
         coursesCreated: [{ courseId: mongoose.Types.ObjectId }], //todo: add ref Course
         isBlocked: { type: Boolean, default: false },
 
-        isApproved: { type: Boolean, default: false },
-        profilePic: {url: String, public_id: String},
+        isApproved: {
+            type: String,
+            enum: ["pending", "success", "rejected", "uninitialized"],
+            default: "uninitialized",
+        },
+        profilePic: { url: String, public_id: String },
         legalName: { type: String },
         legalNameProof: { url: String, public_id: String },
         country: String,
