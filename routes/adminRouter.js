@@ -1,5 +1,5 @@
 import express from "express";
-import { onboardingTeacherList } from "../controllers/admin.teacherMangementControllers.js";
+import { approveOnboarding, onboardingTeacherList } from "../controllers/admin.teacherMangementControllers.js";
 
 import {
     login,
@@ -16,6 +16,8 @@ adminRouter.post("/auth/refresh", updateAccessToken);
 
 
 adminRouter.get("/teacher/onboarding-list", onboardingTeacherList);
+adminRouter.patch("/teacher/approve-onboarding", approveOnboarding);
+
 
 
 export default adminRouter;
