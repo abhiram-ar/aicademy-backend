@@ -1,5 +1,6 @@
 import { logErrorMessage, logWarning } from "../utils/log.js";
 import teacherModel from "../models/teacherModel.js";
+import sendMail from "../utils/sendMail.js";
 
 export const onboardingTeacherList = async (req, res) => {
     try {
@@ -38,15 +39,36 @@ export const approveOnboarding = async (req, res) => {
                 .json({ success: false, message: "teacherId not provided" });
         }
 
-        const teacher = await teacherModel.findById(teacherId)
+        const teacher = await teacherModel.findById(teacherId);
 
-        if(teacher.isApproved === "success"){
-            logWarning("teacher is already approved")
-            return res.status(200).json({success: true, message: "teacher is already approved"})
+        if (teacher.isApproved === "success") {
+            logWarning("teacher is already approved");
+            return res.status(200).json({
+                success: true,
+                message: "teacher is already approved",
+            });
         }
 
         teacher.isApproved = "success";
-        await teacher.save()
+        await teacher.save();
+
+        try {
+            await sendMail({
+                email: teacher.email,
+                subject: "AIcademy onboarding",
+                template: "onboardingApproved.ejs",
+                data: { firstName: teacher.firstName },
+            });
+        } catch (error) {
+            logErrorMessage("error while sending onboarding success mail");
+            console.log(error);
+            teacher.isApproved = "pending";
+            await teacher.save();
+            return res.status(500).json({
+                success: false,
+                message: `failed to send onboard success mail to ${teacher.email}`,
+            });
+        }
 
         res.status(200).json({
             success: true,
