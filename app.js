@@ -28,7 +28,7 @@ app.get(
     }
 );
 
-app.use("/api/auth/refresh", updateAccessToken);
+app.get("/api/auth/refresh", updateAccessToken);
 app.use("/api/user", userRouter);
 app.use("/api/teacher", teacherRouter);
 app.use("/api/admin", adminRouter);

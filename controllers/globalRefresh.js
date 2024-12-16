@@ -3,7 +3,7 @@ import sessionModel from "../models/sessionModel.js";
 import teacherModel from "../models/teacherModel.js";
 import userModel from "../models/userModel.js";
 import { createAccessToken, createRefershToken } from "../utils/jwt.js";
-import { logErrorMessage, logSuccess } from "../utils/log.js";
+import { logErrorMessage, logSuccess, logWarning } from "../utils/log.js";
 import jwt from "jsonwebtoken";
 
 //get new accessToken - refersh token
@@ -118,7 +118,7 @@ const handleUser = async (req, res, decoded) => {
     const newAccessToken = createAccessToken({
         userId: userDetails._id,
         username: userDetails.firstName,
-        role: "user",
+        role: userDetails.role,
     });
 
     res.status(200).json(newAccessToken);
