@@ -116,6 +116,24 @@ const handleTeachers = async (req, res, decoded) => {
 const handleUser = async (req, res, decoded) => {
     logSuccess("hit user refresh");
     const userDetails = await userModel.findById(decoded.userId);
+
+    if (!userDetails) {
+        logWarning(
+            "user does not exist anymore, cannot create new access token"
+        );
+        logWarning("requesting client to clear cookies");
+        res.clearCookie("refreshJWT", {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+        });
+        return res.status(403).json({
+            success: false,
+            message:
+                "user does not exists anymore. Cannot create new access token, requested to clear cookie",
+        });
+    }
+
     if (userDetails.isBlocked) {
         logWarning("user is blocked, cannot create new access token");
         logWarning("requesting client to clear cookies");
