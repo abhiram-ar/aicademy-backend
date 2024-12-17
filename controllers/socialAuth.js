@@ -6,6 +6,7 @@ import sessionModel from "../models/sessionModel.js";
 import teacherModel from "../models/teacherModel.js";
 
 export const googleAuth = async (req, res) => {
+    logSuccess("HIT GOOGLE AUTH")
     try {
         const { credentials, role } = req.body;
         if (!credentials) {
