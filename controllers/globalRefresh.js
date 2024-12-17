@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken";
 
 //get new accessToken - refersh token
 export const updateAccessToken = async (req, res) => {
+    logSuccess("hit global refresh")
     const { refreshJWT } = req.cookies;
     if (!refreshJWT) {
         logWarning("updateAccesToken: cannot find refersh token in cookies");
