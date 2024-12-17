@@ -22,7 +22,6 @@ const teacherSchema = new mongoose.Schema(
         },
         password: {
             type: String,
-            required: [true, "Please entere your password"],
             minLength: [8, "Password must be atleast 8 characters"],
             select: false,
         },
