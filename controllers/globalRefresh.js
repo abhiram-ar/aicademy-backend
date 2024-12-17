@@ -73,7 +73,7 @@ export const updateAccessToken = async (req, res) => {
 const handleTeachers = async (req, res, decoded) => {
     logSuccess("hit teacher refresh");
     const teacher = await teacherModel.findById(decoded.teacherId);
-
+    
     if (!teacher) {
         logWarning("teacher no longer exist in DB");
         logWarning("requesting client to clear cookies");

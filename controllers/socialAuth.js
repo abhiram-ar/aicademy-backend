@@ -112,7 +112,6 @@ const handleUser = async (req, res, payload) => {
 const handleTeacher = async (req, res, payload) => {
     try {
         let teacher = await teacherModel.findOne({ email: payload.email });
-
         if (!teacher) {
             logWarning(
                 "Google auth: teacher does not exist, trying to create new teacher"
@@ -134,7 +133,7 @@ const handleTeacher = async (req, res, payload) => {
         }
 
         const tokenPayload = {
-            userId: teacher._id,
+            teacherId: teacher._id,
             username: teacher.firstName,
             role: teacher.role,
         };
