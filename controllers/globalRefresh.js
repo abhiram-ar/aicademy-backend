@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken";
 
 //get new accessToken - refersh token
 export const updateAccessToken = async (req, res) => {
-    logSuccess("hit global refresh")
+    logSuccess("hit global refresh");
     const { refreshJWT } = req.cookies;
     if (!refreshJWT) {
         logWarning("updateAccesToken: cannot find refersh token in cookies");
@@ -71,8 +71,23 @@ export const updateAccessToken = async (req, res) => {
 };
 
 const handleTeachers = async (req, res, decoded) => {
-    logSuccess("hit teacher refresh")
+    logSuccess("hit teacher refresh");
     const teacher = await teacherModel.findById(decoded.teacherId);
+
+    if (!teacher) {
+        logWarning("teacher no longer exist in DB");
+        logWarning("requesting client to clear cookies");
+        res.clearCookie("refreshJWT", {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+        });
+        return res.status(403).json({
+            success: false,
+            message: "teacher is no longer exists",
+        });
+    }
+
     if (teacher.isBlocked) {
         logWarning("teacher is blocked, cannot create new access token");
         logWarning("requesting client to clear cookies");
@@ -99,7 +114,7 @@ const handleTeachers = async (req, res, decoded) => {
 };
 
 const handleUser = async (req, res, decoded) => {
-    logSuccess("hit user refresh")
+    logSuccess("hit user refresh");
     const userDetails = await userModel.findById(decoded.userId);
     if (userDetails.isBlocked) {
         logWarning("user is blocked, cannot create new access token");
@@ -126,7 +141,7 @@ const handleUser = async (req, res, decoded) => {
 };
 
 const handleAdmin = async (req, res, decoded) => {
-    logSuccess("hit admin refresh")
+    logSuccess("hit admin refresh");
     const admin = await adminModel.findById(decoded.adminId);
     if (!admin.isActive) {
         logWarning("admin is inactive, cannot create new access token");
