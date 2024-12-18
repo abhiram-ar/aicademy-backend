@@ -20,6 +20,7 @@ const userSchema = new Schema(
             },
             unique: true,
         },
+        googleAuth: Boolean,
         password: {
             type: String,
             minLength: [8, "Password must be at least 8 characters"],

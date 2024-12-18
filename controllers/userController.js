@@ -125,7 +125,7 @@ export const activateUser = async (req, res) => {
         console.log(error);
         res.status(400).json({
             success: false,
-            message: "error while activating your account",
+            message: "error while activating your account, try again",
         });
     }
 };
@@ -151,13 +151,22 @@ export const loginUser = async (req, res) => {
         }
 
         if (user.isBlocked) {
-                logWarning("user is blocked, cannot login");
-                return res.status(403).json({
-                    success: false,
-                    message:
-                        "User is blocked. Contact admin",
-                });
-            }
+            logWarning("user is blocked, cannot login");
+            return res.status(403).json({
+                success: false,
+                message: "User is blocked. Contact admin",
+            });
+        }
+
+        if (user.googleAuth) {
+            logErrorMessage("gAuth user is using email-password to login");
+            logWarning("requesting client to use gAuth to login instead");
+            return res.status(400).json({
+                success: false,
+                message:
+                "GAuth account: Please use sign-in with Google",
+            });
+        }
 
         const isPasswordMatch = await user.comparePassword(password);
         if (!isPasswordMatch) {
@@ -178,7 +187,7 @@ export const loginUser = async (req, res) => {
 
         //save refreshtoken in session DB
         await sessionModel.create({
-            role:"user",
+            role: "user",
             userId: user._id,
             email: user.email,
             refreshToken,
@@ -198,8 +207,8 @@ export const loginUser = async (req, res) => {
                 _id: user._id,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                email: user.email
-            }
+                email: user.email,
+            },
         });
     } catch (error) {
         logErrorMessage("error while logging user");

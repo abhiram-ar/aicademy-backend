@@ -53,6 +53,7 @@ const handleUser = async (req, res, payload) => {
                 email: payload.email,
                 firstName: payload.name,
                 avatarURL: payload.picture,
+                googleAuth: true
             });
             logSuccess("Google auth: new user created sucessfully");
         }
@@ -121,6 +122,7 @@ const handleTeacher = async (req, res, payload) => {
                 email: payload.email,
                 firstName: payload.name,
                 avatarURL: payload.picture,
+                googleAuth: true
             });
             logSuccess("Google auth: new user created sucessfully");
         }
