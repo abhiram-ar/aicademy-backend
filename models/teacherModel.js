@@ -20,6 +20,7 @@ const teacherSchema = new mongoose.Schema(
                 message: "Invalid email",
             },
         },
+        googleAuth: Boolean,
         password: {
             type: String,
             minLength: [8, "Password must be atleast 8 characters"],
