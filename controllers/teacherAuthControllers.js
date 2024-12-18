@@ -154,6 +154,15 @@ export const login = async (req, res) => {
             });
         }
 
+        if (teacher.googleAuth) {
+            logWarning("gAuth teacher is using email-password to login");
+            logWarning("requesting client to use gAuth to login instead");
+            return res.status(400).json({
+                success: false,
+                message: "GAuth account: Please use sign-in with Google",
+            });
+        }
+        
         const isPasswordMatch = await teacher.comparePassword(password);
         if (!isPasswordMatch) {
             logWarning("login: password don't match");
@@ -221,12 +230,10 @@ export const onboading = async (req, res) => {
         }
 
         if (teacher.isApproved === "success") {
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message: "user already approved/onboarded",
-                });
+            return res.status(400).json({
+                success: false,
+                message: "user already approved/onboarded",
+            });
         }
 
         console.log(req.body);
@@ -366,7 +373,6 @@ export const updateAccessToken = async (req, res) => {
     );
 };
 
-
 //logout teacher
 export const logout = async (req, res) => {
     try {
@@ -406,4 +412,3 @@ export const logout = async (req, res) => {
         });
     }
 };
-
