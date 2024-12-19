@@ -6,7 +6,7 @@ import {
     login,
     updateAccessToken,
     logout
-} from "./../controllers/teacherAuthControllers.js";
+} from "../controllers/teacherAuthControllers.js";
 import { upload } from "../middlewares/upload.multer.js";
 import { isAuthenticated } from "../middlewares/auth.js";
 

@@ -10,7 +10,7 @@ import {
     logout,
     register,
     updateAccessToken,
-} from "./../controllers/adminAuthControllers.js";
+} from "../controllers/adminAuthControllers.js";
 import { authorizedRoles, isAuthenticated } from "../middlewares/auth.js";
 
 const adminRouter = express.Router();
