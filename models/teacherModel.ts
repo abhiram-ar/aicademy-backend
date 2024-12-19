@@ -1,8 +1,36 @@
-import mongoose, { plugin } from "mongoose";
-import { emailRegex } from "../utils/validators.js";
+import mongoose, { plugin, Types } from "mongoose";
+import { emailRegex } from "../utils/validators.ts";
 import bcrypt from "bcrypt";
 
-const teacherSchema = new mongoose.Schema(
+
+export interface ITeacher extends Document {
+    firstName: string;
+    lastName?: string;
+    email: string;
+    googleAuth?: boolean;
+    password?: string;
+    avatarURL?: string;
+    role: string;
+    isVerified: boolean;
+    coursesCreated: { courseId: Types.ObjectId }[];
+    isBlocked: boolean;F
+    isApproved: "pending" | "success" | "rejected" | "uninitialized";
+    profilePic?: { url: string; public_id: string };
+    legalName?: string;
+    legalNameProof?: { url: string; public_id: string };
+    country?: string;
+    phoneNo?: number;
+    biography?: string;
+    education?: string;
+    college?: string;
+    qualification?: string;
+    qualificationProof?: { url: string; public_id: string };
+    remark?: string;
+    comparePassword(enteredPassword: string): Promise<boolean>;
+}
+
+
+const teacherSchema = new mongoose.Schema<ITeacher>(
     {
         firstName: {
             type: String,

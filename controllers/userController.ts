@@ -1,13 +1,13 @@
-import userModel from "./../models/userModel.js";
+import userModel from "../models/userModel.ts";
 import jwt from "jsonwebtoken";
 import path from "path";
-import { __dirname, __filename } from "./../config/esModuleScope.js";
-import sendMail from "./../utils/sendMail.js";
+import { __dirname, __filename } from "../config/esModuleScope.ts";
+import sendMail from "../utils/sendMail.ts";
 import ejs from "ejs";
-import { log, logErrorMessage, logWarning, logSuccess } from "../utils/log.js";
+import { log, logErrorMessage, logWarning, logSuccess } from "../utils/log.ts";
 import chalk from "chalk";
-import { createAccessToken, createRefershToken } from "./../utils/jwt.js";
-import sessionModel from "./../models/sessionModel.js";
+import { createAccessToken, createRefershToken } from "../utils/jwt.ts";
+import sessionModel from "../models/sessionModel.ts";
 //user registeration
 export const registerUser = async (req, res) => {
     try {
@@ -163,8 +163,7 @@ export const loginUser = async (req, res) => {
             logWarning("requesting client to use gAuth to login instead");
             return res.status(400).json({
                 success: false,
-                message:
-                "GAuth account: Please use sign-in with Google",
+                message: "GAuth account: Please use sign-in with Google",
             });
         }
 
@@ -218,75 +217,6 @@ export const loginUser = async (req, res) => {
             .status(400)
             .json({ success: false, message: "login failed" });
     }
-};
-
-//get new accessToken - refersh token
-export const updateAccessToken = async (req, res) => {
-    const { refreshJWT } = req.cookies;
-    if (!refreshJWT) {
-        logWarning("updateAccesToken: cannot find refersh token in cookies");
-        return res
-            .status(401)
-            .json({ success: false, message: "No refresh token in cookies" });
-    }
-
-    jwt.verify(
-        refreshJWT,
-        process.env.REFRESH_TOKEN_SECRET,
-        async (error, decoded) => {
-            if (error) {
-                logErrorMessage("error while verifying refresh token");
-                logErrorMessage(error.message);
-                return res.status(400).json({
-                    success: false,
-                    message: "error while verifying refresh token",
-                });
-            }
-
-            const sessionDetails = await sessionModel.findOne({
-                refreshToken: refreshJWT,
-            });
-
-            if (!sessionDetails) {
-                logWarning(
-                    "refresh token does not exist in DB, requesting client to clear cookies"
-                );
-                res.clearCookie("refreshJWT", {
-                    httpOnly: true,
-                    secure: false,
-                    sameSite: "Lax",
-                });
-                return res.status(403).json({
-                    success: false,
-                    message: "User session does't exist anymore",
-                });
-            }
-
-            const userDetails = await userModel.findById(decoded.userId);
-            if (userDetails.isBlocked) {
-                logWarning("user is blocked, cannot create new access token");
-                logWarning("requesting client to clear cookies");
-                res.clearCookie("refreshJWT", {
-                    httpOnly: true,
-                    secure: false,
-                    sameSite: "Lax",
-                });
-                return res.status(403).json({
-                    success: false,
-                    message:
-                        "User is blocked. Cannot create new access token, requested to clear cookie",
-                });
-            }
-
-            const newAccessToken = createAccessToken({
-                userId: userDetails._id,
-                username: userDetails.firstName,
-                role: "user",
-            });
-
-            res.status(200).json(newAccessToken);
-        }
-    );
 };
 
 //logout user

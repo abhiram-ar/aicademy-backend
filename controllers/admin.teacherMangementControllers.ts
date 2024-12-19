@@ -41,6 +41,10 @@ export const approveOnboarding = async (req, res) => {
 
         const teacher = await teacherModel.findById(teacherId);
 
+        if(!teacher){
+            throw new Error("Teacher does not exit in DB")
+        }
+
         if (teacher.isApproved === "success") {
             logWarning("teacher is already approved");
             return res.status(200).json({
@@ -96,6 +100,10 @@ export const rejectOnboarding = async (req, res) => {
         }
 
         const teacher = await teacherModel.findById(teacherId);
+
+        if(!teacher){
+            throw new Error("teacher does not exist in DB")
+        }
 
         if (teacher.isApproved === "rejected") {
             logWarning("teacher is already rejected");

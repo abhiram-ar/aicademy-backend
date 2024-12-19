@@ -3,22 +3,20 @@ import {
     approveOnboarding,
     onboardingTeacherList,
     rejectOnboarding,
-} from "../controllers/admin.teacherMangementControllers.js";
+} from "../controllers/admin.teacherMangementControllers.ts";
 
 import {
     login,
     logout,
     register,
-    updateAccessToken,
-} from "./../controllers/adminAuthControllers.js";
-import { authorizedRoles, isAuthenticated } from "../middlewares/auth.js";
+} from "../controllers/adminAuthControllers.ts";
+import { authorizedRoles, isAuthenticated } from "../middlewares/auth.ts";
 
 const adminRouter = express.Router();
 
 //public rotues
 adminRouter.post("/auth/register", register);
 adminRouter.post("/auth/login", login);
-adminRouter.post("/auth/refresh", updateAccessToken);
 adminRouter.post("/auth/logout", logout);
 
 

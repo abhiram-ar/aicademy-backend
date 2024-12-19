@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { logErrorMessage, logWarning } from "../utils/log.js";
+import { logErrorMessage, logWarning } from "../utils/log.ts";
 
 export const isAuthenticated = (req, res, next) => {
     const auth = req.headers.authorization;

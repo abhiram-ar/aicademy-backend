@@ -1,14 +1,14 @@
-import teacherModel from "./../models/teacherModel.js";
+import teacherModel from "../models/teacherModel.js";
 import { logErrorMessage, logWarning } from "../utils/log.js";
 import {
     createActivationToken,
     createAccessToken,
     createRefershToken,
-} from "./../utils/jwt.js";
+} from "../utils/jwt.js";
 import sendMail from "../utils/sendMail.js";
 import jwt from "jsonwebtoken";
 import sessionModel from "../models/sessionModel.js";
-import cloudinary from "./../config/cloudinary.js";
+import cloudinary from "../config/cloudinary.js";
 
 export const register = async (req, res) => {
     try {
@@ -114,13 +114,6 @@ export const activateAccount = async (req, res) => {
         res.status(400).json({
             success: false,
             message: "error while activating your account",
-            data: {
-                teacher: {
-                    _id: newTeacher._id,
-                    email: newTeacher.email,
-                    isApproved: false,
-                },
-            },
         });
     }
 };
@@ -162,7 +155,7 @@ export const login = async (req, res) => {
                 message: "GAuth account: Please use sign-in with Google",
             });
         }
-        
+
         const isPasswordMatch = await teacher.comparePassword(password);
         if (!isPasswordMatch) {
             logWarning("login: password don't match");
@@ -301,77 +294,6 @@ export const onboading = async (req, res) => {
     }
 };
 
-//get new accessToken - refersh token
-export const updateAccessToken = async (req, res) => {
-    const { refreshJWT } = req.cookies;
-    if (!refreshJWT) {
-        logWarning("updateAccesToken: cannot find refersh token in cookies");
-        return res
-            .status(401)
-            .json({ success: false, message: "No refresh token in cookies" });
-    }
-
-    jwt.verify(
-        refreshJWT,
-        process.env.REFRESH_TOKEN_SECRET,
-        async (error, decoded) => {
-            if (error) {
-                logErrorMessage("error while verifying refresh token");
-                logErrorMessage(error.message);
-                return res.status(400).json({
-                    success: false,
-                    message: "error while verifying refresh token",
-                });
-            }
-
-            const sessionDetails = await sessionModel.findOne({
-                refreshToken: refreshJWT,
-            });
-
-            if (!sessionDetails) {
-                logWarning(
-                    "refresh token does not exist in DB, requesting client to clear cookies"
-                );
-                res.clearCookie("refreshJWT", {
-                    httpOnly: true,
-                    secure: false,
-                    sameSite: "Lax",
-                });
-                return res.status(403).json({
-                    success: false,
-                    message: "teacher session does't exist anymore",
-                });
-            }
-
-            const teacher = await teacherModel.findById(decoded.teacherId);
-            if (teacher.isBlocked) {
-                logWarning(
-                    "teacher is blocked, cannot create new access token"
-                );
-                logWarning("requesting client to clear cookies");
-                res.clearCookie("refreshJWT", {
-                    httpOnly: true,
-                    secure: false,
-                    sameSite: "Lax",
-                });
-                return res.status(403).json({
-                    success: false,
-                    message:
-                        "teacher is blocked. Cannot create new access token, requested to clear cookie",
-                });
-            }
-
-            const newAccessToken = createAccessToken({
-                teacherId: teacher._id,
-                username: teacherModel.firstName,
-                role: teacher.role,
-                isApproved: teacher.isApproved,
-            });
-
-            res.status(200).json(newAccessToken);
-        }
-    );
-};
 
 //logout teacher
 export const logout = async (req, res) => {

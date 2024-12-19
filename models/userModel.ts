@@ -1,8 +1,24 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
-import { emailRegex } from "../utils/validators.js";
+import { emailRegex } from "../utils/validators.ts";
 
-const userSchema = new Schema(
+
+interface IUser extends Document {
+    firstName: string;
+    lastName?: string;
+    email: string;
+    googleAuth?: boolean;
+    password?: string;
+    avatarURL?: string;
+    role: string;
+    isVerified: boolean;
+    coursesBought: { courseId: string }[];
+    isBlocked: boolean;
+    comparePassword(enteredPassword: string): Promise<boolean>;
+}
+
+
+const userSchema = new Schema<IUser>(
     {
         firstName: {
             type: String,
