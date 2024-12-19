@@ -1,32 +1,35 @@
 {
-  "name": "aicademy-backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@types/express": "^5.0.0",
-    "bcrypt": "^5.1.1",
-    "chalk": "^5.3.0",
-    "cloudinary": "^2.5.1",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "ejs": "^3.1.10",
-    "express": "^4.21.2",
-    "google-auth-library": "^9.15.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.8.4",
-    "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.16"
-  },
-  "devDependencies": {
-    "tsx": "^4.19.2"
-  }
+    "name": "aicademy-backend",
+    "version": "1.0.0",
+    "description": "",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev-ts": "npx tsx watch ./server.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@types/express": "^5.0.0",
+        "bcrypt": "^5.1.1",
+        "chalk": "^5.3.0",
+        "cloudinary": "^2.5.1",
+        "cookie-parser": "^1.4.7",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "ejs": "^3.1.10",
+        "express": "^4.21.2",
+        "google-auth-library": "^9.15.0",
+        "jsonwebtoken": "^9.0.2",
+        "mongoose": "^8.8.4",
+        "morgan": "^1.10.0",
+        "multer": "^1.4.5-lts.1",
+        "nodemailer": "^6.9.16"
+    },
+    "devDependencies": {
+        "@types/cookie-parser": "^1.4.8",
+        "@types/morgan": "^1.9.9",
+        "tsx": "^4.19.2"
+    }
 }
