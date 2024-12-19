@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { emailRegex } from "../utils/validators.js";
+import { emailRegex } from "../utils/validators.ts";
 import bcrypt from "bcrypt";
 
 const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS as string) || 10;

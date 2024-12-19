@@ -4,18 +4,16 @@ import {
     onboading,
     register,
     login,
-    updateAccessToken,
     logout
-} from "../controllers/teacherAuthControllers.js";
-import { upload } from "../middlewares/upload.multer.js";
-import { isAuthenticated } from "../middlewares/auth.js";
+} from "../controllers/teacherAuthControllers.ts";
+import { upload } from "../middlewares/upload.multer.ts";
+import { isAuthenticated } from "../middlewares/auth.ts";
 
 const teacherRouter = express.Router();
 
 teacherRouter.post("/auth/register", register);
 teacherRouter.post("/auth/activate", activateAccount);
 teacherRouter.post("/auth/login", login);
-teacherRouter.post("/auth/refresh", updateAccessToken)
 teacherRouter.post("/auth/logout", logout)
 
 teacherRouter.post(

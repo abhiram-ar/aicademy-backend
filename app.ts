@@ -1,13 +1,13 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import userRouter from "./routes/userRouter.js";
+import userRouter from "./routes/userRouter.ts";
 import morgan from "morgan";
-import { isAuthenticated, authorizedRoles } from "./middlewares/auth.js";
-import teacherRouter from "./routes/teacherRouter.js";
-import adminRouter from "./routes/adminRouter.js";
-import { updateAccessToken } from "./controllers/globalRefresh.js";
-import { googleAuth } from "./controllers/socialAuth.js";
+import { isAuthenticated, authorizedRoles } from "./middlewares/auth.ts";
+import teacherRouter from "./routes/teacherRouter.ts";
+import adminRouter from "./routes/adminRouter.ts";
+import { updateAccessToken } from "./controllers/globalRefresh.ts";
+import { googleAuth } from "./controllers/socialAuth.ts";
 
 const app = express();
 app.use(express.json());

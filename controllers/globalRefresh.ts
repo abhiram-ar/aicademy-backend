@@ -105,7 +105,7 @@ const handleTeachers = async (req, res, decoded) => {
 
     const newAccessToken = createAccessToken({
         teacherId: teacher._id,
-        username: teacherModel.firstName,
+        username: teacher.firstName,
         role: teacher.role,
         isApproved: teacher.isApproved,
     });
@@ -161,6 +161,11 @@ const handleUser = async (req, res, decoded) => {
 const handleAdmin = async (req, res, decoded) => {
     logSuccess("hit admin refresh");
     const admin = await adminModel.findById(decoded.adminId);
+    
+    if(!admin){
+        throw new Error("admin does not exit in Db")
+    }
+
     if (!admin.isActive) {
         logWarning("admin is inactive, cannot create new access token");
         logWarning("requesting client to clear cookies");

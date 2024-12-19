@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
-import { emailRegex } from "../utils/validators.js";
+import { emailRegex } from "../utils/validators.ts";
 
 const userSchema = new Schema(
     {
