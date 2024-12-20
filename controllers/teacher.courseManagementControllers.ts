@@ -52,3 +52,4 @@ export const editCourse = async (req: Request, res: Response): Promise<any> => {
         });
     }
 };
+
