@@ -29,7 +29,7 @@ export const createCourse = async (
 export const editCourse = async (req: Request, res: Response): Promise<any> => {
     try {
         const { courseId, data } = req.body;
-        const course = courseModel.findById(courseId);
+        const course = await courseModel.findById(courseId);
 
         if (!course) {
             logWarning("Unable to find the course to edit");
@@ -37,6 +37,11 @@ export const editCourse = async (req: Request, res: Response): Promise<any> => {
                 .status(400)
                 .json({ success: false, message: "Invalid course" });
         }
+
+        await course.updateOne(data);
+        return res
+            .status(200)
+            .json({ success: true, message: "course edited sucessfully" });
     } catch (error) {
         logErrorMessage(`error while editing the course`);
         logErrorMessage(error.message);
