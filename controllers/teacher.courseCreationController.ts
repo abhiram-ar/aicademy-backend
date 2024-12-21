@@ -67,7 +67,7 @@ export const getCourseDetails = async (
     res: Response
 ): Promise<any> => {
     try {
-        const {courseId} = req.query;
+        const { courseId } = req.query;
         if (!courseId) {
             logWarning("courseID not provided");
             return res
@@ -92,6 +92,55 @@ export const getCourseDetails = async (
         return res.status(400).json({
             success: false,
             message: "error while fetching course details",
+        });
+    }
+};
+
+export const updateBasicDetails = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const {
+            courseId,
+            title,
+            description,
+            price,
+            estimatedPrice,
+            category,
+            level,
+        } = req.body;
+
+        if (!courseId) {
+            logErrorMessage("No courseId provided to update course details");
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message: "No courseId provided in request body",
+                });
+        }
+
+        await courseModel.findByIdAndUpdate(courseId, {
+            title,
+            description,
+            price,
+            estimatedPrice,
+            category,
+            level,
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Course details updated sucessfully",
+        });
+    } catch (error) {
+        logErrorMessage("error while updating basic course details");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "Error while updating basic coure details",
         });
     }
 };
