@@ -10,11 +10,10 @@ const courseSchema = new Schema({
     },
     courseState: {
         type: String,
-        required: true,
         enum: ["draft", "published", "unpublished"],
     },
 
-    price: { type: Number, required: [true, "Price is required"] },
+    price: { type: Number},
 
     estimatedPrice: { type: Number },
     courseThumbnail: { key: String, public_url: String },
