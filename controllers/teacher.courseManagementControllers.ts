@@ -1,6 +1,6 @@
 import { json, NextFunction, Request, response, Response } from "express";
 import { logErrorMessage, logSuccess, logWarning } from "../utils/log";
-import courseModel from "../models/couse.model";
+import courseModel from "../models/course.model";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import s3, { BUCKET_NAME } from "../services/aws.S3Client";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";

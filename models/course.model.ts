@@ -8,13 +8,20 @@ const courseSchema = new Schema({
         ref: "Teacher",
         required: [true, "Teaceher ID is required for coures"],
     },
+    courseState: {
+        type: String,
+        required: true,
+        enum: ["draft", "published", "unpublished"],
+    },
+
     price: { type: Number, required: [true, "Price is required"] },
+
     estimatedPrice: { type: Number },
     courseThumbnail: { key: String, public_url: String },
     demoVideos: [{ key: String, public_url: String }],
 
     rating: Number,
-    boughtCount: Number,
+    boughtCount: { type: Number, default: 0 },
 
     category: String,
     level: { type: String, enum: ["beginner", "intermediate", "advanced"] },
@@ -40,5 +47,5 @@ const courseSchema = new Schema({
     ],
 });
 
-const courseModel = mongoose.model("course", courseSchema)
-export default courseModel
+const courseModel = mongoose.model("course", courseSchema);
+export default courseModel;
