@@ -9,4 +9,6 @@ const s3 = new S3Client({
     },
 });
 
+export const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME
+
 export default s3;
