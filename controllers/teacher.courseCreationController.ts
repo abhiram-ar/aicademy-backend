@@ -62,9 +62,12 @@ export const getCourseDraftList = async (
     }
 };
 
-export const getCourseDetails = async (req: TRequest, res: Response):Promise<any> => {
+export const getCourseDetails = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
     try {
-        const { courseId } = req.body;
+        const {courseId} = req.query;
         if (!courseId) {
             logWarning("courseID not provided");
             return res
@@ -77,13 +80,11 @@ export const getCourseDetails = async (req: TRequest, res: Response):Promise<any
             _id: courseId,
         });
 
-        return res
-            .status(200)
-            .json({
-                success: true,
-                messsage: "course details sucessfully fetched",
-                courseDetails,
-            });
+        return res.status(200).json({
+            success: true,
+            messsage: "course details sucessfully fetched",
+            courseDetails,
+        });
     } catch (error) {
         logErrorMessage("Error while Fetching a course details");
         logErrorMessage(error.message);
