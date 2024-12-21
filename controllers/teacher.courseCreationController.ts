@@ -75,7 +75,7 @@ export const getCourseDetails = async (
                 .json({ success: false, message: "CourseId not provided" });
         }
 
-        const courseDetails = await courseModel.find({
+        const courseDetails = await courseModel.findOne({
             createdBy: req.user.teacherId,
             _id: courseId,
         });
