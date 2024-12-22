@@ -1,9 +1,11 @@
-import { Request, Response } from "express";
+import { json, Request, Response } from "express";
 import courseModel from "../models/course.model";
-import { logErrorMessage, logWarning } from "../utils/log";
+import { logErrorMessage, logSuccess, logWarning } from "../utils/log";
+import cloudinary from "../config/cloudinary";
 
 // Extend the Request interface
 export interface TRequest extends Request {
+    file: any;
     user: {
         teacherId?: string;
         username: string;
@@ -113,12 +115,10 @@ export const updateBasicDetails = async (
 
         if (!courseId) {
             logErrorMessage("No courseId provided to update course details");
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message: "No courseId provided in request body",
-                });
+            return res.status(400).json({
+                success: false,
+                message: "No courseId provided in request body",
+            });
         }
 
         await courseModel.findByIdAndUpdate(courseId, {
@@ -141,6 +141,63 @@ export const updateBasicDetails = async (
         return res.status(400).json({
             success: false,
             message: "Error while updating basic coure details",
+        });
+    }
+};
+
+export const updateThumbnail = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const teacherId = req.user.teacherId;
+        const { courseId, thumbnailPublic_Id } = req.body;
+        const file = req.file;
+
+        if (!courseId) {
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message: "courseId missing in request",
+                });
+        }
+
+        const uploadResult = await cloudinary.uploader.upload(file.path, {
+            asset_folder: "thumbnails/",
+            public_id: thumbnailPublic_Id || undefined,
+            overwrite: thumbnailPublic_Id ? true : false,
+            invalidate: thumbnailPublic_Id ? true : false,
+        });
+        console.log(uploadResult);
+        if (!thumbnailPublic_Id) {
+            logWarning("old thumbaildoes not exist");
+            await courseModel.findOneAndUpdate(
+                { createdBy: teacherId, _id: courseId },
+                {
+                    $set: {
+                        thumbnail: {
+                            public_id: uploadResult.public_id,
+                            url: uploadResult.url,
+                        },
+                    },
+                },
+                { runValidators: true }
+            );
+            logSuccess(`new thumbail details updatedDB`);
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "thumnbail updated successfully",
+        });
+    } catch (error) {
+        logErrorMessage(`error while uploading thumbnail`);
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while uploading thumnail",
         });
     }
 };

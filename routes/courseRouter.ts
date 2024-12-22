@@ -6,8 +6,10 @@ import {
     getCourseDraftList,
     TRequest,
     updateBasicDetails,
+    updateThumbnail,
 } from "./../controllers/teacher.courseCreationController";
 import { authorizedRoles, isAuthenticated } from "../middlewares/auth";
+import { upload } from "../middlewares/upload.multer";
 
 const courseRouter = Express.Router();
 
@@ -31,6 +33,11 @@ courseRouter.get("/full-details", (req, res) =>
     getCourseDetails(req as TRequest, res)
 );
 
+courseRouter.patch(
+    "/draft/thumbnail",
+    upload.single("newThumbnail"),
+    (req, res) => updateThumbnail(req as TRequest, res)
+);
 
 courseRouter.post("/upload/presignedurl", generatePresignedURL);
 

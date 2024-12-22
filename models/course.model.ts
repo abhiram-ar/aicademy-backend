@@ -16,7 +16,7 @@ const courseSchema = new Schema({
     price: { type: Number},
 
     estimatedPrice: { type: Number },
-    courseThumbnail: { key: String, public_url: String },
+    thumbnail: { public_id: String, url: String },
     demoVideos: [{ key: String, public_url: String }],
 
     rating: Number,
