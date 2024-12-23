@@ -302,3 +302,37 @@ export const saveVideoMetadata = async (
         });
     }
 };
+
+const allCourseVideos = async (req: TRequest, res: Response): Promise<any> => {
+    try {
+        const { courseId } = req.body;
+        if (!courseId) {
+            logWarning("Missing parameter to fetch all course video: coursrId");
+            return res.status(400).json({
+                success: false,
+                message: "courseId is missing in request",
+            });
+        }
+
+        const courseVideos = await videoModel.find({
+            courseId,
+            uploadedBy: req.user.teacherId,
+        });
+
+        return res
+            .status(200)
+            .json({
+                success: true,
+                message: "all course video sucessfully fetched",
+                courseVideos,
+            });
+    } catch (error) {
+        logWarning("error while fething all course videos");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while fetching all course videos",
+        });
+    }
+};
