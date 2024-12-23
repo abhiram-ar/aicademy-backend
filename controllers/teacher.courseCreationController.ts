@@ -305,7 +305,7 @@ export const saveVideoMetadata = async (
 
 export const allCourseVideos = async (req: TRequest, res: Response): Promise<any> => {
     try {
-        const { courseId } = req.body;
+        const { courseId } = req.query;
         if (!courseId) {
             logWarning("Missing parameter to fetch all course video: coursrId");
             return res.status(400).json({
