@@ -11,6 +11,7 @@ const videoSchema = new mongoose.Schema({
         ref: "Course",
         required: true,
     },
+    displayName: { type: String, required: true },
     key: {
         type: String,
         required: [true, "video s3 required"],
@@ -18,6 +19,7 @@ const videoSchema = new mongoose.Schema({
         index: true,
     },
     originalSize: { type: Number },
+    originalFileType: String,
 });
 
 const videoModel = mongoose.model("Video", videoSchema);

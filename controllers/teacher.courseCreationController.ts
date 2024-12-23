@@ -5,7 +5,7 @@ import cloudinary from "../config/cloudinary";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import s3, { BUCKET_NAME } from "../services/aws.S3Client";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import crypto from "node:crypto"
+import crypto from "node:crypto";
 
 // Extend the Request interface
 export interface TRequest extends Request {
@@ -159,12 +159,10 @@ export const updateThumbnail = async (
         const file = req.file;
 
         if (!courseId) {
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message: "courseId missing in request",
-                });
+            return res.status(400).json({
+                success: false,
+                message: "courseId missing in request",
+            });
         }
 
         const uploadResult = await cloudinary.uploader.upload(file.path, {
@@ -206,7 +204,6 @@ export const updateThumbnail = async (
     }
 };
 
-
 export const generatePresignedURL = async (
     req: TRequest,
     res: Response
@@ -220,7 +217,9 @@ export const generatePresignedURL = async (
                 .json({ success: false, message: "Missing required fields" });
         }
 
-        const newKey = `${req.user.teacherId}/${crypto.randomBytes(8).toString("hex")}-${fileName}`
+        const newKey = `${req.user.teacherId}/${crypto
+            .randomBytes(8)
+            .toString("hex")}-${fileName}`;
 
         const command = new PutObjectCommand({
             Bucket: BUCKET_NAME,
@@ -246,6 +245,26 @@ export const generatePresignedURL = async (
         return res.status(400).json({
             success: false,
             message: "error while generating presinged url for video upload",
+        });
+    }
+};
+
+export const saveVideoMetadata = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const { courseId, key, originalFileName, originalSize } = req.body;
+        return res
+            .status(200)
+            .json({ success: true, message: "video metadata saved sucessfully" });
+    } catch (error) {
+        logErrorMessage("error while saving video metadata");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while saving video metadata",
         });
     }
 };
