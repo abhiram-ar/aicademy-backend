@@ -6,6 +6,7 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import s3, { BUCKET_NAME } from "../services/aws.S3Client";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "node:crypto";
+import videoModel from "../models/video.model";
 
 // Extend the Request interface
 export interface TRequest extends Request {
@@ -254,10 +255,43 @@ export const saveVideoMetadata = async (
     res: Response
 ): Promise<any> => {
     try {
-        const { courseId, key, originalFileName, originalSize } = req.body;
-        return res
-            .status(200)
-            .json({ success: true, message: "video metadata saved sucessfully" });
+        const {
+            courseId,
+            key,
+            originalFileName,
+            originalFileSize,
+            originalFileType,
+        } = req.body;
+
+        if (
+            !(
+                courseId &&
+                key &&
+                originalFileName &&
+                originalFileSize &&
+                originalFileType
+            )
+        ) {
+            logWarning("required fields missing to save video metadata to DB");
+            return res.status(400).json({
+                success: false,
+                message: "Required fields missign in request",
+            });
+        }
+
+        await videoModel.create({
+            uploadedBy: req.user.teacherId,
+            displayName: originalFileName,
+            courseId,
+            key,
+            originalFileSize,
+            originalFileType,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "video metadata saved sucessfully",
+        });
     } catch (error) {
         logErrorMessage("error while saving video metadata");
         logErrorMessage(error.message);

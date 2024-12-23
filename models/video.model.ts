@@ -18,7 +18,7 @@ const videoSchema = new mongoose.Schema({
         unique: true,
         index: true,
     },
-    originalSize: { type: Number },
+    originalFileSize: { type: Number },
     originalFileType: String,
 });
 
