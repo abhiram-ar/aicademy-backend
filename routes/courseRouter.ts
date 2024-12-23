@@ -1,5 +1,5 @@
 import Express from "express";
-import { generatePresignedURL } from "../controllers/teacher.courseManagementControllers";
+import { generatePresignedURL } from "../controllers/teacher.courseCreationController";
 import {
     createDraft,
     getCourseDetails,
@@ -39,6 +39,11 @@ courseRouter.patch(
     (req, res) => updateThumbnail(req as TRequest, res)
 );
 
-courseRouter.post("/upload/presignedurl", generatePresignedURL);
+courseRouter.post(
+    "/upload/presignedurl",
+    isAuthenticated,
+    authorizedRoles("teacher"),
+    (req, res) => generatePresignedURL(req as TRequest, res)
+);
 
 export default courseRouter;

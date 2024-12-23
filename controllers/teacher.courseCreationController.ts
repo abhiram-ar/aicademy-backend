@@ -2,6 +2,10 @@ import { json, Request, Response } from "express";
 import courseModel from "../models/course.model";
 import { logErrorMessage, logSuccess, logWarning } from "../utils/log";
 import cloudinary from "../config/cloudinary";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import s3, { BUCKET_NAME } from "../services/aws.S3Client";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import crypto from "node:crypto"
 
 // Extend the Request interface
 export interface TRequest extends Request {
@@ -198,6 +202,50 @@ export const updateThumbnail = async (
         return res.status(400).json({
             success: false,
             message: "error while uploading thumnail",
+        });
+    }
+};
+
+
+export const generatePresignedURL = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const { fileName, fileType } = req.body;
+        if (!fileName || !fileType) {
+            logWarning("missing required fields for generating presigned URL");
+            return res
+                .status(400)
+                .json({ success: false, message: "Missing required fields" });
+        }
+
+        const newKey = `${req.user.teacherId}/${crypto.randomBytes(8).toString("hex")}-${fileName}`
+
+        const command = new PutObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: newKey,
+            ContentType: fileType,
+        });
+
+        const preSignedURL = await getSignedUrl(s3, command, {
+            expiresIn: 3600,
+        });
+        res.status(200).json({
+            success: true,
+            message: "preSignedURL generated sucessfully",
+            key: newKey,
+            preSignedURL,
+        });
+    } catch (error) {
+        logErrorMessage(
+            `error while generating presigned url for video upload`
+        );
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while generating presinged url for video upload",
         });
     }
 };
