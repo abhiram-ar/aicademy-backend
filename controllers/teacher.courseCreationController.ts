@@ -303,7 +303,7 @@ export const saveVideoMetadata = async (
     }
 };
 
-const allCourseVideos = async (req: TRequest, res: Response): Promise<any> => {
+export const allCourseVideos = async (req: TRequest, res: Response): Promise<any> => {
     try {
         const { courseId } = req.body;
         if (!courseId) {

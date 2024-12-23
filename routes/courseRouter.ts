@@ -1,5 +1,6 @@
 import Express from "express";
 import {
+    allCourseVideos,
     generatePresignedURL,
     saveVideoMetadata,
 } from "../controllers/teacher.courseCreationController";
@@ -42,6 +43,10 @@ courseRouter.patch(
     (req, res) => updateThumbnail(req as TRequest, res)
 );
 
+courseRouter.get("/draft/videos", (req, res) =>
+    allCourseVideos(req as TRequest, res)
+);
+
 courseRouter.post("/upload/presignedurl", (req, res) =>
     generatePresignedURL(req as TRequest, res)
 );
@@ -49,5 +54,6 @@ courseRouter.post("/upload/presignedurl", (req, res) =>
 courseRouter.post("/upload/save-metadata", (req, res) =>
     saveVideoMetadata(req as TRequest, res)
 );
+
 
 export default courseRouter;
