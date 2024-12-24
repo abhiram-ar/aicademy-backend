@@ -304,8 +304,11 @@ export const saveVideoMetadata = async (
 };
 
 // securify flaw: Any valid teacher can delete any video in the platform
-// fixed: 
-export const deleteVideo = async (req: TRequest, res: Response): Promise<any> => {
+// fixed: true, check video ownwer ship before deletion
+export const deleteVideo = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
     try {
         const { key } = req.body;
         if (!key) {
@@ -313,6 +316,27 @@ export const deleteVideo = async (req: TRequest, res: Response): Promise<any> =>
             return res.status(400).json({
                 success: false,
                 message: "video key is missing in request",
+            });
+        }
+
+        const videoDocument = await videoModel.findOne({ key: key });
+        if (!videoDocument) {
+            logWarning(
+                `attempting to delete video in S3 that does not exitst in DB`
+            );
+            return res
+                .status(404)
+                .json({
+                    succes: false,
+                    message: "Invalid video key or does not exits in DB",
+                });
+        }
+        
+        if (req.user.teacherId !== String(videoDocument.uploadedBy)) {
+            logErrorMessage("Teacher is trying to delete video they dont own");
+            return res.status(403).json({
+                success: false,
+                message: "You dont have the aurhority to delete this video",
             });
         }
 
@@ -325,7 +349,7 @@ export const deleteVideo = async (req: TRequest, res: Response): Promise<any> =>
         console.log(deleteRes);
 
         //remove entry from DB
-        await videoModel.deleteOne({ key: key });
+        await videoDocument.deleteOne();
 
         return res
             .status(200)
