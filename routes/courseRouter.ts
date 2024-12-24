@@ -1,5 +1,10 @@
 import Express from "express";
-import { generatePresignedURL } from "../controllers/teacher.courseCreationController";
+import {
+    allCourseVideos,
+    deleteVideo,
+    generatePresignedURL,
+    saveVideoMetadata,
+} from "../controllers/teacher.courseCreationController";
 import {
     createDraft,
     getCourseDetails,
@@ -39,11 +44,20 @@ courseRouter.patch(
     (req, res) => updateThumbnail(req as TRequest, res)
 );
 
-courseRouter.post(
-    "/upload/presignedurl",
-    isAuthenticated,
-    authorizedRoles("teacher"),
-    (req, res) => generatePresignedURL(req as TRequest, res)
+courseRouter.get("/draft/videos", (req, res) =>
+    allCourseVideos(req as TRequest, res)
+);
+
+courseRouter.delete("/draft/video", (req, res) =>
+    deleteVideo(req as TRequest, res)
+);
+
+courseRouter.post("/upload/presignedurl", (req, res) =>
+    generatePresignedURL(req as TRequest, res)
+);
+
+courseRouter.post("/upload/save-metadata", (req, res) =>
+    saveVideoMetadata(req as TRequest, res)
 );
 
 export default courseRouter;

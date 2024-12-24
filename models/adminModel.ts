@@ -47,5 +47,5 @@ adminSchema.methods.comparePassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const adminModel = mongoose.model("admin", adminSchema);
+const adminModel = mongoose.model("Admin", adminSchema);
 export default adminModel;
