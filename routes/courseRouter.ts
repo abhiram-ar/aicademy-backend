@@ -4,6 +4,7 @@ import {
     deleteVideo,
     generatePresignedURL,
     saveVideoMetadata,
+    updateCourseStructure,
 } from "../controllers/teacher.courseCreationController";
 import {
     createDraft,
@@ -32,6 +33,10 @@ courseRouter.get("/draft-list", (req, res) =>
 
 courseRouter.patch("/draft/basic-info", (req, res) =>
     updateBasicDetails(req as TRequest, res)
+);
+
+courseRouter.patch("/draft/structure", (req, res) =>
+    updateCourseStructure(req as TRequest, res)
 );
 
 courseRouter.get("/full-details", (req, res) =>
