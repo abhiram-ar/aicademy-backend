@@ -331,8 +331,8 @@ export const deleteVideo = async (
                     message: "Invalid video key or does not exits in DB",
                 });
         }
-
-        if (req.user.teacherId !== videoDocument.uploadedBy) {
+        
+        if (req.user.teacherId !== String(videoDocument.uploadedBy)) {
             logErrorMessage("Teacher is trying to delete video they dont own");
             return res.status(403).json({
                 success: false,
