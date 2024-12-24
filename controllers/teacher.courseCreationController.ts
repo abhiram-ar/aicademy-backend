@@ -304,8 +304,11 @@ export const saveVideoMetadata = async (
 };
 
 // securify flaw: Any valid teacher can delete any video in the platform
-// fixed: 
-export const deleteVideo = async (req: TRequest, res: Response): Promise<any> => {
+// fixed:
+export const deleteVideo = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
     try {
         const { key } = req.body;
         if (!key) {
@@ -314,6 +317,23 @@ export const deleteVideo = async (req: TRequest, res: Response): Promise<any> =>
                 success: false,
                 message: "video key is missing in request",
             });
+        }
+
+        const videoDetails = await videoModel.findOne({ key: key });
+        if (!videoDetails) {
+            logWarning(
+                `attempting to delete video in S3 that does not exitst in DB`
+            );
+        }
+
+        if (req.user.teacherId !== videoDetails?.uploadedBy) {
+            logErrorMessage("Teacher is trying to delete video they dont own");
+            return res
+                .status(403)
+                .json({
+                    success: false,
+                    message: "You dont have the aurhority to delete this video",
+                });
         }
 
         const command = new DeleteObjectCommand({
