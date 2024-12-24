@@ -25,7 +25,7 @@ const courseSchema = new Schema({
     category: String,
     level: { type: String, enum: ["beginner", "intermediate", "advanced"] },
 
-    benifits: [String],
+    benefits: [String],
     prerequisites: [String],
 
     chapters: [

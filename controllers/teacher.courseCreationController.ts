@@ -117,6 +117,8 @@ export const updateBasicDetails = async (
             estimatedPrice,
             category,
             level,
+            benefits,
+            prerequisites
         } = req.body;
 
         if (!courseId) {
@@ -134,6 +136,8 @@ export const updateBasicDetails = async (
             estimatedPrice,
             category,
             level,
+            benefits,
+            prerequisites
         });
 
         res.status(200).json({
