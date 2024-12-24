@@ -2,7 +2,7 @@ import { json, Request, Response } from "express";
 import courseModel from "../models/course.model";
 import { logErrorMessage, logSuccess, logWarning } from "../utils/log";
 import cloudinary from "../config/cloudinary";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import s3, { BUCKET_NAME } from "../services/aws.S3Client";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "node:crypto";
@@ -303,7 +303,48 @@ export const saveVideoMetadata = async (
     }
 };
 
-export const allCourseVideos = async (req: TRequest, res: Response): Promise<any> => {
+// securify flaw: Any valid teacher can delete any video in the platform
+// fixed: 
+export const deleteVideo = async (req: TRequest, res: Response): Promise<any> => {
+    try {
+        const { key } = req.body;
+        if (!key) {
+            logWarning("Video key missing to deleete video from S3");
+            return res.status(400).json({
+                success: false,
+                message: "video key is missing in request",
+            });
+        }
+
+        const command = new DeleteObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: key,
+        });
+
+        const deleteRes = await s3.send(command);
+        console.log(deleteRes);
+
+        //remove entry from DB
+        await videoModel.deleteOne({ key: key });
+
+        return res
+            .status(200)
+            .json({ success: true, message: "Video deleted successfully" });
+    } catch (error) {
+        logErrorMessage("Error while deleting video from S3");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while deleting file from s3 or updating DB",
+        });
+    }
+};
+
+export const allCourseVideos = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
     try {
         const { courseId } = req.query;
         if (!courseId) {
@@ -319,13 +360,11 @@ export const allCourseVideos = async (req: TRequest, res: Response): Promise<any
             uploadedBy: req.user.teacherId,
         });
 
-        return res
-            .status(200)
-            .json({
-                success: true,
-                message: "all course video sucessfully fetched",
-                courseVideos,
-            });
+        return res.status(200).json({
+            success: true,
+            message: "all course video sucessfully fetched",
+            courseVideos,
+        });
     } catch (error) {
         logWarning("error while fething all course videos");
         logErrorMessage(error.message);
