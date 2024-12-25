@@ -7,6 +7,7 @@ import s3, { BUCKET_NAME } from "../services/aws.S3Client";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "node:crypto";
 import videoModel from "../models/video.model";
+import teacherModel from "../models/teacherModel";
 
 // Extend the Request interface
 export interface TRequest extends Request {
@@ -116,6 +117,9 @@ export const updateBasicDetails = async (
             estimatedPrice,
             category,
             level,
+            benefits,
+            prerequisites,
+            demoVideoKey
         } = req.body;
 
         if (!courseId) {
@@ -133,6 +137,9 @@ export const updateBasicDetails = async (
             estimatedPrice,
             category,
             level,
+            benefits,
+            prerequisites,
+            demoVideoKey
         });
 
         res.status(200).json({
@@ -146,6 +153,53 @@ export const updateBasicDetails = async (
         return res.status(400).json({
             success: false,
             message: "Error while updating basic coure details",
+        });
+    }
+};
+
+export const updateCourseStructure = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const { chapters, courseId } = req.body;
+        if (!chapters || !courseId) {
+            logErrorMessage(
+                `required fields missing to updating cousrse structure`
+            );
+            return res.status(400).json({
+                success: false,
+                message: "Required fields missing for this request",
+            });
+        }
+
+        const updateResposne = await courseModel.findOneAndUpdate(
+            { _id: courseId, createdBy: req.user.teacherId },
+            { chapters: chapters }
+        );
+
+        // if invalid if another teacher tries to modify the course data
+        if (!updateResposne) {
+            logWarning(
+                "Requested for course structure update, but no updates in DB"
+            );
+            return res
+                .status(200)
+                .json({ success: false, message: "No updates made in DB" });
+        }
+
+        console.log(updateResposne);
+
+        return res
+            .status(200)
+            .json({ success: true, message: "course successfuly updated" });
+    } catch (error) {
+        logErrorMessage("Error while updating course structure");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(200).json({
+            success: false,
+            message: "Error while updating course structure",
         });
     }
 };
@@ -324,14 +378,12 @@ export const deleteVideo = async (
             logWarning(
                 `attempting to delete video in S3 that does not exitst in DB`
             );
-            return res
-                .status(404)
-                .json({
-                    succes: false,
-                    message: "Invalid video key or does not exits in DB",
-                });
+            return res.status(404).json({
+                succes: false,
+                message: "Invalid video key or does not exits in DB",
+            });
         }
-        
+
         if (req.user.teacherId !== String(videoDocument.uploadedBy)) {
             logErrorMessage("Teacher is trying to delete video they dont own");
             return res.status(403).json({
