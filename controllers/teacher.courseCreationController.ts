@@ -118,7 +118,8 @@ export const updateBasicDetails = async (
             category,
             level,
             benefits,
-            prerequisites
+            prerequisites,
+            demoVideoKey
         } = req.body;
 
         if (!courseId) {
@@ -137,7 +138,8 @@ export const updateBasicDetails = async (
             category,
             level,
             benefits,
-            prerequisites
+            prerequisites,
+            demoVideoKey
         });
 
         res.status(200).json({

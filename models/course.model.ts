@@ -13,11 +13,11 @@ const courseSchema = new Schema({
         enum: ["draft", "published", "unpublished"],
     },
 
-    price: { type: Number},
+    price: { type: Number },
 
     estimatedPrice: { type: Number },
     thumbnail: { public_id: String, url: String },
-    demoVideos: [{ key: String, public_url: String }],
+    demoVideoKey: String,
 
     rating: Number,
     boughtCount: { type: Number, default: 0 },
