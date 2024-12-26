@@ -4,7 +4,7 @@ export const createAccessToken = (payload) => {
     return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "30m" });
 };
 export const createRefershToken = (payload) => {
-    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "1h" });
+    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "1d" });
 };
 
 export const createActivationToken = (userCredentials) => {
