@@ -46,5 +46,9 @@ const courseSchema = new Schema({
     ],
 });
 
+courseSchema.index({ title: "text" });
+courseSchema.index({ category: 1 });
+courseSchema.index({ price: 1 });
+
 const courseModel = mongoose.model("Course", courseSchema);
 export default courseModel;
