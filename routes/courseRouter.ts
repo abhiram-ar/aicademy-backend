@@ -16,10 +16,22 @@ import {
 } from "./../controllers/teacher.courseCreationController";
 import { authorizedRoles, isAuthenticated } from "../middlewares/auth";
 import { upload } from "../middlewares/upload.multer";
+import { fetchCourses } from "../controllers/userCourseControllers";
 
 const courseRouter = Express.Router();
 
-//protected rotues
+// public routes - for users
+courseRouter.get("/list", fetchCourses)
+
+
+
+
+
+
+
+
+
+//protected rotues - only authorized for teachers
 courseRouter.use(isAuthenticated, authorizedRoles("teacher"));
 
 courseRouter.post(
