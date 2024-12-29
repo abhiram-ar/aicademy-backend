@@ -1,6 +1,6 @@
 import { Request, Response, Express } from "express";
 import courseModel, { ICourse } from "../models/course.model";
-import { logErrorMessage } from "../utils/log";
+import { logErrorMessage, logWarning } from "../utils/log";
 import { Aggregate, FilterQuery, SortOrder } from "mongoose";
 
 export const fetchCourses = async (
@@ -90,10 +90,27 @@ export const fullCourseDetails = async (
         const { courseId } = req.query;
         console.log(courseId);
 
-        const courseDetails = await courseModel.findOne(
-            { _id: courseId },
-            { "chapters.lessons.videoKey": 0 }
-        ).populate({path: "createdBy", select: "legalName"})
+        if (!courseId) {
+            logWarning("courseId missing in the request");
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message: "courseId is misssing in the request",
+                });
+        }
+
+        const courseDetails = await courseModel
+            .findOne({ _id: courseId }, { "chapters.lessons.videoKey": 0 })
+            .populate({ path: "createdBy", select: "legalName" });
+
+        if (!courseDetails) {
+            logWarning("no course found wit id:" + courseId);
+            return res.status(404).json({
+                success: false,
+                message: "no course found for id: " + courseId,
+            });
+        }
 
         return res.status(200).json({
             success: true,
