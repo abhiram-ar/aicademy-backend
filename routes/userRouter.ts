@@ -1,5 +1,5 @@
 import express from "express";
-import { addToCart, getCart, URequest } from "../controllers/userCartControllers.js";
+import { addToCart, getCart, removeFromCart, URequest } from "../controllers/userCartControllers.js";
 import { authorizedRoles, isAuthenticated } from "../middlewares/auth.js";
 import {
     registerUser,
@@ -20,5 +20,6 @@ userRouter.use(isAuthenticated, authorizedRoles("user"));
 
 userRouter.get("/cart", (req, res) => getCart(req as URequest, res));
 userRouter.post("/cart", (req, res) => addToCart(req as URequest, res));
+userRouter.delete("/cart", (req, res) => removeFromCart(req as URequest, res));
 
 export default userRouter;

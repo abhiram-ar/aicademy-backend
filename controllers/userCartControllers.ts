@@ -36,6 +36,7 @@ export const getCart = async (req: URequest, res: Response): Promise<any> => {
         return res.status(200).json({
             success: true,
             message: "cart fetch successful",
+            length: cartDetails.courses.length,
             cart: cartDetails?.courses,
             cartId: cartDetails._id,
         });
@@ -89,4 +90,37 @@ export const addToCart = async (req: URequest, res: Response): Promise<any> => {
     }
 };
 
+export const removeFromCart = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const { courseId } = req.body;
+        if (!courseId) {
+            logWarning("missing parameter to remove from cart: courseId ");
+            return res.status(400).json({
+                success: false,
+                message: "courseId misisng in request",
+            });
+        }
 
+        const cartUpdateResult = await cartModel.findOneAndUpdate(
+            { userId: req.user.userId },
+            { $pull: { courses: courseId } }
+        );
+
+        console.log(cartUpdateResult);
+        return res.status(200).json({
+            success: true,
+            message: "course successflly removed from the cart",
+        });
+    } catch (error) {
+        logErrorMessage("Error while removing course from cart");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "errro while removing course from cart",
+        });
+    }
+};
