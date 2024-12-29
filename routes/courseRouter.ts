@@ -1,4 +1,7 @@
 import Express from "express";
+import { authorizedRoles, isAuthenticated } from "../middlewares/auth";
+import { upload } from "../middlewares/upload.multer";
+import { fetchCourses, fullCourseDetails } from "../controllers/userCourseControllers";
 import {
     allCourseVideos,
     deleteVideo,
@@ -14,14 +17,12 @@ import {
     updateBasicDetails,
     updateThumbnail,
 } from "./../controllers/teacher.courseCreationController";
-import { authorizedRoles, isAuthenticated } from "../middlewares/auth";
-import { upload } from "../middlewares/upload.multer";
-import { fetchCourses } from "../controllers/userCourseControllers";
 
 const courseRouter = Express.Router();
 
 // public routes - for users
 courseRouter.get("/list", fetchCourses)
+courseRouter.get("/details", fullCourseDetails)
 
 
 

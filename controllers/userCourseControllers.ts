@@ -81,3 +81,31 @@ export const fetchCourses = async (
         });
     }
 };
+
+export const fullCourseDetails = async (
+    req: Request,
+    res: Response
+): Promise<any> => {
+    try {
+        const { courseId } = req.query;
+        console.log(courseId);
+
+        const courseDetails = await courseModel.findOne(
+            { _id: courseId },
+            { "chapters.lessons.videoKey": 0 }
+        ).populate({path: "createdBy", select: "legalName"})
+
+        return res.status(200).json({
+            success: true,
+            message: "full course details fetched successfyllt",
+            fullCourseData: courseDetails,
+        });
+    } catch (error) {
+        logErrorMessage("Error while fetching fullc course Details");
+        logErrorMessage(error.message);
+        return res.status(400).json({
+            success: false,
+            message: "Error while fethching full course details",
+        });
+    }
+};
