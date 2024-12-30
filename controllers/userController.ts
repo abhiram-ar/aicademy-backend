@@ -344,7 +344,7 @@ export const resetPassword = async (
 
         await userModel.findOneAndUpdate(
             { email: decoded.email },
-            { password: passwordHash }
+            { password: passwordHash, googleAuth: false }
         );
 
         return res
@@ -360,4 +360,3 @@ export const resetPassword = async (
         });
     }
 };
-

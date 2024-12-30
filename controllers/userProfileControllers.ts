@@ -13,7 +13,7 @@ export const getProfile = async (
         const userId = req.user.userId;
         const userDetails = await userModel
             .findById(userId)
-            .select("firstName lastName avatarURL profilePicture");
+            .select("firstName lastName avatarURL profilePicture googleAuth");
         return res.status(200).json({
             success: true,
             message: "userdetails successfully fetched",
@@ -140,9 +140,12 @@ export const changePassword = async (
                 .json({ success: false, message: "Wrong old password" });
         }
 
-        const hashedNewPassword =  await bcrypt.hash(newPassword, 10);
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-        await userDetails.updateOne({ password: hashedNewPassword });
+        await userDetails.updateOne({
+            password: hashedNewPassword,
+            googleAuth: false,
+        });
 
         res.status(200).json({
             success: true,
