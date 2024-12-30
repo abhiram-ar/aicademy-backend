@@ -15,6 +15,7 @@ import {
     resetPassword,
 } from "../controllers/userController.js";
 import {
+    changePassword,
     getProfile,
     updateProfile,
     updateProfilePic,
@@ -42,5 +43,8 @@ userRouter.patch("/profilePic", upload.single("newProfilePic"), (req, res) =>
 userRouter.get("/cart", (req, res) => getCart(req as URequest, res));
 userRouter.post("/cart", (req, res) => addToCart(req as URequest, res));
 userRouter.delete("/cart", (req, res) => removeFromCart(req as URequest, res));
+userRouter.patch("/password", (req, res) =>
+    changePassword(req as URequest, res)
+);
 
 export default userRouter;

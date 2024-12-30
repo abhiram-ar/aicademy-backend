@@ -3,6 +3,7 @@ import { logErrorMessage, logSuccess, logWarning } from "../utils/log";
 import { URequest } from "./userCartControllers";
 import userModel from "../models/userModel";
 import cloudinary from "../config/cloudinary";
+import bcrypt from "bcrypt";
 
 export const getProfile = async (
     req: URequest,
@@ -104,7 +105,10 @@ export const updateProfilePic = async (
     }
 };
 
-const changePassword = async (req: URequest, res: Response): Promise<any> => {
+export const changePassword = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
     try {
         const { oldPassword, newPassword } = req.body;
         if (!oldPassword || !newPassword) {
@@ -135,6 +139,10 @@ const changePassword = async (req: URequest, res: Response): Promise<any> => {
                 .status(400)
                 .json({ success: false, message: "Wrong old password" });
         }
+
+        const hashedNewPassword =  await bcrypt.hash(newPassword, 10);
+
+        await userDetails.updateOne({ password: hashedNewPassword });
 
         res.status(200).json({
             success: true,
