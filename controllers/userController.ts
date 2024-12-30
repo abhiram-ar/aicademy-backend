@@ -339,7 +339,6 @@ export const resetPassword = async (
             token,
             process.env.ACTIVATION_CODE_SECRET
         );
-        console.log(decoded);
 
         const passwordHash = await bcrypt.hash(newPassword, 10);
 
@@ -361,3 +360,4 @@ export const resetPassword = async (
         });
     }
 };
+
