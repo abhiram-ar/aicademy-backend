@@ -8,6 +8,7 @@ import { log, logErrorMessage, logWarning, logSuccess } from "../utils/log.ts";
 import chalk from "chalk";
 import { createAccessToken, createRefershToken } from "../utils/jwt.ts";
 import sessionModel from "../models/sessionModel.ts";
+import { Request, Response } from "express";
 //user registeration
 export const registerUser = async (req, res) => {
     try {
@@ -256,5 +257,59 @@ export const logout = async (req, res) => {
             success: false,
             messsage: "error while logging out user",
         });
+    }
+};
+
+export const generateForgetPasswordOTP = async (
+    req: Request,
+    res: Response
+): Promise<any> => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            logWarning("email missing to generate password reset OTP");
+            return res.status(400).json({
+                success: false,
+                message: "email is required for this request",
+            });
+        }
+
+        const userDetails = await userModel.findOne({ email });
+        if (!userDetails) {
+            logWarning("invalid email for generating password reset OTP");
+            return res
+                .status(404)
+                .json({ success: false, message: "Invalid email" });
+        }
+
+        const { activationCode, activationToken } =
+            createActivationToken(email);
+
+        //send activation code to usersEmail
+        const data = { firstName: userDetails.firstName, otp: activationCode };
+
+        try {
+            await sendMail({
+                email: email,
+                subject: "AIcademy Reset Password OTP",
+                template: "passwordResetOTP.ejs",
+                data,
+            });
+            return res.status(201).json({
+                success: true,
+                message: `activation code send to your email ${email} `,
+                activationToken,
+            });
+        } catch (error) {
+            logErrorMessage("error while sending password reset mail");
+            throw error;
+        }
+    } catch (error) {
+        logErrorMessage("error while generating password reset OTP");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res
+            .status(400)
+            .json({ success: false, message: "Error while generating OTP" });
     }
 };

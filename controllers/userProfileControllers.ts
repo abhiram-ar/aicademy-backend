@@ -8,7 +8,6 @@ export const getProfile = async (
     req: URequest,
     res: Response
 ): Promise<any> => {
-    console.log(`hit`);
     try {
         const userId = req.user.userId;
         const userDetails = await userModel
@@ -26,6 +25,31 @@ export const getProfile = async (
         return res.status(400).json({
             success: false,
             message: "Error while fetching user profile",
+        });
+    }
+};
+
+export const updateProfile = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const { firstName, lastName } = req.body;
+        await userModel.findByIdAndUpdate(req.user.userId, {
+            firstName,
+            lastName,
+        });
+        return res.status(200).json({
+            success: false,
+            message: "user profile successfully updated",
+        });
+    } catch (error) {
+        logErrorMessage("error while updating user profile");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while updating user profile",
         });
     }
 };
