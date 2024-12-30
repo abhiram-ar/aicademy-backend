@@ -12,6 +12,7 @@ import {
     loginUser,
     logout,
     generateForgetPasswordOTP,
+    resetPassword,
 } from "../controllers/userController.js";
 import {
     getProfile,
@@ -27,6 +28,7 @@ userRouter.post("/auth/activate", activateUser);
 userRouter.post("/auth/login", loginUser);
 userRouter.post("/auth/logout", logout);
 userRouter.post("/auth/forgotPassword", generateForgetPasswordOTP);
+userRouter.patch("/auth/resetPassword", resetPassword);
 
 userRouter.use(isAuthenticated, authorizedRoles("user"));
 //user protected rotues
