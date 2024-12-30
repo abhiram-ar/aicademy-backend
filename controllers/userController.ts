@@ -282,11 +282,16 @@ export const generateForgetPasswordOTP = async (
                 .json({ success: false, message: "Invalid email" });
         }
 
-        const { activationCode, activationToken } =
-            createActivationToken(email);
+        const resetToken = jwt.sign(
+            { email: userDetails.email },
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+                expiresIn: "5m",
+            }
+        );
 
         //send activation code to usersEmail
-        const data = { firstName: userDetails.firstName, otp: activationCode };
+        const data = { firstName: userDetails.firstName, resetToken };
 
         try {
             await sendMail({
@@ -298,7 +303,6 @@ export const generateForgetPasswordOTP = async (
             return res.status(201).json({
                 success: true,
                 message: `activation code send to your email ${email} `,
-                activationToken,
             });
         } catch (error) {
             logErrorMessage("error while sending password reset mail");
