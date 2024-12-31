@@ -20,10 +20,13 @@ adminRouter.post("/auth/login", login);
 adminRouter.post("/auth/logout", logout);
 
 
-//protected routes
 adminRouter.use(isAuthenticated, authorizedRoles("admin"));
+//protected routes
 adminRouter.get("/teacher/onboarding-list", onboardingTeacherList);
 adminRouter.patch("/teacher/approve-onboarding", approveOnboarding);
 adminRouter.patch("/teacher/reject-onboarding", rejectOnboarding);
+
+
+
 
 export default adminRouter;

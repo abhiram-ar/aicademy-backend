@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import { emailRegex } from "../utils/validators.ts";
 
-interface IUser extends Document {
+export interface IUser extends Document {
     firstName: string;
     lastName?: string;
     profilePicture: { url: string; public_id: string };
