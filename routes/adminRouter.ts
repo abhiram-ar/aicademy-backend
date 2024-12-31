@@ -11,6 +11,7 @@ import {
     register,
 } from "../controllers/adminAuthControllers.ts";
 import { authorizedRoles, isAuthenticated } from "../middlewares/auth.ts";
+import { getUserList } from "../controllers/admin.userManagementControllers.ts";
 
 const adminRouter = express.Router();
 
@@ -19,14 +20,12 @@ adminRouter.post("/auth/register", register);
 adminRouter.post("/auth/login", login);
 adminRouter.post("/auth/logout", logout);
 
-
 adminRouter.use(isAuthenticated, authorizedRoles("admin"));
 //protected routes
 adminRouter.get("/teacher/onboarding-list", onboardingTeacherList);
 adminRouter.patch("/teacher/approve-onboarding", approveOnboarding);
 adminRouter.patch("/teacher/reject-onboarding", rejectOnboarding);
 
-
-
+adminRouter.get("/user/list", getUserList);
 
 export default adminRouter;

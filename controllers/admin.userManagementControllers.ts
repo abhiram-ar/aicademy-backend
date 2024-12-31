@@ -3,22 +3,30 @@ import { logErrorMessage, logWarning } from "../utils/log";
 import { FilterQuery } from "mongoose";
 import userModel, { IUser } from "../models/userModel";
 
-const getUserList = async (req: Request, res: Response): Promise<any> => {
+export const getUserList = async (
+    req: Request,
+    res: Response
+): Promise<any> => {
     try {
         const { search, limit = 10, page = 1 } = req.query;
 
         const filter: FilterQuery<IUser> = {};
 
         if (search) {
-            filter.firstName = { $regex: search as string, $options: "i" };
-            filter.lastName = { $regex: search as string, $options: "i" };
-            filter.email = { $regex: search as string, $options: "i" };
+            filter.$or = [
+                { firstName: { $regex: search as string, $options: "i" } },
+                { lastName: { $regex: search as string, $options: "i" } },
+                { email: { $regex: search as string, $options: "i" } },
+            ];
         }
 
-        const skip = parseInt(page as string) - 1 * parseInt(limit as string);
+        console.log(filter);
+
+        const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
 
         const userList = await userModel
             .find(filter)
+            .select("firstName lastName email isBlocked")
             .skip(skip)
             .limit(parseInt(limit as string));
 
