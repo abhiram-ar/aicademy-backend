@@ -9,6 +9,8 @@ import chalk from "chalk";
 import { createAccessToken, createRefershToken } from "../utils/jwt.ts";
 import sessionModel from "../models/sessionModel.ts";
 import { Request, Response } from "express";
+import bcrypt from "bcrypt";
+
 //user registeration
 export const registerUser = async (req, res) => {
     try {
@@ -282,11 +284,16 @@ export const generateForgetPasswordOTP = async (
                 .json({ success: false, message: "Invalid email" });
         }
 
-        const { activationCode, activationToken } =
-            createActivationToken(email);
+        const resetToken = jwt.sign(
+            { email: userDetails.email, role: userDetails.role },
+            process.env.ACTIVATION_CODE_SECRET,
+            {
+                expiresIn: "5m",
+            }
+        );
 
         //send activation code to usersEmail
-        const data = { firstName: userDetails.firstName, otp: activationCode };
+        const data = { firstName: userDetails.firstName, resetToken };
 
         try {
             await sendMail({
@@ -298,7 +305,7 @@ export const generateForgetPasswordOTP = async (
             return res.status(201).json({
                 success: true,
                 message: `activation code send to your email ${email} `,
-                activationToken,
+                resetToken,
             });
         } catch (error) {
             logErrorMessage("error while sending password reset mail");
@@ -311,5 +318,45 @@ export const generateForgetPasswordOTP = async (
         return res
             .status(400)
             .json({ success: false, message: "Error while generating OTP" });
+    }
+};
+
+export const resetPassword = async (
+    req: Request,
+    res: Response
+): Promise<any> => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) {
+            logWarning(`token or newPassword missing to reset password`);
+            return res.status(400).json({
+                success: false,
+                message: "required paramerter missing to reset password",
+            });
+        }
+
+        const decoded = await jwt.verify(
+            token,
+            process.env.ACTIVATION_CODE_SECRET
+        );
+
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+
+        await userModel.findOneAndUpdate(
+            { email: decoded.email, role: decoded.role },
+            { password: passwordHash, googleAuth: false }
+        );
+
+        return res
+            .status(200)
+            .json({ success: true, message: "Password changed succesfully" });
+    } catch (error) {
+        logErrorMessage("error while reseting password");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while resettign password",
+        });
     }
 };

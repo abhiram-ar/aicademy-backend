@@ -3,6 +3,7 @@ import { logErrorMessage, logSuccess, logWarning } from "../utils/log";
 import { URequest } from "./userCartControllers";
 import userModel from "../models/userModel";
 import cloudinary from "../config/cloudinary";
+import bcrypt from "bcrypt";
 
 export const getProfile = async (
     req: URequest,
@@ -12,7 +13,7 @@ export const getProfile = async (
         const userId = req.user.userId;
         const userDetails = await userModel
             .findById(userId)
-            .select("firstName lastName avatarURL profilePicture");
+            .select("firstName lastName avatarURL profilePicture googleAuth");
         return res.status(200).json({
             success: true,
             message: "userdetails successfully fetched",
@@ -101,5 +102,61 @@ export const updateProfilePic = async (
             success: false,
             message: "error while uploading profilepic",
         });
+    }
+};
+
+export const changePassword = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        if (!oldPassword || !newPassword) {
+            logWarning(
+                "oldPassword or newPassword is missing while changing password"
+            );
+            return res.status(400).json({
+                success: false,
+                message: "oldPassword or newPassword missing",
+            });
+        }
+
+        const userDetails = await userModel
+            .findById(req.user.userId)
+            .select("+password");
+
+        if (!userDetails) {
+            logWarning("change password: user email does not exist in DB");
+            return res
+                .status(404)
+                .json({ success: false, message: "Invalid credentials " });
+        }
+
+        const isPasswordMatch = await userDetails.comparePassword(oldPassword);
+        if (!isPasswordMatch) {
+            logWarning("password does not match");
+            return res
+                .status(400)
+                .json({ success: false, message: "Wrong old password" });
+        }
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+        await userDetails.updateOne({
+            password: hashedNewPassword,
+            googleAuth: false,
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "password successfully changed",
+        });
+    } catch (error) {
+        logErrorMessage("error while changing password");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res
+            .status(400)
+            .json({ success: false, message: "error while changing password" });
     }
 };

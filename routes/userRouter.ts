@@ -12,8 +12,10 @@ import {
     loginUser,
     logout,
     generateForgetPasswordOTP,
+    resetPassword,
 } from "../controllers/userController.js";
 import {
+    changePassword,
     getProfile,
     updateProfile,
     updateProfilePic,
@@ -27,6 +29,7 @@ userRouter.post("/auth/activate", activateUser);
 userRouter.post("/auth/login", loginUser);
 userRouter.post("/auth/logout", logout);
 userRouter.post("/auth/forgotPassword", generateForgetPasswordOTP);
+userRouter.patch("/auth/resetPassword", resetPassword);
 
 userRouter.use(isAuthenticated, authorizedRoles("user"));
 //user protected rotues
@@ -40,5 +43,8 @@ userRouter.patch("/profilePic", upload.single("newProfilePic"), (req, res) =>
 userRouter.get("/cart", (req, res) => getCart(req as URequest, res));
 userRouter.post("/cart", (req, res) => addToCart(req as URequest, res));
 userRouter.delete("/cart", (req, res) => removeFromCart(req as URequest, res));
+userRouter.patch("/password", (req, res) =>
+    changePassword(req as URequest, res)
+);
 
 export default userRouter;
