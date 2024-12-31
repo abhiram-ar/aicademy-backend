@@ -49,3 +49,56 @@ export const getUserList = async (
         });
     }
 };
+
+export const blockUser = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { userId } = req.body;
+        if (!userId) {
+            logWarning("userId missing to block user");
+            return res.status(400).json({
+                success: false,
+                message: "userId missing to block user",
+            });
+        }
+
+        await userModel.findByIdAndUpdate(userId, { isBlocked: true });
+        return res
+            .status(200)
+            .json({ success: true, message: "user successfully blocked" });
+    } catch (error) {
+        logErrorMessage("error while blocking user");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res
+            .status(400)
+            .json({ success: false, message: "Error while blocking user" });
+    }
+};
+
+export const unBlockUser = async (
+    req: Request,
+    res: Response
+): Promise<any> => {
+    try {
+        const { userId } = req.body;
+        if (!userId) {
+            logWarning("userId missing to ubBlock user");
+            return res.status(400).json({
+                success: false,
+                message: "userId missing to block user",
+            });
+        }
+
+        await userModel.findByIdAndUpdate(userId, { isBlocked: false });
+        return res
+            .status(200)
+            .json({ success: true, message: "user successfully unblocked" });
+    } catch (error) {
+        logErrorMessage("error while unblocking user");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res
+            .status(400)
+            .json({ success: false, message: "Error while unblocking user" });
+    }
+};
