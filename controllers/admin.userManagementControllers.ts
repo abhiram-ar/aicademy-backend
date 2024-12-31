@@ -20,8 +20,6 @@ export const getUserList = async (
             ];
         }
 
-        console.log(filter);
-
         const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
 
         const userList = await userModel
@@ -29,6 +27,8 @@ export const getUserList = async (
             .select("firstName lastName email isBlocked")
             .skip(skip)
             .limit(parseInt(limit as string));
+
+        console.log(userList);
 
         const total = await userModel.countDocuments(filter);
 
