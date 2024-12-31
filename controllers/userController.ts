@@ -285,7 +285,7 @@ export const generateForgetPasswordOTP = async (
         }
 
         const resetToken = jwt.sign(
-            { email: userDetails.email },
+            { email: userDetails.email, role: userDetails.role },
             process.env.ACTIVATION_CODE_SECRET,
             {
                 expiresIn: "5m",
@@ -343,7 +343,7 @@ export const resetPassword = async (
         const passwordHash = await bcrypt.hash(newPassword, 10);
 
         await userModel.findOneAndUpdate(
-            { email: decoded.email },
+            { email: decoded.email, role: decoded.role },
             { password: passwordHash, googleAuth: false }
         );
 
