@@ -119,8 +119,7 @@ export const verifyPaymentAndCheckout = async (
             // update the user courses they bought
             await user.updateOne({
                 $addToSet: { coursesBought: { $each: userCart.courses } },
-            });
-            await user.save();
+            })
 
             // update the metadata on the course
             await courseModel.updateMany(
@@ -138,6 +137,9 @@ export const verifyPaymentAndCheckout = async (
                     { $inc: { earnings: (course.price * 70) / 100 } }
                 );
             }
+
+            //todo:clear user cart
+            await userCart.updateOne({ courses: [] })
 
             await session.endSession();
             logSuccess("Checkout transaction successful");
