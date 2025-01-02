@@ -1,12 +1,17 @@
 import Express from "express";
 import { authorizedRoles, isAuthenticated } from "../middlewares/auth";
 import { upload } from "../middlewares/upload.multer";
-import { fetchCourses, fullCourseDetails } from "../controllers/userCourseControllers";
+import {
+    fetchCourses,
+    fullCourseDetails,
+} from "../controllers/userCourseControllers";
 import {
     allCourseVideos,
     deleteVideo,
     generatePresignedURL,
+    publishCourse,
     saveVideoMetadata,
+    unPublishCourse,
     updateCourseStructure,
 } from "../controllers/teacher.courseCreationController";
 import {
@@ -21,16 +26,8 @@ import {
 const courseRouter = Express.Router();
 
 // public routes - for users
-courseRouter.get("/list", fetchCourses)
-courseRouter.get("/details", fullCourseDetails)
-
-
-
-
-
-
-
-
+courseRouter.get("/list", fetchCourses);
+courseRouter.get("/details", fullCourseDetails);
 
 //protected rotues - only authorized for teachers
 courseRouter.use(isAuthenticated, authorizedRoles("teacher"));
@@ -76,6 +73,13 @@ courseRouter.post("/upload/presignedurl", (req, res) =>
 
 courseRouter.post("/upload/save-metadata", (req, res) =>
     saveVideoMetadata(req as TRequest, res)
+);
+
+courseRouter.patch("/publish", (req, res) =>
+    publishCourse(req as TRequest, res)
+);
+courseRouter.patch("/unpublish", (req, res) =>
+    unPublishCourse(req as TRequest, res)
 );
 
 export default courseRouter;

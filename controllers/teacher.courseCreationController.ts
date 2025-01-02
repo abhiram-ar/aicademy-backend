@@ -52,9 +52,8 @@ export const getCourseDraftList = async (
         const draftList = await courseModel.find(
             {
                 createdBy: req.user.teacherId,
-                courseState: "draft",
             },
-            { title: 1 }
+            { title: 1, courseState: 1 }
         );
 
         console.log(draftList);
@@ -119,7 +118,7 @@ export const updateBasicDetails = async (
             level,
             benefits,
             prerequisites,
-            demoVideoKey
+            demoVideoKey,
         } = req.body;
 
         if (!courseId) {
@@ -139,7 +138,7 @@ export const updateBasicDetails = async (
             level,
             benefits,
             prerequisites,
-            demoVideoKey
+            demoVideoKey,
         });
 
         res.status(200).json({
@@ -448,6 +447,69 @@ export const allCourseVideos = async (
         return res.status(400).json({
             success: false,
             message: "error while fetching all course videos",
+        });
+    }
+};
+
+export const publishCourse = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const { courseId } = req.body;
+        if (!courseId) {
+            logWarning("courseId missing to update course state");
+            return res.status(400).json({
+                success: false,
+                message: "courseId missing in request",
+            });
+        }
+
+        await courseModel.findOneAndUpdate(
+            { _id: courseId, createdBy: req.user.teacherId },
+            {
+                courseState: "published",
+            }
+        );
+        return res
+            .status(200)
+            .json({ success: true, message: "course published" });
+    } catch (error) {
+        console.log(error);
+        console.log(error.message);
+        return res
+            .status(400)
+            .json({ success: false, message: "error while publshing course" });
+    }
+};
+
+export const unPublishCourse = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const { courseId } = req.body;
+        if (!courseId) {
+            logWarning("courseId missing to update course state");
+            return res.status(400).json({
+                success: false,
+                message: "courseId missing in request",
+            });
+        }
+
+        await courseModel.findOneAndUpdate(
+            { _id: courseId, createdBy: req.user.teacherId },
+            { courseState: "draft" }
+        );
+        return res
+            .status(200)
+            .json({ success: true, message: "course unpublished" });
+    } catch (error) {
+        console.log(error);
+        console.log(error.message);
+        return res.status(400).json({
+            success: false,
+            message: "error while unpublshing course",
         });
     }
 };

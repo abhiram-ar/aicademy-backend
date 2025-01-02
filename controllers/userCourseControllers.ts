@@ -65,11 +65,14 @@ export const fetchCourses = async (
             .skip(skip)
             .limit(parseInt(limit as string));
 
+        const total = await courseModel.countDocuments(filter);
+
         res.status(200).json({
             success: true,
             message: "courseList successfully fetched",
             length: courses.length,
             courses,
+            pages: Math.ceil(total / parseInt(limit as string)),
         });
     } catch (error) {
         logErrorMessage("Error while fetching courses for explore page");
@@ -92,12 +95,10 @@ export const fullCourseDetails = async (
 
         if (!courseId) {
             logWarning("courseId missing in the request");
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message: "courseId is misssing in the request",
-                });
+            return res.status(400).json({
+                success: false,
+                message: "courseId is misssing in the request",
+            });
         }
 
         const courseDetails = await courseModel
