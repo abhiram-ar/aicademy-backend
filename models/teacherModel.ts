@@ -2,7 +2,6 @@ import mongoose, { plugin, Types } from "mongoose";
 import { emailRegex } from "../utils/validators.ts";
 import bcrypt from "bcrypt";
 
-
 export interface ITeacher extends Document {
     firstName: string;
     lastName?: string;
@@ -13,7 +12,8 @@ export interface ITeacher extends Document {
     role: string;
     isVerified: boolean;
     coursesCreated: { courseId: Types.ObjectId }[];
-    isBlocked: boolean;F
+    isBlocked: boolean;
+    F;
     isApproved: "pending" | "success" | "rejected" | "uninitialized";
     profilePic?: { url: string; public_id: string };
     legalName?: string;
@@ -27,8 +27,9 @@ export interface ITeacher extends Document {
     qualificationProof?: { url: string; public_id: string };
     remark?: string;
     comparePassword(enteredPassword: string): Promise<boolean>;
+    earnings: number;
+    totalAmountCheckedOut: number;
 }
-
 
 const teacherSchema = new mongoose.Schema<ITeacher>(
     {
@@ -78,6 +79,9 @@ const teacherSchema = new mongoose.Schema<ITeacher>(
         qualification: String,
         qualificationProof: { url: String, public_id: String },
         remark: { type: String, select: false },
+
+        earnings: Number,
+        totalAmountCheckedOut: Number,
     },
     { timestamps: true }
 );

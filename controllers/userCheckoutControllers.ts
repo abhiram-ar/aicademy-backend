@@ -3,7 +3,11 @@ import cartModel from "../models/cartModel";
 import userModel from "./../models/userModel";
 import razorpayInstance from "../config/razorpay";
 import { URequest } from "./userCartControllers";
-import { logErrorMessage, logWarning } from "../utils/log";
+import { logErrorMessage, logSuccess, logWarning } from "../utils/log";
+import crypto from "crypto";
+import mongoose from "mongoose";
+import courseModel from "../models/course.model";
+import teacherModel from "../models/teacherModel";
 
 export const createOrder = async (
     req: URequest,
@@ -53,6 +57,121 @@ export const createOrder = async (
         return res.status(400).json({
             success: false,
             message: "error while creating razorpay order",
+        });
+    }
+};
+
+export const verifyPaymentAndCheckout = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const {
+            order_id,
+            razorpay_payment_id,
+            razorpay_order_id,
+            razorpay_signature,
+        } = req.body;
+
+        if (
+            !order_id ||
+            !razorpay_payment_id ||
+            !razorpay_order_id ||
+            !razorpay_signature
+        ) {
+            logWarning("required parameters missing for payment verification");
+            return res.status(400).json({
+                success: false,
+                message: "required parameter missing for payement verification",
+            });
+        }
+
+        const secretKey = process.env.RAZORPAY_KEY_SECRET as string;
+
+        // generate signature for verifiaction
+        const hmac = crypto.createHmac("sha256", secretKey);
+        hmac.update(order_id + "|" + razorpay_payment_id);
+        const generatedSignature = hmac.digest("hex");
+
+        if (generatedSignature !== razorpay_signature) {
+            logWarning("payment signature dont match");
+            return res.status(403).json({
+                success: false,
+                message: "Payment signature does not match",
+            });
+        }
+
+        const session = await mongoose.startSession();
+
+        try {
+            session.startTransaction();
+
+            const user = await userModel.findById(req.user.userId);
+            if (!user) throw Error("Valid user not found for checkout");
+
+            const userCart = await cartModel
+                .findOne({
+                    userId: req.user.userId,
+                })
+                .populate({ path: "courses", select: "createdBy" });
+            if (!userCart) throw Error("User cart not found");
+
+            // userCart.courses.forEach(async (course) => {
+            //     user.coursesBought.push(courseId: course._id);
+            // });
+            // update the user courses they bought
+            await user.updateOne({
+                $addToSet: { coursesBought: { $each: userCart.courses } },
+            });
+
+            // update the metadata on the course
+            await courseModel.updateMany(
+                { _id: { $in: userCart.courses } },
+                {
+                    $inc: { boughtCount: 1 },
+                }
+            );
+
+            // update the teacher earning
+            const toatlAmount = 1000; //update with live data
+            await teacherModel.updateMany(
+                {
+                    _id: {
+                        $in: userCart.courses.map((course) => course.createdBy),
+                    },
+                },
+                { $inc: { earnings: 700 } }
+            );
+
+            console.log(userCart);
+
+            await user.save();
+
+            await session.endSession();
+            logSuccess("Checkout transaction successful");
+            return res.status(200).json({
+                success: true,
+                message: "payment verified successfully",
+            });
+        } catch (error) {
+            await session.abortTransaction();
+            await session.endSession();
+            logErrorMessage("checkout transation failed");
+            logErrorMessage(error.message);
+            return res.status(400).json({
+                success: false,
+                message: "error while checkout",
+            });
+        } finally {
+            await session.endSession();
+        }
+    } catch (error) {
+        logErrorMessage("error while verifying payment");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while verifying payment",
         });
     }
 };
