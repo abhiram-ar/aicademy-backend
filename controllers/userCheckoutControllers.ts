@@ -115,11 +115,12 @@ export const verifyPaymentAndCheckout = async (
                 })
                 .populate({ path: "courses", select: "createdBy price" });
             if (!userCart) throw Error("User cart not found");
+            console.log("usercart",userCart);
 
             // update the user courses they bought
             await user.updateOne({
                 $addToSet: { coursesBought: { $each: userCart.courses } },
-            })
+            });
 
             // update the metadata on the course
             await courseModel.updateMany(
@@ -139,7 +140,7 @@ export const verifyPaymentAndCheckout = async (
             }
 
             //todo:clear user cart
-            await userCart.updateOne({ courses: [] })
+            await userCart.updateOne({ courses: [] });
 
             await session.endSession();
             logSuccess("Checkout transaction successful");
