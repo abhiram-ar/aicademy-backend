@@ -113,16 +113,14 @@ export const verifyPaymentAndCheckout = async (
                 .findOne({
                     userId: req.user.userId,
                 })
-                .populate({ path: "courses", select: "createdBy" });
+                .populate({ path: "courses", select: "createdBy price" });
             if (!userCart) throw Error("User cart not found");
 
-            // userCart.courses.forEach(async (course) => {
-            //     user.coursesBought.push(courseId: course._id);
-            // });
             // update the user courses they bought
             await user.updateOne({
                 $addToSet: { coursesBought: { $each: userCart.courses } },
             });
+            await user.save();
 
             // update the metadata on the course
             await courseModel.updateMany(
@@ -133,19 +131,13 @@ export const verifyPaymentAndCheckout = async (
             );
 
             // update the teacher earning
-            const toatlAmount = 1000; //update with live data
-            await teacherModel.updateMany(
-                {
-                    _id: {
-                        $in: userCart.courses.map((course) => course.createdBy),
-                    },
-                },
-                { $inc: { earnings: 700 } }
-            );
-
-            console.log(userCart);
-
-            await user.save();
+            // sequential executtion to await to avoid race conditions
+            for (const course of userCart.courses) {
+                await teacherModel.findOneAndUpdate(
+                    { _id: course.createdBy },
+                    { $inc: { earnings: (course.price * 70) / 100 } }
+                );
+            }
 
             await session.endSession();
             logSuccess("Checkout transaction successful");
