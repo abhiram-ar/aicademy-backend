@@ -5,8 +5,8 @@ export interface ICourse extends Document {
     description: string;
     createdBy: mongoose.Types.ObjectId;
     courseState?: "draft" | "published" | "unpublished";
-    price?: number;
-    estimatedPrice?: number;
+    price: number;
+    estimatedPrice: number;
     thumbnail?: { public_id?: string; url?: string };
     demoVideoKey?: string;
     rating?: number;

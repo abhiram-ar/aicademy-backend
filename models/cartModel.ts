@@ -1,4 +1,10 @@
-import mongoose from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
+import { ICourse } from "./course.model";
+
+export interface ICart {
+    userId: string;
+    courses: (HydratedDocument<ICourse> | { _id: string })[]; // Courses can be populated or just ObjectIds
+}
 
 const cartSchema = new mongoose.Schema(
     {
