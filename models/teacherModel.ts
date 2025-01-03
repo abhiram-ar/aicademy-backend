@@ -1,4 +1,4 @@
-import mongoose, { plugin, Types } from "mongoose";
+import mongoose, { Model, plugin, Types } from "mongoose";
 import { emailRegex } from "../utils/validators.ts";
 import bcrypt from "bcrypt";
 import { ICourse } from "./../models/course.model";
@@ -97,6 +97,6 @@ teacherSchema.methods.comparePassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const teacherModel = mongoose.model("Teacher", teacherSchema);
+const teacherModel: Model<ITeacher> = mongoose.model("Teacher", teacherSchema);
 
 export default teacherModel;
