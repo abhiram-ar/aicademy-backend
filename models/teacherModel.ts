@@ -1,6 +1,7 @@
 import mongoose, { plugin, Types } from "mongoose";
 import { emailRegex } from "../utils/validators.ts";
 import bcrypt from "bcrypt";
+import { ICourse } from "./../models/course.model";
 
 export interface ITeacher extends Document {
     firstName: string;
@@ -11,9 +12,8 @@ export interface ITeacher extends Document {
     avatarURL?: string;
     role: string;
     isVerified: boolean;
-    coursesCreated: { courseId: Types.ObjectId }[];
+    coursesCreated: { courseId: Types.ObjectId | ICourse }[];
     isBlocked: boolean;
-    F;
     isApproved: "pending" | "success" | "rejected" | "uninitialized";
     profilePic?: { url: string; public_id: string };
     legalName?: string;

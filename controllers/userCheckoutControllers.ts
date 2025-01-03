@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import cartModel from "../models/cartModel";
+import cartModel, { ICart } from "../models/cartModel";
 import userModel from "./../models/userModel";
 import razorpayInstance from "../config/razorpay";
 import { URequest } from "./userCartControllers";
 import { logErrorMessage, logSuccess, logWarning } from "../utils/log";
 import crypto from "crypto";
-import mongoose from "mongoose";
-import courseModel from "../models/course.model";
+import mongoose, { HydratedDocument } from "mongoose";
+import courseModel, { ICourse } from "../models/course.model";
 import teacherModel from "../models/teacherModel";
 
 export const createOrder = async (
@@ -115,7 +115,7 @@ export const verifyPaymentAndCheckout = async (
                 })
                 .populate({ path: "courses", select: "createdBy price" });
             if (!userCart) throw Error("User cart not found");
-            console.log("usercart",userCart);
+            console.log("usercart checkout", userCart);
 
             // update the user courses they bought
             await user.updateOne({
@@ -132,14 +132,15 @@ export const verifyPaymentAndCheckout = async (
 
             // update the teacher earning
             // sequential executtion to await to avoid race conditions
-            for (const course of userCart.courses) {
+            for (const item of userCart.courses) {
+                const course = item as ICourse;
                 await teacherModel.findOneAndUpdate(
                     { _id: course.createdBy },
                     { $inc: { earnings: (course.price * 70) / 100 } }
                 );
             }
 
-            //todo:clear user cart
+            //clear user cart
             await userCart.updateOne({ courses: [] });
 
             await session.endSession();

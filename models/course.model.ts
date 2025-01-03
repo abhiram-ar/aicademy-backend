@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface ICourse extends Document {
     title: string;
@@ -82,6 +82,6 @@ courseSchema.index({ title: "text" });
 courseSchema.index({ category: 1 });
 courseSchema.index({ price: 1 });
 
-const courseModel = mongoose.model("Course", courseSchema);
+const courseModel: Model<ICourse> = mongoose.model("Course", courseSchema);
 export default courseModel;
 export type courseDocument = ICourse;
