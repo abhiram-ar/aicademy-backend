@@ -61,10 +61,15 @@ export const fetchCoupons = async (
     res: Response
 ): Promise<any> => {
     try {
-        const { search, limit = 10, page = 1, sortBy="usedBy.length" } = req.query;
+        const {
+            search,
+            limit = 10,
+            page = 1,
+            sortBy = "usedBy.length",
+        } = req.query;
 
         const filter: FilterQuery<ICoupon> = {};
-        if(search) {
+        if (search) {
             filter.$or = [
                 { code: { $regex: search, $options: "i" } },
                 { description: { $regex: search, $options: "i" } },
@@ -74,7 +79,7 @@ export const fetchCoupons = async (
         const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
         const couponList = await couponModel
             .find(filter)
-            .sort({ [sortBy as string] : -1 })
+            .sort({ [sortBy as string]: -1 })
             .skip(skip)
             .limit(parseInt(limit as string));
 
@@ -94,5 +99,35 @@ export const fetchCoupons = async (
         return res
             .status(400)
             .json({ success: false, message: "error while fetching coupons" });
+    }
+};
+
+export const changeCouponStatus = async (
+    req: Request,
+    res: Response
+): Promise<any> => {
+    try {
+        console.log(req.body);
+        const { couponId, isActive } = req.body;
+        if (!couponId) {
+            logWarning("required paramerter missing in request");
+            return res.status(400).json({
+                success: false,
+                message: "required parameter missing in request",
+            });
+        }
+
+        await couponModel.findByIdAndUpdate(couponId, { isActive });
+        return res
+            .status(200)
+            .json({ success: false, message: "coupon state updated" });
+    } catch (error) {
+        logErrorMessage("error while changing the state of coupon");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while changing coupon status",
+        });
     }
 };

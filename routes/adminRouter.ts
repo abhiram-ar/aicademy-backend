@@ -17,6 +17,7 @@ import {
     unBlockUser,
 } from "../controllers/admin.userManagementControllers.ts";
 import {
+    changeCouponStatus,
     createCoupon,
     fetchCoupons,
 } from "../controllers/adminCouponControllers.ts";
@@ -40,5 +41,6 @@ adminRouter.patch("/user/unblock", unBlockUser);
 
 adminRouter.get("/course/coupon", fetchCoupons);
 adminRouter.post("/course/coupon", createCoupon);
+adminRouter.patch("/course/coupon/state", changeCouponStatus);
 
 export default adminRouter;
