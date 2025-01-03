@@ -21,6 +21,10 @@ import {
     updateProfilePic,
 } from "../controllers/userProfileControllers.js";
 import { upload } from "../middlewares/upload.multer.js";
+import {
+    createOrder,
+    verifyPaymentAndCheckout,
+} from "../controllers/userCheckoutControllers.js";
 
 const userRouter = express.Router();
 
@@ -45,6 +49,13 @@ userRouter.post("/cart", (req, res) => addToCart(req as URequest, res));
 userRouter.delete("/cart", (req, res) => removeFromCart(req as URequest, res));
 userRouter.patch("/password", (req, res) =>
     changePassword(req as URequest, res)
+);
+
+userRouter.post("/checkout/create-order", (req, res) =>
+    createOrder(req as URequest, res)
+);
+userRouter.post("/checkout/verify-payment", (req, res) =>
+    verifyPaymentAndCheckout(req as URequest, res)
 );
 
 export default userRouter;

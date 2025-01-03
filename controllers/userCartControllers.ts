@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { logErrorMessage, logWarning } from "../utils/log";
-import cartModel from "../models/cartModel";
-import courseModel from "../models/course.model";
+import cartModel, { ICart } from "../models/cartModel";
+import courseModel, { ICourse } from "../models/course.model";
 
 export interface URequest extends Request {
     file: any;
@@ -32,6 +32,20 @@ export const getCart = async (req: URequest, res: Response): Promise<any> => {
             cartDetails = await cartModel.create({ userId });
         }
 
+        const totalAmount = cartDetails.courses.reduce(
+            (total, current) => {
+                const course = current as unknown as ICourse;
+                return {
+                    totalPrice: total.totalPrice + course.price,
+                    estimatedTotal:
+                        total.estimatedTotal + course.estimatedPrice,
+                };
+            },
+            { totalPrice: 0, estimatedTotal: 0 }
+        );
+
+        console.log(totalAmount);
+
         console.log("cartDetails", cartDetails);
         return res.status(200).json({
             success: true,
@@ -39,6 +53,7 @@ export const getCart = async (req: URequest, res: Response): Promise<any> => {
             length: cartDetails.courses.length,
             cart: cartDetails?.courses,
             cartId: cartDetails._id,
+            totalAmount,
         });
     } catch (error) {
         logErrorMessage("error while fetching/creating cart");

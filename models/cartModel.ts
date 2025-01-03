@@ -1,9 +1,15 @@
-import mongoose from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
+import { ICourse } from "./course.model";
 
-const cartSchema = new mongoose.Schema(
+export interface ICart extends Document {
+    userId: mongoose.Types.ObjectId;
+    courses: Array<mongoose.Types.ObjectId | ICourse>;
+}
+
+const cartSchema = new mongoose.Schema<ICart>(
     {
         userId: {
-            type: mongoose.Types.ObjectId,
+            type: Schema.Types.ObjectId,
             ref: "User",
             required: true,
             unique: true,
@@ -15,5 +21,5 @@ const cartSchema = new mongoose.Schema(
 
 cartSchema.index({ userId: 1 });
 
-const cartModel = mongoose.model("Cart", cartSchema);
+const cartModel: Model<ICart> = mongoose.model("Cart", cartSchema);
 export default cartModel;

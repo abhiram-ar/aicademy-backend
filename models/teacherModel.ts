@@ -1,7 +1,7 @@
 import mongoose, { plugin, Types } from "mongoose";
 import { emailRegex } from "../utils/validators.ts";
 import bcrypt from "bcrypt";
-
+import { ICourse } from "./../models/course.model";
 
 export interface ITeacher extends Document {
     firstName: string;
@@ -12,8 +12,8 @@ export interface ITeacher extends Document {
     avatarURL?: string;
     role: string;
     isVerified: boolean;
-    coursesCreated: { courseId: Types.ObjectId }[];
-    isBlocked: boolean;F
+    coursesCreated: { courseId: Types.ObjectId | ICourse }[];
+    isBlocked: boolean;
     isApproved: "pending" | "success" | "rejected" | "uninitialized";
     profilePic?: { url: string; public_id: string };
     legalName?: string;
@@ -27,8 +27,9 @@ export interface ITeacher extends Document {
     qualificationProof?: { url: string; public_id: string };
     remark?: string;
     comparePassword(enteredPassword: string): Promise<boolean>;
+    earnings: number;
+    totalAmountCheckedOut: number;
 }
-
 
 const teacherSchema = new mongoose.Schema<ITeacher>(
     {
@@ -78,6 +79,9 @@ const teacherSchema = new mongoose.Schema<ITeacher>(
         qualification: String,
         qualificationProof: { url: String, public_id: String },
         remark: { type: String, select: false },
+
+        earnings: Number,
+        totalAmountCheckedOut: Number,
     },
     { timestamps: true }
 );

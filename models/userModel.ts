@@ -12,7 +12,7 @@ export interface IUser extends Document {
     avatarURL?: string;
     role: string;
     isVerified: boolean;
-    coursesBought: { courseId: string }[];
+    coursesBought: { courseId: mongoose.Types.ObjectId }[];
     isBlocked: boolean;
     comparePassword(enteredPassword: string): Promise<boolean>;
 }
@@ -45,7 +45,7 @@ const userSchema = new Schema<IUser>(
         },
         role: { type: String, default: "user" },
         isVerified: { type: Boolean, default: false },
-        coursesBought: [{ courseId: String }],
+        coursesBought: [{ type: mongoose.Types.ObjectId, ref: "Course" }],
         isBlocked: { type: Boolean, default: false },
     },
     { timestamps: true }

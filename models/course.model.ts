@@ -1,12 +1,12 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface ICourse extends Document {
     title: string;
     description: string;
     createdBy: mongoose.Types.ObjectId;
     courseState?: "draft" | "published" | "unpublished";
-    price?: number;
-    estimatedPrice?: number;
+    price: number;
+    estimatedPrice: number;
     thumbnail?: { public_id?: string; url?: string };
     demoVideoKey?: string;
     rating?: number;
@@ -82,6 +82,6 @@ courseSchema.index({ title: "text" });
 courseSchema.index({ category: 1 });
 courseSchema.index({ price: 1 });
 
-const courseModel = mongoose.model("Course", courseSchema);
+const courseModel: Model<ICourse> = mongoose.model("Course", courseSchema);
 export default courseModel;
 export type courseDocument = ICourse;
