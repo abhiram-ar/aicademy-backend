@@ -16,6 +16,10 @@ import {
     getUserList,
     unBlockUser,
 } from "../controllers/admin.userManagementControllers.ts";
+import {
+    createCoupon,
+    fetchCoupons,
+} from "../controllers/adminCouponControllers.ts";
 
 const adminRouter = express.Router();
 
@@ -33,5 +37,8 @@ adminRouter.patch("/teacher/reject-onboarding", rejectOnboarding);
 adminRouter.get("/user/list", getUserList);
 adminRouter.patch("/user/block", blockUser);
 adminRouter.patch("/user/unblock", unBlockUser);
+
+adminRouter.get("/course/coupon", fetchCoupons);
+adminRouter.post("/course/coupon", createCoupon);
 
 export default adminRouter;

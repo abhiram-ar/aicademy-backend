@@ -1,6 +1,6 @@
 import mongoose, { Document, Model } from "mongoose";
 
-interface ICoupon extends Document {
+export interface ICoupon extends Document {
     code: string;
     description: string;
     isActive: boolean;
@@ -16,7 +16,7 @@ const couponSchema = new mongoose.Schema<ICoupon>(
     {
         code: { type: String, required: true, index: true, unique: true },
         description: String,
-        isActive: { type: Boolean, default: false },
+        isActive: { type: Boolean, default: true },
         discount: { type: Number, required: true },
         expiryDate: { type: Date },
         usageLimit: Number,
