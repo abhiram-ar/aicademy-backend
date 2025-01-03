@@ -12,17 +12,20 @@ interface ICoupon extends Document {
     minPurchaseAmount: number;
 }
 
-const couponSchema = new mongoose.Schema<ICoupon>({
-    code: { type: String, required: true, index: true, unique: true },
-    description: String,
-    isActive: { type: Boolean, default: false },
-    discount: { type: Number, required: true },
-    expiryDate: { type: Date },
-    usageLimit: Number,
-    usedBy: [{ type: mongoose.Types.ObjectId, ref: "User" }],
-    maxDiscountAmount: Number,
-    minPurchaseAmount: Number,
-});
+const couponSchema = new mongoose.Schema<ICoupon>(
+    {
+        code: { type: String, required: true, index: true, unique: true },
+        description: String,
+        isActive: { type: Boolean, default: false },
+        discount: { type: Number, required: true },
+        expiryDate: { type: Date },
+        usageLimit: Number,
+        usedBy: [{ type: mongoose.Types.ObjectId, ref: "User" }],
+        maxDiscountAmount: Number,
+        minPurchaseAmount: Number,
+    },
+    { timestamps: true }
+);
 
 couponSchema.index({ code: 1 });
 
