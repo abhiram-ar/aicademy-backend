@@ -149,7 +149,7 @@ export const applyCoupon = async (
         const { code } = req.body;
         if (!code) {
             throw {
-                message: "coupon 'code' is missing in  request",
+                message: "coupon 'code' is missing",
                 type: "checked",
             };
         }
@@ -176,7 +176,7 @@ export const applyCoupon = async (
         const cartTotal = userCart.totalAmount().totalPrice;
         if (cartTotal < coupon.minPurchaseAmount) {
             throw {
-                message: `min cart value should be ${coupon.minPurchaseAmount}₹`,
+                message: `min cart value should be ₹${coupon.minPurchaseAmount}`,
                 type: "checked",
             };
         }
