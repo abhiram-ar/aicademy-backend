@@ -84,9 +84,7 @@ export const createOrder = async (
             message: "order created successfully",
             orderDetails,
             couponDetails:
-                Object.keys(couponDetails).length > 0
-                    ? couponDetails
-                    : null,
+                Object.keys(couponDetails).length > 0 ? couponDetails : null,
         });
     } catch (error) {
         logErrorMessage("error while creating razorpay order");
@@ -169,7 +167,7 @@ export const verifyPaymentAndCheckout = async (
             );
 
             // update the teacher earning
-            // sequential executtion to await to avoid race conditions
+            // sequential executtion by for..of loop and await to avoid race conditions
             for (const item of userCart.courses) {
                 const course = item as ICourse;
                 await teacherModel.findOneAndUpdate(
