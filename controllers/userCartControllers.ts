@@ -2,7 +2,7 @@ import { Request, RequestHandler, Response } from "express";
 import { logErrorMessage, logWarning } from "../utils/log";
 import cartModel, { ICart } from "../models/cartModel";
 import courseModel, { ICourse } from "../models/course.model";
-import couponModel from "../models/couponModel";
+import couponModel, { ICoupon } from "../models/couponModel";
 
 export interface URequest extends Request {
     file: any;
@@ -22,10 +22,13 @@ export const getCart = async (req: URequest, res: Response): Promise<any> => {
             });
         }
 
-        let cartDetails = await cartModel.findOne({ userId }).populate({
-            path: "courses",
-            select: "title description createdBy level price estimatedPrice thumbnail",
-        });
+        let cartDetails = await cartModel
+            .findOne({ userId })
+            .populate({
+                path: "courses",
+                select: "title description createdBy level price estimatedPrice thumbnail",
+            })
+            .populate("couponApplied");
 
         // if cart does not exist in DB create a new cart,
         // since user is autheicated and authorized, cart is created safely
@@ -33,27 +36,43 @@ export const getCart = async (req: URequest, res: Response): Promise<any> => {
             cartDetails = await cartModel.create({ userId });
         }
 
-        const totalAmount = cartDetails.courses.reduce(
-            (total, current) => {
-                const course = current as unknown as ICourse;
-                return {
-                    totalPrice: total.totalPrice + course.price,
-                    estimatedTotal:
-                        total.estimatedTotal + course.estimatedPrice,
-                };
-            },
-            { totalPrice: 0, estimatedTotal: 0 }
-        );
+        const totalAmount = cartDetails.totalAmount();
 
-        console.log(totalAmount);
+        const couponDetails: any = {};
+        if (cartDetails.couponApplied) {
+            const appliedCoupon = cartDetails.couponApplied as ICoupon;
+            const validationResult = appliedCoupon.validateCoupon();
 
-        console.log("cartDetails", cartDetails);
+            // remove coupon if coupon is invalid
+            if (
+                !validationResult.success ||
+                appliedCoupon.minPurchaseAmount > totalAmount.totalPrice
+            ) {
+                logWarning(
+                    validationResult?.error?.message ??
+                        "cart total less than coupon minAmount, removing coupon"
+                );
+                await cartDetails.updateOne({ $unset: { couponApplied: "" } });
+                cartDetails.couponApplied = null;
+            }
+            // calculate discount
+            else {
+                couponDetails.code = appliedCoupon.code;
+                couponDetails.couponDiscount = Math.min(
+                    appliedCoupon.maxDiscountAmount,
+                    (totalAmount.totalPrice * appliedCoupon.discount) / 100
+                );
+                totalAmount.totalPrice -= couponDetails.couponDiscount;
+            }
+        }
+
         return res.status(200).json({
             success: true,
             message: "cart fetch successful",
             length: cartDetails.courses.length,
             cart: cartDetails?.courses,
             cartId: cartDetails._id,
+            coupon: couponDetails,
             totalAmount,
         });
     } catch (error) {
@@ -159,7 +178,7 @@ export const applyCoupon = async (
             throw { message: "Invalid coupon", type: "checked" };
         }
         console.log(coupon);
-        
+
         // check coupon validity
         const validationResult = coupon.validateCoupon();
         if (!validationResult.success) {
@@ -191,7 +210,7 @@ export const applyCoupon = async (
         });
     } catch (error) {
         logErrorMessage("error while applying coupon");
-        logErrorMessage(error.message );
+        logErrorMessage(error.message);
         console.log(error);
         res.status(400).json({
             success: false,

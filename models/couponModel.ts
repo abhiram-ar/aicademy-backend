@@ -10,7 +10,10 @@ export interface ICoupon extends Document {
     usedBy: mongoose.Types.ObjectId;
     maxDiscountAmount: number;
     minPurchaseAmount: number;
-    validateCoupon: () => { success: boolean; error?: object };
+    validateCoupon: () => {
+        success: boolean;
+        error?: { message: string; type: string };
+    };
 }
 
 const couponSchema = new mongoose.Schema<ICoupon>(
