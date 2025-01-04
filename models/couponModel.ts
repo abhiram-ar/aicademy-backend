@@ -42,6 +42,12 @@ couponSchema.methods.validateCoupon = function () {
             error: { message: "Coupon expired", type: "checked" },
         };
     }
+    if (this.usedBy && this.usageLimit < this.usedBy.length) {
+        return {
+            success: false,
+            error: { message: "Max usage reached", type: "checked" },
+        };
+    }
 
     return { success: true };
 };

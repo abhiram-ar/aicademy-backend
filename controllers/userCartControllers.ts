@@ -154,21 +154,20 @@ export const applyCoupon = async (
             };
         }
 
-        // check coupon validity
         const coupon = await couponModel.findOne({ code: code });
         if (!coupon) {
             throw { message: "Invalid coupon", type: "checked" };
         }
         console.log(coupon);
-
+        
+        // check coupon validity
         const validationResult = coupon.validateCoupon();
         if (!validationResult.success) {
             throw validationResult.error;
         }
 
-        const userId = req.user.userId;
         const userCart = await cartModel
-            .findOne({ userId: userId })
+            .findOne({ userId: req.user.userId })
             .populate({ path: "courses", select: "price estimatedPrice" });
         if (!userCart) {
             throw { message: "cannot find user cart", type: "checked" };
