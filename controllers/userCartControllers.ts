@@ -219,3 +219,28 @@ export const applyCoupon = async (
         });
     }
 };
+
+export const removeCouponFromCart = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    console.log("hit remove");
+    try {
+        await cartModel.findOneAndUpdate(
+            { userId: req.user.userId },
+            { $unset: { couponApplied: "" } }
+        );
+        res.status(200).json({
+            success: true,
+            message: "coupon removed from cart",
+        });
+    } catch (error) {
+        logErrorMessage("error while removing coupon from cart");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while removing coupon from cart",
+        });
+    }
+};

@@ -3,6 +3,7 @@ import {
     addToCart,
     applyCoupon,
     getCart,
+    removeCouponFromCart,
     removeFromCart,
     URequest,
 } from "../controllers/userCartControllers.js";
@@ -54,6 +55,9 @@ userRouter.post("/cart", (req, res) => addToCart(req as URequest, res));
 userRouter.delete("/cart", (req, res) => removeFromCart(req as URequest, res));
 userRouter.post("/cart/apply-coupon", (req, res) =>
     applyCoupon(req as URequest, res)
+);
+userRouter.patch("/cart/remove-coupon", (req, res) =>
+    removeCouponFromCart(req as URequest, res)
 );
 
 // checkout routes
