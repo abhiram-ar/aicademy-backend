@@ -8,6 +8,7 @@ import crypto from "crypto";
 import mongoose, { HydratedDocument } from "mongoose";
 import courseModel, { ICourse } from "../models/course.model";
 import teacherModel from "../models/teacherModel";
+import { ICoupon } from "../models/couponModel";
 
 export const createOrder = async (
     req: URequest,
@@ -17,7 +18,8 @@ export const createOrder = async (
         const userId = req.user.userId;
         const cart = await cartModel
             .findOne({ userId })
-            .populate({ path: "courses", select: "price" });
+            .populate({ path: "courses", select: "price" })
+            .populate("couponApplied");
 
         if (!cart) {
             logWarning("cannot find user cart to create razorpay order");
@@ -27,12 +29,40 @@ export const createOrder = async (
         }
 
         // get cart sum
-        const amount = cart.courses.reduce((total, current): number => {
-            const course = current as unknown as { price: number };
-            return total + course.price;
-        }, 0);
+        let amount = cart.totalAmount().totalPrice;
 
         // todo: deduce amoount for coupon
+        const couponDetails: { code?: string; couponDiscount?: number } = {};
+        if (cart.couponApplied) {
+            const appliedCoupon = cart.couponApplied as ICoupon;
+            const validationResult = appliedCoupon.validateCoupon();
+
+            // remove coupon if coupon is invalid
+            if (
+                !validationResult.success ||
+                appliedCoupon.minPurchaseAmount > amount
+            ) {
+                logWarning(
+                    validationResult?.error?.message ??
+                        "orderCreation: cart total less than coupon minAmount, removing coupon"
+                );
+                await cart.updateOne({ $unset: { couponApplied: "" } });
+                return res.status(400).json({
+                    success: false,
+                    messsage: "Invalid coupon while checkout",
+                    errorMessage: "Invalid coupon",
+                });
+            }
+            // calculate discount
+            else {
+                couponDetails.code = appliedCoupon.code;
+                couponDetails.couponDiscount = Math.min(
+                    appliedCoupon.maxDiscountAmount,
+                    (amount * appliedCoupon.discount) / 100
+                );
+                amount -= couponDetails.couponDiscount;
+            }
+        }
 
         // create a razorpay order
         const orderDetails = await razorpayInstance.orders.create({
@@ -41,14 +71,22 @@ export const createOrder = async (
             notes: {
                 customerId: userId as string,
                 courses: cart.courses.map((course) => course._id).join(","),
+                coupondDiscount: couponDetails.couponDiscount
+                    ? couponDetails.couponDiscount
+                    : null,
+                couponApplied: couponDetails.code ? couponDetails.code : null,
             },
         });
 
-        console.log(orderDetails);
+        console.log(cart);
         res.status(200).json({
             success: true,
             message: "order created successfully",
             orderDetails,
+            couponDetails:
+                Object.keys(couponDetails).length > 0
+                    ? couponDetails
+                    : null,
         });
     } catch (error) {
         logErrorMessage("error while creating razorpay order");
