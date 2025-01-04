@@ -1,7 +1,9 @@
 import express from "express";
 import {
     addToCart,
+    applyCoupon,
     getCart,
+    removeCouponFromCart,
     removeFromCart,
     URequest,
 } from "../controllers/userCartControllers.js";
@@ -43,14 +45,22 @@ userRouter.patch("/profile", (req, res) => updateProfile(req as URequest, res));
 userRouter.patch("/profilePic", upload.single("newProfilePic"), (req, res) =>
     updateProfilePic(req as URequest, res)
 );
-
-userRouter.get("/cart", (req, res) => getCart(req as URequest, res));
-userRouter.post("/cart", (req, res) => addToCart(req as URequest, res));
-userRouter.delete("/cart", (req, res) => removeFromCart(req as URequest, res));
 userRouter.patch("/password", (req, res) =>
     changePassword(req as URequest, res)
 );
 
+// cart routes
+userRouter.get("/cart", (req, res) => getCart(req as URequest, res));
+userRouter.post("/cart", (req, res) => addToCart(req as URequest, res));
+userRouter.delete("/cart", (req, res) => removeFromCart(req as URequest, res));
+userRouter.post("/cart/apply-coupon", (req, res) =>
+    applyCoupon(req as URequest, res)
+);
+userRouter.patch("/cart/remove-coupon", (req, res) =>
+    removeCouponFromCart(req as URequest, res)
+);
+
+// checkout routes
 userRouter.post("/checkout/create-order", (req, res) =>
     createOrder(req as URequest, res)
 );

@@ -1,7 +1,8 @@
-import { Request, Response } from "express";
+import { Request, RequestHandler, Response } from "express";
 import { logErrorMessage, logWarning } from "../utils/log";
 import cartModel, { ICart } from "../models/cartModel";
 import courseModel, { ICourse } from "../models/course.model";
+import couponModel, { ICoupon } from "../models/couponModel";
 
 export interface URequest extends Request {
     file: any;
@@ -21,10 +22,13 @@ export const getCart = async (req: URequest, res: Response): Promise<any> => {
             });
         }
 
-        let cartDetails = await cartModel.findOne({ userId }).populate({
-            path: "courses",
-            select: "title description createdBy level price estimatedPrice thumbnail",
-        });
+        let cartDetails = await cartModel
+            .findOne({ userId })
+            .populate({
+                path: "courses",
+                select: "title description createdBy level price estimatedPrice thumbnail",
+            })
+            .populate("couponApplied");
 
         // if cart does not exist in DB create a new cart,
         // since user is autheicated and authorized, cart is created safely
@@ -32,27 +36,43 @@ export const getCart = async (req: URequest, res: Response): Promise<any> => {
             cartDetails = await cartModel.create({ userId });
         }
 
-        const totalAmount = cartDetails.courses.reduce(
-            (total, current) => {
-                const course = current as unknown as ICourse;
-                return {
-                    totalPrice: total.totalPrice + course.price,
-                    estimatedTotal:
-                        total.estimatedTotal + course.estimatedPrice,
-                };
-            },
-            { totalPrice: 0, estimatedTotal: 0 }
-        );
+        const totalAmount = cartDetails.totalAmount();
 
-        console.log(totalAmount);
+        const couponDetails: any = {};
+        if (cartDetails.couponApplied) {
+            const appliedCoupon = cartDetails.couponApplied as ICoupon;
+            const validationResult = appliedCoupon.validateCoupon();
 
-        console.log("cartDetails", cartDetails);
+            // remove coupon if coupon is invalid
+            if (
+                !validationResult.success ||
+                appliedCoupon.minPurchaseAmount > totalAmount.totalPrice
+            ) {
+                logWarning(
+                    validationResult?.error?.message ??
+                        "cart total less than coupon minAmount, removing coupon"
+                );
+                await cartDetails.updateOne({ $unset: { couponApplied: "" } });
+                cartDetails.couponApplied = null;
+            }
+            // calculate discount
+            else {
+                couponDetails.code = appliedCoupon.code;
+                couponDetails.couponDiscount = Math.min(
+                    appliedCoupon.maxDiscountAmount,
+                    (totalAmount.totalPrice * appliedCoupon.discount) / 100
+                );
+                totalAmount.totalPrice -= couponDetails.couponDiscount;
+            }
+        }
+
         return res.status(200).json({
             success: true,
             message: "cart fetch successful",
             length: cartDetails.courses.length,
             cart: cartDetails?.courses,
             cartId: cartDetails._id,
+            coupon: couponDetails,
             totalAmount,
         });
     } catch (error) {
@@ -136,6 +156,91 @@ export const removeFromCart = async (
         return res.status(400).json({
             success: false,
             message: "errro while removing course from cart",
+        });
+    }
+};
+
+export const applyCoupon = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const { code } = req.body;
+        if (!code) {
+            throw {
+                message: "coupon 'code' is missing",
+                type: "checked",
+            };
+        }
+
+        const coupon = await couponModel.findOne({ code: code });
+        if (!coupon) {
+            throw { message: "Invalid coupon", type: "checked" };
+        }
+        console.log(coupon);
+
+        // check coupon validity
+        const validationResult = coupon.validateCoupon();
+        if (!validationResult.success) {
+            throw validationResult.error;
+        }
+
+        const userCart = await cartModel
+            .findOne({ userId: req.user.userId })
+            .populate({ path: "courses", select: "price estimatedPrice" });
+        if (!userCart) {
+            throw { message: "cannot find user cart", type: "checked" };
+        }
+
+        const cartTotal = userCart.totalAmount().totalPrice;
+        if (cartTotal < coupon.minPurchaseAmount) {
+            throw {
+                message: `min cart value should be ₹${coupon.minPurchaseAmount}`,
+                type: "checked",
+            };
+        }
+
+        // apply coupon to cart
+        userCart.couponApplied = coupon.id;
+        await userCart.save();
+
+        res.status(200).json({
+            success: true,
+            message: "coupon applied successfully",
+        });
+    } catch (error) {
+        logErrorMessage("error while applying coupon");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "Error while applying coupon",
+            errorMessage: error?.type === "checked" && error.message,
+        });
+    }
+};
+
+export const removeCouponFromCart = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    console.log("hit remove");
+    try {
+        await cartModel.findOneAndUpdate(
+            { userId: req.user.userId },
+            { $unset: { couponApplied: "" } }
+        );
+        res.status(200).json({
+            success: true,
+            message: "coupon removed from cart",
+        });
+    } catch (error) {
+        logErrorMessage("error while removing coupon from cart");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while removing coupon from cart",
         });
     }
 };
