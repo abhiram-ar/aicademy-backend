@@ -10,7 +10,7 @@ export interface ICoupon extends Document {
     usedBy: mongoose.Types.ObjectId;
     maxDiscountAmount: number;
     minPurchaseAmount: number;
-    validateCoupon: () => boolean | any;
+    validateCoupon: () => { success: boolean; error?: object };
 }
 
 const couponSchema = new mongoose.Schema<ICoupon>(
@@ -28,16 +28,22 @@ const couponSchema = new mongoose.Schema<ICoupon>(
     { timestamps: true }
 );
 
-couponSchema.methods.validateCoupon = async function () {
+couponSchema.methods.validateCoupon = function () {
     if (!this.isActive) {
-        throw { message: "Coupon is not active anymore", type: "checked" };
+        return {
+            success: false,
+            error: { message: "Coupon is not active anymore", type: "checked" },
+        };
     }
 
     if (this.expiryDate < new Date(Date.now())) {
-        throw { message: "Coupon expired", type: "checked" };
+        return {
+            success: false,
+            error: { message: "Coupon expired", type: "checked" },
+        };
     }
 
-    return true;
+    return { success: true };
 };
 
 couponSchema.index({ code: 1 });

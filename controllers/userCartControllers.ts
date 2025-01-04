@@ -161,12 +161,9 @@ export const applyCoupon = async (
         }
         console.log(coupon);
 
-        if (!coupon.isActive) {
-            throw { message: "Coupon is not active anymore", type: "checked" };
-        }
-
-        if (coupon.expiryDate < new Date(Date.now())) {
-            throw { message: "Coupon expired", type: "checked" };
+        const validationResult = coupon.validateCoupon();
+        if (!validationResult.success) {
+            throw validationResult.error;
         }
 
         const userId = req.user.userId;
@@ -195,12 +192,12 @@ export const applyCoupon = async (
         });
     } catch (error) {
         logErrorMessage("error while applying coupon");
-        logErrorMessage(error.message);
+        logErrorMessage(error.message );
         console.log(error);
         res.status(400).json({
             success: false,
             message: "Error while applying coupon",
-            errorMessage: error.type === "checked" && error.message,
+            errorMessage: error?.type === "checked" && error.message,
         });
     }
 };
