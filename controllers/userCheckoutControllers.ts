@@ -222,12 +222,14 @@ export const verifyPaymentAndCheckout = async (
             await orderModel.create({
                 userId: userCart.userId,
                 coursesBought: coursesBoughtDetails,
-                coupon: orderDetails.couponDetails && {
-                    couponApplied: true,
-                    couponCode: orderDetails.couponDetails.code,
-                    couponDiscountAmount:
-                        orderDetails.couponDetails.couponDiscount,
-                },
+                coupon: orderDetails.couponDetails
+                    ? {
+                          couponApplied: true,
+                          couponCode: orderDetails.couponDetails.code,
+                          couponDiscountAmount:
+                              orderDetails.couponDetails.couponDiscount,
+                      }
+                    : { couponApplied: false },
                 paymentDetails: {
                     razorpayPaymentId: razorpay_payment_id,
                     razorpayOrderId: razorpay_order_id,
