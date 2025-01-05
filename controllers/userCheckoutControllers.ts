@@ -254,8 +254,11 @@ export const verifyPaymentAndCheckout = async (
                         : 0), // plaftform fee = 30% cart value - coupon discount
             });
 
-            //clear user cart
-            // await userCart.updateOne({ courses: [] });
+            // clear user cart
+            await userCart.updateOne({
+                courses: [],
+                $unset: { couponApplied: "" },
+            });
 
             await session.endSession();
             logSuccess("Checkout transaction successful");

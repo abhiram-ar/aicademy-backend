@@ -1,7 +1,9 @@
 import { Request, Response, Express } from "express";
 import courseModel, { ICourse } from "../models/course.model";
-import { logErrorMessage, logWarning } from "../utils/log";
+import { log, logErrorMessage, logWarning } from "../utils/log";
 import { Aggregate, FilterQuery, SortOrder } from "mongoose";
+import { URequest } from "./userCartControllers";
+import userModel from "../models/userModel";
 
 export const fetchCourses = async (
     req: Request,
@@ -124,6 +126,44 @@ export const fullCourseDetails = async (
         return res.status(400).json({
             success: false,
             message: "Error while fethching full course details",
+        });
+    }
+};
+
+export const fetchUserBoughtCourseList = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const userdata = await userModel.findById(req.user.userId).populate({
+            path: "coursesBought",
+            select: "thumbnail title",
+            populate: {
+                path: "createdBy",
+                select: "legalName",
+            },
+        });
+
+        if (!userdata) {
+            logWarning("user does not exits in DB for fetch bought course");
+            return res
+                .status(404)
+                .json({ success: false, message: "Invalid user" });
+        }
+
+        console.log(userdata);
+        return res.status(200).json({
+            success: false,
+            message: "bought course successfully fetched",
+            boughtCourseList: userdata.coursesBought,
+        });
+    } catch (error) {
+        logErrorMessage("error while fething user bought cousrs");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            message: "error while fething user bought course list",
         });
     }
 };
