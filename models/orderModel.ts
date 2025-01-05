@@ -6,13 +6,12 @@ interface IOrder extends Document {
         courseId: mongoose.Types.ObjectId;
         soldPrice: number;
         teacherId: mongoose.Types.ObjectId;
-        teacherEarning: number;
     };
 
     coupon: {
         couponApplied: Boolean;
-        couponId?: mongoose.Types.ObjectId;
-        couponDiscount?: number;
+        couponCode?: mongoose.Types.ObjectId;
+        couponDiscountAmount?: number;
     };
 
     paymentDetails: {
@@ -25,6 +24,7 @@ interface IOrder extends Document {
         notes?: object;
     };
 
+    currency: "INR";
     orderValue: number;
     totalDiscount: number;
     platformFee: number;
@@ -46,13 +46,12 @@ const orderSchema = new mongoose.Schema<IOrder>(
                     ref: "Teacher",
                     required: true,
                 },
-                teacherEarning: { type: Number, required: true },
             },
         ],
 
         coupon: {
             couponApplied: { type: Boolean, required: true },
-            couponId: { type: Schema.Types.ObjectId, ref: "Coupon" },
+            couponCode: String,
             couponDiscountAmount: { type: Number },
         },
 
@@ -66,6 +65,7 @@ const orderSchema = new mongoose.Schema<IOrder>(
             notes: Object,
         },
 
+        currency: String,
         orderValue: { type: Number, required: true },
         totalDiscount: { type: Number, required: true },
         platformFee: { type: Number, required: true },
