@@ -21,7 +21,10 @@ import {
     createCoupon,
     fetchCoupons,
 } from "../controllers/adminCouponControllers.ts";
-import { fetchCourseReports } from "../controllers/adminCourseReportControllers.ts";
+import {
+    fetchCourseReports,
+    updateReportStatus,
+} from "../controllers/adminCourseReportControllers.ts";
 
 const adminRouter = express.Router();
 
@@ -45,6 +48,7 @@ adminRouter.patch("/user/unblock", unBlockUser);
 
 // user course-reports routes
 adminRouter.get("/user/course/reports", fetchCourseReports);
+adminRouter.patch("/user/course/report/status", updateReportStatus);
 
 // course management rooutes
 adminRouter.get("/course/coupon", fetchCoupons);

@@ -58,7 +58,7 @@ export const updateReportStatus = async (
                 .status(400)
                 .json({ success: false, message: "Required paramter missing" });
         }
-        if (newStatus !== "pending" || newStatus !== "resolved") {
+        if (!(newStatus === "pending" || newStatus === "resolved")) {
             logWarning("invalid value for new status");
             return res.status(400).json({
                 success: false,
