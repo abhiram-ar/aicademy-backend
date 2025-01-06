@@ -5,9 +5,11 @@ import razorpayInstance from "../config/razorpay";
 import { URequest } from "./userCartControllers";
 import { logErrorMessage, logSuccess, logWarning } from "../utils/log";
 import crypto from "crypto";
-import mongoose, { HydratedDocument } from "mongoose";
+import mongoose, { HydratedDocument, ObjectId } from "mongoose";
 import courseModel, { ICourse } from "../models/course.model";
 import teacherModel from "../models/teacherModel";
+import { ICoupon } from "../models/couponModel";
+import orderModel from "../models/orderModel";
 
 export const createOrder = async (
     req: URequest,
@@ -17,7 +19,8 @@ export const createOrder = async (
         const userId = req.user.userId;
         const cart = await cartModel
             .findOne({ userId })
-            .populate({ path: "courses", select: "price" });
+            .populate({ path: "courses", select: "price" })
+            .populate("couponApplied");
 
         if (!cart) {
             logWarning("cannot find user cart to create razorpay order");
@@ -27,12 +30,40 @@ export const createOrder = async (
         }
 
         // get cart sum
-        const amount = cart.courses.reduce((total, current): number => {
-            const course = current as unknown as { price: number };
-            return total + course.price;
-        }, 0);
+        let amount = cart.totalAmount().totalPrice;
 
         // todo: deduce amoount for coupon
+        const couponDetails: { code?: string; couponDiscount?: number } = {};
+        if (cart.couponApplied) {
+            const appliedCoupon = cart.couponApplied as ICoupon;
+            const validationResult = appliedCoupon.validateCoupon();
+
+            // remove coupon if coupon is invalid
+            if (
+                !validationResult.success ||
+                appliedCoupon.minPurchaseAmount > amount
+            ) {
+                logWarning(
+                    validationResult?.error?.message ??
+                        "orderCreation: cart total less than coupon minAmount, removing coupon"
+                );
+                await cart.updateOne({ $unset: { couponApplied: "" } });
+                return res.status(400).json({
+                    success: false,
+                    messsage: "Invalid coupon while checkout",
+                    errorMessage: "Invalid coupon",
+                });
+            }
+            // calculate discount
+            else {
+                couponDetails.code = appliedCoupon.code;
+                couponDetails.couponDiscount = Math.min(
+                    appliedCoupon.maxDiscountAmount,
+                    (amount * appliedCoupon.discount) / 100
+                );
+                amount -= couponDetails.couponDiscount;
+            }
+        }
 
         // create a razorpay order
         const orderDetails = await razorpayInstance.orders.create({
@@ -41,14 +72,20 @@ export const createOrder = async (
             notes: {
                 customerId: userId as string,
                 courses: cart.courses.map((course) => course._id).join(","),
+                coupondDiscount: couponDetails.couponDiscount
+                    ? couponDetails.couponDiscount
+                    : null,
+                couponApplied: couponDetails.code ? couponDetails.code : null,
             },
         });
 
-        console.log(orderDetails);
+        console.log(cart);
         res.status(200).json({
             success: true,
             message: "order created successfully",
             orderDetails,
+            couponDetails:
+                Object.keys(couponDetails).length > 0 ? couponDetails : null,
         });
     } catch (error) {
         logErrorMessage("error while creating razorpay order");
@@ -59,6 +96,26 @@ export const createOrder = async (
             message: "error while creating razorpay order",
         });
     }
+};
+
+type Torder = {
+    orderDetails: {
+        amount: number;
+        amount_due: number;
+        amount_paid: number;
+        currency: "INR";
+        notes: {
+            couponApplied?: string;
+            coupondDiscount?: number;
+            courses: string[];
+            customerId: string;
+        };
+        receipt: null;
+    };
+    couponDetails?: {
+        code: string;
+        couponDiscount: number;
+    };
 };
 
 export const verifyPaymentAndCheckout = async (
@@ -101,6 +158,8 @@ export const verifyPaymentAndCheckout = async (
             });
         }
 
+        const orderDetails: Torder = req.body.order;
+
         const session = await mongoose.startSession();
 
         try {
@@ -113,7 +172,8 @@ export const verifyPaymentAndCheckout = async (
                 .findOne({
                     userId: req.user.userId,
                 })
-                .populate({ path: "courses", select: "createdBy price" });
+                .populate({ path: "courses", select: "createdBy price" })
+                .populate("couponApplied");
             if (!userCart) throw Error("User cart not found");
             console.log("usercart checkout", userCart);
 
@@ -131,17 +191,76 @@ export const verifyPaymentAndCheckout = async (
             );
 
             // update the teacher earning
-            // sequential executtion to await to avoid race conditions
+            // sequential executtion by for..of loop and await to avoid race conditions
+            // earrnig of techer 70% of couse value
+            const coursesBoughtDetails: {
+                courseId: string;
+                soldPrice: number;
+                teacherId: string;
+            }[] = [];
             for (const item of userCart.courses) {
                 const course = item as ICourse;
+
+                const courseProfit = (course.price * 70) / 100;
+                coursesBoughtDetails.push({
+                    courseId: course.id,
+                    soldPrice: courseProfit,
+                    teacherId: course.createdBy as unknown as string,
+                });
+
                 await teacherModel.findOneAndUpdate(
                     { _id: course.createdBy },
-                    { $inc: { earnings: (course.price * 70) / 100 } }
+                    {
+                        $inc: {
+                            earnings: courseProfit,
+                        },
+                    }
                 );
             }
 
-            //clear user cart
-            await userCart.updateOne({ courses: [] });
+            // crete order-transaction entry
+            await orderModel.create({
+                userId: userCart.userId,
+                coursesBought: coursesBoughtDetails,
+                coupon: orderDetails.couponDetails
+                    ? {
+                          couponApplied: true,
+                          couponCode: orderDetails.couponDetails.code,
+                          couponDiscountAmount:
+                              orderDetails.couponDetails.couponDiscount,
+                      }
+                    : { couponApplied: false },
+                paymentDetails: {
+                    razorpayPaymentId: razorpay_payment_id,
+                    razorpayOrderId: razorpay_order_id,
+                    razorpaySignature: razorpay_signature,
+                    razorpayFee:
+                        ((orderDetails.orderDetails.amount / 100) * 2) / 100, // razorpay fee is included in plaftfrom fee
+                    GST:
+                        ((((orderDetails.orderDetails.amount / 100) * 2) /
+                            100) *
+                            18) /
+                        100,
+                    receipt: orderDetails.orderDetails.receipt,
+                    notes: orderDetails.orderDetails.notes,
+                },
+
+                currency: orderDetails.orderDetails.currency,
+                orderValue: orderDetails.orderDetails.amount / 100,
+                totalDiscount: orderDetails.couponDetails?.couponDiscount || 0,
+                platformFee:
+                    ((orderDetails.orderDetails.amount / 100) * 30) / 100 +
+                    (orderDetails.couponDetails
+                        ? (orderDetails.couponDetails.couponDiscount * -70) /
+                          100
+                        : 0), // plaftform fee = 30% cart value - coupon discount
+            });
+
+            // clear user cart
+            await userCart.updateOne({
+                courses: [],
+                $unset: { couponApplied: "" },
+            });
 
             await session.endSession();
             logSuccess("Checkout transaction successful");
