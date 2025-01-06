@@ -1,6 +1,6 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
-export interface IReportSchema extends Document {
+export interface IReport extends Document {
     title: string;
     courseId: mongoose.Types.ObjectId;
     description: string;
@@ -8,15 +8,26 @@ export interface IReportSchema extends Document {
     status: "pending" | "resolved";
 }
 
-const reportSchema = new mongoose.Schema<IReportSchema>({
-    title: { type: String, required: true },
-    courseId: { type: Schema.Types.ObjectId, ref: "Course", required: true },
-    description: { type: String, required: true },
-    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    status: { type: String, enum: ["pending", "resolved"], default: "pending" },
-});
+const reportSchema = new mongoose.Schema<IReport>(
+    {
+        title: { type: String, required: true },
+        courseId: {
+            type: Schema.Types.ObjectId,
+            ref: "Course",
+            required: true,
+        },
+        description: { type: String, required: true },
+        createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+        status: {
+            type: String,
+            enum: ["pending", "resolved"],
+            default: "pending",
+        },
+    },
+    { timestamps: true }
+);
 
-export const reportModel: Model<IReportSchema> = mongoose.model(
+export const reportModel: Model<IReport> = mongoose.model(
     "Report",
     reportSchema
 );
