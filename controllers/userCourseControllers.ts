@@ -1,9 +1,10 @@
 import { Request, Response, Express } from "express";
 import courseModel, { ICourse } from "../models/course.model";
-import { log, logErrorMessage, logWarning } from "../utils/log";
-import { Aggregate, FilterQuery, SortOrder } from "mongoose";
+import { logErrorMessage, logWarning } from "../utils/log";
+import { FilterQuery } from "mongoose";
 import { URequest } from "./userCartControllers";
 import userModel from "../models/userModel";
+import { reportModel } from "../models/userCourseReportModel";
 
 export const fetchCourses = async (
     req: Request,
@@ -164,6 +165,63 @@ export const fetchUserBoughtCourseList = async (
         return res.status(400).json({
             success: false,
             message: "error while fething user bought course list",
+        });
+    }
+};
+
+export const reportACourse = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    console.log("hit");
+    try {
+        const { courseId, title, description } = req.body;
+        if (!courseId || !title || !description) {
+            logWarning("required parameter missing in request");
+            return res.status(400).json({
+                success: false,
+                message: "required parameters missing",
+            });
+        }
+
+        const userDetails = await userModel.findOne(
+            {
+                _id: req.user.userId,
+                coursesBought: { $in: [courseId] },
+            },
+            { coursesBought: 1 }
+        );
+
+        if (!userDetails) {
+            logErrorMessage("User cannot report a course they didnt purchased");
+            return res
+                .status(403)
+                .json({
+                    success: false,
+                    message: "cannot report a course you didnt purchase",
+                });
+        }
+
+        console.log(userDetails);
+
+        await reportModel.create({
+            title,
+            courseId,
+            description,
+            createdBy: req.user.userId,
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "report successfully created",
+        });
+    } catch (error) {
+        logErrorMessage("Error while reporting a course");
+        logErrorMessage(error.message);
+        console.log(error);
+        return res.status(400).json({
+            success: false,
+            messsage: "error while creating a report",
         });
     }
 };
