@@ -197,6 +197,7 @@ export const verifyPaymentAndCheckout = async (
                 courseId: string;
                 soldPrice: number;
                 teacherId: string;
+                teacherEarning: number;
             }[] = [];
             for (const item of userCart.courses) {
                 const course = item as ICourse;
@@ -204,8 +205,9 @@ export const verifyPaymentAndCheckout = async (
                 const courseProfit = (course.price * 70) / 100;
                 coursesBoughtDetails.push({
                     courseId: course.id,
-                    soldPrice: courseProfit,
+                    soldPrice: course.price,
                     teacherId: course.createdBy as unknown as string,
+                    teacherEarning: courseProfit,
                 });
 
                 await teacherModel.findOneAndUpdate(

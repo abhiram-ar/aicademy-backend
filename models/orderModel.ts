@@ -6,6 +6,7 @@ interface IOrder extends Document {
         courseId: mongoose.Types.ObjectId;
         soldPrice: number;
         teacherId: mongoose.Types.ObjectId;
+        teacherEarning: number;
     };
 
     coupon: {
@@ -46,6 +47,7 @@ const orderSchema = new mongoose.Schema<IOrder>(
                     ref: "Teacher",
                     required: true,
                 },
+                teacherEarning: { type: Number, required: true },
             },
         ],
 
