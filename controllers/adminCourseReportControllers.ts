@@ -24,12 +24,14 @@ export const fetchCourseReports = async (
             .find(filter)
             .sort({ status: 1, createdAt: 1 })
             .skip(skip)
-            .limit(parseInt(limit as string));
+            .limit(parseInt(limit as string))
+            .populate({ path: "courseId", select: "title" });
 
         const totalMatch = await reportModel.countDocuments(filter);
         return res.status(200).json({
             success: true,
             message: "Reports successfully fethced",
+            length: reportList.length,
             reportList,
             pages: Math.ceil(totalMatch / parseInt(limit as string)),
         });
