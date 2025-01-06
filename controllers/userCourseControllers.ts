@@ -5,6 +5,7 @@ import { FilterQuery } from "mongoose";
 import { URequest } from "./userCartControllers";
 import userModel from "../models/userModel";
 import { reportModel } from "../models/userCourseReportModel";
+import orderModel from "./../models/orderModel";
 
 export const fetchCourses = async (
     req: Request,
@@ -194,12 +195,10 @@ export const reportACourse = async (
 
         if (!userDetails) {
             logErrorMessage("User cannot report a course they didnt purchased");
-            return res
-                .status(403)
-                .json({
-                    success: false,
-                    message: "cannot report a course you didnt purchase",
-                });
+            return res.status(403).json({
+                success: false,
+                message: "cannot report a course you didnt purchase",
+            });
         }
 
         console.log(userDetails);
@@ -222,6 +221,38 @@ export const reportACourse = async (
         return res.status(400).json({
             success: false,
             messsage: "error while creating a report",
+        });
+    }
+};
+
+export const fetchOrderHistory = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const orderHistory = await orderModel
+            .find({ userId: req.user.userId })
+            .select(
+                "coupon coursesBought.courseId coursesBought.soldPrice orderValue totalDiscount createdAt"
+            )
+            .populate({
+                path: "coursesBought.courseId",
+                select: "title description createdBy level price estimatedPrice thumbnail",
+                populate: { path: "createdBy", select: "legalName firstName" },
+            })
+            .sort({ createdAt: -1 });
+        res.status(200).json({
+            success: true,
+            message: "order histroy successfully fetched ",
+            orderHistory,
+        });
+    } catch (error) {
+        logErrorMessage("error while fetching order histroy");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while fetching order history",
         });
     }
 };

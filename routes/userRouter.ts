@@ -28,6 +28,7 @@ import {
     verifyPaymentAndCheckout,
 } from "../controllers/userCheckoutControllers.js";
 import {
+    fetchOrderHistory,
     fetchUserBoughtCourseList,
     reportACourse,
 } from "../controllers/userCourseControllers.js";
@@ -78,5 +79,8 @@ userRouter.get("/course/list", (req, res) =>
 );
 userRouter.post("/course/report", (req, res) =>
     reportACourse(req as URequest, res)
+);
+userRouter.get("/order-history", (req, res) =>
+    fetchOrderHistory(req as URequest, res)
 );
 export default userRouter;
