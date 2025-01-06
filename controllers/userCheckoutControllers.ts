@@ -8,7 +8,7 @@ import crypto from "crypto";
 import mongoose, { HydratedDocument, ObjectId } from "mongoose";
 import courseModel, { ICourse } from "../models/course.model";
 import teacherModel from "../models/teacherModel";
-import { ICoupon } from "../models/couponModel";
+import couponModel, { ICoupon } from "../models/couponModel";
 import orderModel from "../models/orderModel";
 
 export const createOrder = async (
@@ -255,6 +255,18 @@ export const verifyPaymentAndCheckout = async (
                           100
                         : 0), // plaftform fee = 30% cart value - coupon discount
             });
+
+            // update coupon usage Details,
+            if (orderDetails.couponDetails) {
+                await couponModel.findOneAndUpdate(
+                    {
+                        code: orderDetails.couponDetails.code,
+                    },
+                    {
+                        $addToSet: { usedBy: req.user.userId },
+                    }
+                );
+            }
 
             // clear user cart
             await userCart.updateOne({
