@@ -22,18 +22,17 @@ export const fetchCourseReports = async (
 
         const reportList = await reportModel
             .find(filter)
+            .sort({ status: 1, createdAt: 1 })
             .skip(skip)
             .limit(parseInt(limit as string));
 
-        const totalPages = await reportModel.countDocuments(filter);
-        return res
-            .status(200)
-            .json({
-                success: true,
-                message: "Reports successfully fethced",
-                reportList,
-                pages: totalPages,
-            });
+        const totalMatch = await reportModel.countDocuments(filter);
+        return res.status(200).json({
+            success: true,
+            message: "Reports successfully fethced",
+            reportList,
+            pages: Math.ceil(totalMatch / parseInt(limit as string)),
+        });
     } catch (error) {
         logErrorMessage("error while fetching course reports");
         logErrorMessage(error.message);
@@ -41,6 +40,43 @@ export const fetchCourseReports = async (
         res.status(400).json({
             success: false,
             message: "error while fetching user reports",
+        });
+    }
+};
+
+export const updateReportStatus = async (
+    req: Request,
+    res: Response
+): Promise<any> => {
+    try {
+        const { reportId, newStatus } = req.body;
+        if (!reportId || !newStatus) {
+            logWarning(
+                "Required parameter missing for updating request status"
+            );
+            return res
+                .status(400)
+                .json({ success: false, message: "Required paramter missing" });
+        }
+        if (newStatus !== "pending" || newStatus !== "resolved") {
+            logWarning("invalid value for new status");
+            return res.status(400).json({
+                success: false,
+                message: "Invalid value for newStatus",
+            });
+        }
+
+        await reportModel.findByIdAndUpdate(reportId, { status: newStatus });
+        return res.status(201).json({
+            success: true,
+            message: "report status updated successfully",
+        });
+    } catch (error) {
+        logErrorMessage("error while updating report status");
+        logErrorMessage(error.message);
+        return res.status(400).json({
+            success: false,
+            message: "error while updating report status",
         });
     }
 };

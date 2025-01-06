@@ -21,6 +21,7 @@ import {
     createCoupon,
     fetchCoupons,
 } from "../controllers/adminCouponControllers.ts";
+import { fetchCourseReports } from "../controllers/adminCourseReportControllers.ts";
 
 const adminRouter = express.Router();
 
@@ -31,14 +32,21 @@ adminRouter.post("/auth/logout", logout);
 
 adminRouter.use(isAuthenticated, authorizedRoles("admin"));
 //protected routes
+
+// teacher onboarding routes
 adminRouter.get("/teacher/onboarding-list", onboardingTeacherList);
 adminRouter.patch("/teacher/approve-onboarding", approveOnboarding);
 adminRouter.patch("/teacher/reject-onboarding", rejectOnboarding);
 
+// user management routes
 adminRouter.get("/user/list", getUserList);
 adminRouter.patch("/user/block", blockUser);
 adminRouter.patch("/user/unblock", unBlockUser);
 
+// user course-reports routes
+adminRouter.get("/user/course/reports", fetchCourseReports);
+
+// course management rooutes
 adminRouter.get("/course/coupon", fetchCoupons);
 adminRouter.post("/course/coupon", createCoupon);
 adminRouter.patch("/course/coupon/state", changeCouponStatus);
