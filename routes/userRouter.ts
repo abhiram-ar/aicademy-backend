@@ -27,7 +27,10 @@ import {
     createOrder,
     verifyPaymentAndCheckout,
 } from "../controllers/userCheckoutControllers.js";
-import { fetchUserBoughtCourseList } from "../controllers/userCourseControllers.js";
+import {
+    fetchUserBoughtCourseList,
+    reportACourse,
+} from "../controllers/userCourseControllers.js";
 
 const userRouter = express.Router();
 
@@ -73,5 +76,7 @@ userRouter.post("/checkout/verify-payment", (req, res) =>
 userRouter.get("/course/list", (req, res) =>
     fetchUserBoughtCourseList(req as URequest, res)
 );
-
+userRouter.post("/course/report", (req, res) =>
+    reportACourse(req as URequest, res)
+);
 export default userRouter;
