@@ -10,6 +10,7 @@ export interface ICourse extends Document {
     thumbnail?: { public_id?: string; url?: string };
     demoVideoKey?: string;
     rating?: number;
+    totalRatingCount: number;
     boughtCount?: number;
     category?: string;
     level?: "beginner" | "intermediate" | "advanced";
@@ -50,6 +51,7 @@ const courseSchema = new Schema<ICourse>(
         demoVideoKey: String,
 
         rating: Number,
+        totalRatingCount: { type: Number, default: 0 },
         boughtCount: { type: Number, default: 0 },
 
         category: String,

@@ -28,9 +28,15 @@ import {
     verifyPaymentAndCheckout,
 } from "../controllers/userCheckoutControllers.js";
 import {
+    fetchOrderHistory,
     fetchUserBoughtCourseList,
     reportACourse,
 } from "../controllers/userCourseControllers.js";
+import {
+    addReviewToCourse,
+    editReview,
+    fetchUserReview,
+} from "../controllers/userReviewControllers.js";
 
 const userRouter = express.Router();
 
@@ -79,4 +85,18 @@ userRouter.get("/course/list", (req, res) =>
 userRouter.post("/course/report", (req, res) =>
     reportACourse(req as URequest, res)
 );
+userRouter.get("/order-history", (req, res) =>
+    fetchOrderHistory(req as URequest, res)
+);
+
+userRouter.get("/course/review", (req, res) =>
+    fetchUserReview(req as URequest, res)
+);
+userRouter.post("/course/review", (req, res) =>
+    addReviewToCourse(req as URequest, res)
+);
+userRouter.patch("/course/review", (req, res) =>
+    editReview(req as URequest, res)
+);
+
 export default userRouter;
