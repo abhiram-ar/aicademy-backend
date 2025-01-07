@@ -18,12 +18,12 @@ export const fetchUserReview = async (
             });
         }
 
-        const review = await reviewModel.find({
+        const review = await reviewModel.findOne({
             courseId,
             createdBy: req.user.userId,
         });
 
-        res.status(400).json({
+        res.status(200).json({
             success: false,
             message: "review successfully fetched",
             review,
@@ -102,58 +102,58 @@ export const addReviewToCourse = async (
     }
 };
 
-export const editReview = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
-    try {
-        const { reviewId, rating, review } = req.body;
-        if (!reviewId) {
-            throw {
-                message: "reviewId paramter missing in request",
-                status: 400,
-            };
-        }
+// export const editReview = async (
+//     req: URequest,
+//     res: Response
+// ): Promise<any> => {
+//     try {
+//         const { reviewId, rating, review } = req.body;
+//         if (!reviewId) {
+//             throw {
+//                 message: "reviewId paramter missing in request",
+//                 status: 400,
+//             };
+//         }
 
-        if ((rating && rating < 0) || rating > 5) {
-            throw { message: "Rating should be in range 0-5", status: 400 };
-        }
+//         if ((rating && rating < 0) || rating > 5) {
+//             throw { message: "Rating should be in range 0-5", status: 400 };
+//         }
 
-        // check if user had purchased the course
-        const reviewDetails = await reviewModel.findOne({
-            _id: reviewId,
-            createdBy: req.user.userId,
-        });
-        if (!reviewDetails) {
-            throw {
-                message: "Invalid ReviewId",
-                status: 400,
-            };
-        }
+//         // check if user had purchased the course
+//         const reviewDetails = await reviewModel.findOne({
+//             _id: reviewId,
+//             createdBy: req.user.userId,
+//         });
+//         if (!reviewDetails) {
+//             throw {
+//                 message: "Invalid ReviewId",
+//                 status: 400,
+//             };
+//         }
 
-        await reviewModel.updateOne({
-            rating: rating,
-            review: review,
-        });
+//         await reviewModel.updateOne({
+//             rating: rating,
+//             review: review,
+//         });
 
-        return res.status(200).json({
-            success: true,
-            message: "review updated successfully",
-        });
-    } catch (error) {
-        logErrorMessage("error while editing review");
-        logErrorMessage(error.message);
-        if (!error.status) {
-            console.log(error);
-        }
-        return res.status(error.status || 400).json({
-            success: false,
-            message: error.status
-                ? error.message
-                : "error while updating review",
-        });
-    }
-};
+//         return res.status(200).json({
+//             success: true,
+//             message: "review updated successfully",
+//         });
+//     } catch (error) {
+//         logErrorMessage("error while editing review");
+//         logErrorMessage(error.message);
+//         if (!error.status) {
+//             console.log(error);
+//         }
+//         return res.status(error.status || 400).json({
+//             success: false,
+//             message: error.status
+//                 ? error.message
+//                 : "error while updating review",
+//         });
+//     }
+// };
 
 export const fetchPublicReview = async (req: URequest, res: Response) => {
     try {
