@@ -3,6 +3,7 @@ import reviewModel, { IReview } from "../models/reviewModel";
 import { URequest } from "./userCartControllers";
 import { logErrorMessage } from "../utils/log";
 import userModel from "../models/userModel";
+import courseModel from "../models/course.model";
 
 export const fetchUserReview = async (
     req: URequest,
@@ -71,6 +72,17 @@ export const addReviewToCourse = async (
             };
         }
 
+        const courseDetails = await courseModel.findById(courseId, {
+            rating: 1,
+            totalRatingCount: 1,
+        });
+        if (!courseDetails) {
+            throw {
+                message: "Invalid courseId",
+                status: 400,
+            };
+        }
+
         await reviewModel.findOneAndUpdate(
             {
                 createdBy: req.user.userId,
@@ -84,6 +96,20 @@ export const addReviewToCourse = async (
                 upsert: true,
             }
         );
+
+        const { rating: oldRating = 0, totalRatingCount = 0 } = courseDetails;
+        let newRating: number;
+        if (totalRatingCount === 0) {
+            newRating = rating;
+        } else {
+            newRating =
+                (oldRating * totalRatingCount + rating) /
+                (totalRatingCount + 1);
+        }
+        await courseDetails.updateOne({
+            rating: newRating.toFixed(2),
+            totalRatingCount: totalRatingCount + 1,
+        });
 
         return res.status(200).json({
             success: true,
@@ -102,58 +128,86 @@ export const addReviewToCourse = async (
     }
 };
 
-// export const editReview = async (
-//     req: URequest,
-//     res: Response
-// ): Promise<any> => {
-//     try {
-//         const { reviewId, rating, review } = req.body;
-//         if (!reviewId) {
-//             throw {
-//                 message: "reviewId paramter missing in request",
-//                 status: 400,
-//             };
-//         }
+export const editReview = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const { reviewId, rating, review } = req.body;
+        if (!reviewId) {
+            throw {
+                message: "reviewId paramter missing in request",
+                status: 400,
+            };
+        }
 
-//         if ((rating && rating < 0) || rating > 5) {
-//             throw { message: "Rating should be in range 0-5", status: 400 };
-//         }
+        if ((rating && rating < 0) || rating > 5) {
+            throw { message: "Rating should be in range 0-5", status: 400 };
+        }
 
-//         // check if user had purchased the course
-//         const reviewDetails = await reviewModel.findOne({
-//             _id: reviewId,
-//             createdBy: req.user.userId,
-//         });
-//         if (!reviewDetails) {
-//             throw {
-//                 message: "Invalid ReviewId",
-//                 status: 400,
-//             };
-//         }
+        // check if user had purchased the course
+        const reviewDetails = await reviewModel.findOne({
+            _id: reviewId,
+            createdBy: req.user.userId,
+        });
+        if (!reviewDetails) {
+            throw {
+                message: "Invalid ReviewId",
+                status: 400,
+            };
+        }
 
-//         await reviewModel.updateOne({
-//             rating: rating,
-//             review: review,
-//         });
+        const courseDetails = await courseModel.findById(
+            reviewDetails.courseId,
+            {
+                rating: 1,
+                totalRatingCount: 1,
+            }
+        );
+        if (!courseDetails) {
+            throw {
+                message: "Invalid courseId",
+                status: 400,
+            };
+        }
 
-//         return res.status(200).json({
-//             success: true,
-//             message: "review updated successfully",
-//         });
-//     } catch (error) {
-//         logErrorMessage("error while editing review");
-//         logErrorMessage(error.message);
-//         if (!error.status) {
-//             console.log(error);
-//         }
-//         return res.status(error.status || 400).json({
-//             success: false,
-//             message: error.status
-//                 ? error.message
-//                 : "error while updating review",
-//         });
-//     }
-// };
+        // update rating
+        const { rating: oldRating = 0, totalRatingCount = 0 } = courseDetails;
+        let newRating: number;
+        if (totalRatingCount === 0) {
+            newRating = rating;
+        } else {
+            newRating =
+                (oldRating * totalRatingCount - reviewDetails.rating + rating) /
+                totalRatingCount;
+        }
+        await courseDetails.updateOne({
+            rating: newRating.toFixed(2),
+        });
+
+        await reviewModel.updateOne({
+            rating: rating,
+            review: review,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "review updated successfully",
+        });
+    } catch (error) {
+        logErrorMessage("error while editing review");
+        logErrorMessage(error.message);
+        if (!error.status) {
+            console.log(error);
+        }
+        return res.status(error.status || 400).json({
+            success: false,
+            message: error.status
+                ? error.message
+                : "error while updating review",
+        });
+    }
+};
 
 export const fetchPublicReview = async (req: URequest, res: Response) => {
     try {

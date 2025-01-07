@@ -34,6 +34,7 @@ import {
 } from "../controllers/userCourseControllers.js";
 import {
     addReviewToCourse,
+    editReview,
     fetchUserReview,
 } from "../controllers/userReviewControllers.js";
 
@@ -94,8 +95,8 @@ userRouter.get("/course/review", (req, res) =>
 userRouter.post("/course/review", (req, res) =>
     addReviewToCourse(req as URequest, res)
 );
-// userRouter.patch("/course/review", (req, res) =>
-//     editReview(req as URequest, res)
-// );
+userRouter.patch("/course/review", (req, res) =>
+    editReview(req as URequest, res)
+);
 
 export default userRouter;
