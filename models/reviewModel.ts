@@ -16,11 +16,13 @@ const reviewSchema = new mongoose.Schema<IReview>(
             ref: "Course",
             required: true,
         },
-        review: { type: String },
+        review: { type: String, default: "" },
         rating: { type: Number, required: true },
     },
     { timestamps: true }
 );
+
+reviewSchema.index({ courseId: 1 });
 
 const reviewModel: Model<IReview> = mongoose.model("Review", reviewSchema);
 export default reviewModel;
