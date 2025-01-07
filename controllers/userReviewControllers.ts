@@ -1,11 +1,13 @@
-import { Request, RequestHandler, Response } from "express";
+import { Response } from "express";
 import reviewModel, { IReview } from "../models/reviewModel";
 import { URequest } from "./userCartControllers";
 import { logErrorMessage } from "../utils/log";
 import userModel from "../models/userModel";
-import { FilterQuery } from "mongoose";
 
-export const fetchUserReview = async (req: URequest, res: Response) => {
+export const fetchUserReview = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
     try {
         const { courseId } = req.query;
 
@@ -97,12 +99,19 @@ export const addReviewToCourse = async (
             };
         }
 
-        await reviewModel.create({
-            createdBy: req.user.userId,
-            courseId: courseId,
-            rating: rating,
-            review: review,
-        });
+        await reviewModel.findOneAndUpdate(
+            {
+                createdBy: req.user.userId,
+                courseId: courseId,
+            },
+            {
+                rating: rating,
+                review: review,
+            },
+            {
+                upsert: true,
+            }
+        );
 
         return res.status(200).json({
             success: true,

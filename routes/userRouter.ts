@@ -35,6 +35,7 @@ import {
 import {
     addReviewToCourse,
     editReview,
+    fetchUserReview,
 } from "../controllers/userReviewControllers.js";
 
 const userRouter = express.Router();
@@ -88,6 +89,9 @@ userRouter.get("/order-history", (req, res) =>
     fetchOrderHistory(req as URequest, res)
 );
 
+userRouter.get("/course/review", (req, res) =>
+    fetchUserReview(req as URequest, res)
+);
 userRouter.post("/course/review", (req, res) =>
     addReviewToCourse(req as URequest, res)
 );
