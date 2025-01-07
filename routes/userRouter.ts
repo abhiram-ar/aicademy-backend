@@ -32,6 +32,7 @@ import {
     fetchUserBoughtCourseList,
     reportACourse,
 } from "../controllers/userCourseControllers.js";
+import { addReviewToCourse } from "../controllers/userReviewControllers.js";
 
 const userRouter = express.Router();
 
@@ -82,5 +83,9 @@ userRouter.post("/course/report", (req, res) =>
 );
 userRouter.get("/order-history", (req, res) =>
     fetchOrderHistory(req as URequest, res)
+);
+
+userRouter.post("course/review", (req, res) =>
+    addReviewToCourse(req as URequest, res)
 );
 export default userRouter;
