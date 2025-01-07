@@ -1,8 +1,69 @@
-import { Response } from "express";
-import reviewModel from "../models/reviewModel";
+import { Request, RequestHandler, Response } from "express";
+import reviewModel, { IReview } from "../models/reviewModel";
 import { URequest } from "./userCartControllers";
 import { logErrorMessage } from "../utils/log";
 import userModel from "../models/userModel";
+import { FilterQuery } from "mongoose";
+
+export const fetchUserReview = async (req: URequest, res: Response) => {
+    try {
+        const { courseId } = req.query;
+
+        if (!courseId) {
+            return res.status(400).json({
+                success: false,
+                message: "courseId missingi in request",
+            });
+        }
+
+        const review = await reviewModel.find({
+            courseId,
+            createdBy: req.user.userId,
+        });
+
+        res.status(400).json({
+            success: false,
+            message: "review successfully fetched",
+            review,
+        });
+    } catch (error) {
+        logErrorMessage("errro while fething coursr review");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while fething review",
+        });
+    }
+};
+
+export const fetchPublicReview = async (req: URequest, res: Response) => {
+    try {
+        const { courseId, limit = "" } = req.query as {
+            courseId: string;
+            limit?: string;
+        };
+
+        if (!courseId) {
+            return res.status(400).json({
+                success: false,
+                message: "courseId missingi in request",
+            });
+        }
+
+        await reviewModel
+            .find({ courseId })
+            .limit(limit !== "" ? parseInt(limit) : 0); // 0 means no limit in mongoDB
+    } catch (error) {
+        logErrorMessage("errro while fething coursr review");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while fething review",
+        });
+    }
+};
 
 export const addReviewToCourse = async (
     req: URequest,
