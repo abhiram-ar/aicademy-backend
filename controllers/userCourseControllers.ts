@@ -237,7 +237,7 @@ export const fetchOrderHistory = async (
             )
             .populate({
                 path: "coursesBought.courseId",
-                select: "title description createdBy level price estimatedPrice thumbnail",
+                select: "title description createdBy level price estimatedPrice thumbnail rating totalRatingCount",
                 populate: { path: "createdBy", select: "legalName firstName" },
             })
             .sort({ createdAt: -1 });
