@@ -39,34 +39,6 @@ export const fetchUserReview = async (
     }
 };
 
-export const fetchPublicReview = async (req: URequest, res: Response) => {
-    try {
-        const { courseId, limit = "" } = req.query as {
-            courseId: string;
-            limit?: string;
-        };
-
-        if (!courseId) {
-            return res.status(400).json({
-                success: false,
-                message: "courseId missingi in request",
-            });
-        }
-
-        await reviewModel
-            .find({ courseId })
-            .limit(limit !== "" ? parseInt(limit) : 0); // 0 means no limit in mongoDB
-    } catch (error) {
-        logErrorMessage("errro while fething coursr review");
-        logErrorMessage(error.message);
-        console.log(error);
-        res.status(400).json({
-            success: false,
-            message: "error while fething review",
-        });
-    }
-};
-
 export const addReviewToCourse = async (
     req: URequest,
     res: Response
@@ -179,6 +151,34 @@ export const editReview = async (
             message: error.status
                 ? error.message
                 : "error while updating review",
+        });
+    }
+};
+
+export const fetchPublicReview = async (req: URequest, res: Response) => {
+    try {
+        const { courseId, limit = "" } = req.query as {
+            courseId: string;
+            limit?: string;
+        };
+
+        if (!courseId) {
+            return res.status(400).json({
+                success: false,
+                message: "courseId missingi in request",
+            });
+        }
+
+        await reviewModel
+            .find({ courseId })
+            .limit(limit !== "" ? parseInt(limit) : 0); // 0 means no limit in mongoDB
+    } catch (error) {
+        logErrorMessage("errro while fething coursr review");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while fething review",
         });
     }
 };
