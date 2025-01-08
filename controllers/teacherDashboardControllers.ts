@@ -4,6 +4,7 @@ import orderModel from "./../models/orderModel";
 import mongoose from "mongoose";
 import { fullMonthName } from "../utils/constants";
 import { ICourse } from "../models/course.model";
+import teacherModel from "../models/teacherModel";
 
 export interface TRequest extends Request {
     user: { teacherId: string; username: string; role: string };
@@ -305,31 +306,80 @@ export const earnignByCourseNmonths = async (
 
 export const fetchTeacherSalesList = async (req: TRequest, res: Response) => {
     try {
-        const { limit = 0, page = 1 } = req.query;
+        const { limit = 10, page = 1 } = req.query;
+        const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
 
-        const salesList = await orderModel
-            .find(
-                {
-                    "coursesBought.teacherId": req.user.teacherId,
+        const salesList = await orderModel.aggregate([
+            {
+                $unwind: "$coursesBought",
+            },
+            {
+                $match: {
+                    "coursesBought.teacherId": new mongoose.Types.ObjectId(
+                        req.user.teacherId
+                    ),
                 },
-                { coursesBought: 1, createdAt: 1 }
-            )
-            .populate({ path: "coursesBought.courseId", select: "title" });
+            },
+            {
+                $project: {
+                    courseId: "$coursesBought.courseId",
+                    soldPrice: "$coursesBought.soldPrice",
+                    techerEarnings: "$coursesBought.teacherEarning",
+                    createdAt: 1,
+                },
+            },
+            {
+                $lookup: {
+                    from: "courses",
+                    let: { courseId: "$courseId" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$_id", "$$courseId"] } } },
+                        { $project: { title: 1 } },
+                    ],
+                    as: "course",
+                },
+            },
+            {
+                $sort: { createdAt: -1 },
+            },
+            {
+                $skip: skip,
+            },
+            {
+                $limit: parseInt(limit as string),
+            },
+        ]);
 
-        const prettySalesList = salesList.flatMap((sale) =>
-            sale.coursesBought.map((course) => ({
-                _id: course.courseId._id,
-                courseName: (course.courseId as ICourse).title,
-                soldPrice: course.soldPrice,
-                revenue: course.teacherEarning,
-                createdAt: sale.createdAt,
-            }))
-        );
+        // Count total documents for pagination info
+        const totalEntries = await orderModel.aggregate([
+            { $unwind: "$coursesBought" },
+            {
+                $match: {
+                    "coursesBought.teacherId": new mongoose.Types.ObjectId(
+                        req.user.teacherId
+                    ),
+                },
+            },
+            { $count: "total" },
+        ]);
+
+        // const prettySalesList = salesList.flatMap((sale) =>
+        //     sale.coursesBought.map((course) => ({
+        //         _id: course.courseId._id,
+        //         courseName: (course.courseId as ICourse).title,
+        //         soldPrice: course.soldPrice,
+        //         revenue: course.teacherEarning,
+        //         createdAt: sale.createdAt,
+        //     }))
+        // );
 
         res.status(200).json({
             success: true,
             message: "sales list successuly fetched",
-            salesList: prettySalesList,
+            salesList,
+            pages: Math.ceil(
+                (totalEntries[0]?.total || 0) / parseInt(limit as string)
+            ),
         });
     } catch (error) {
         logErrorMessage("error while fetching teacher course sales list");
