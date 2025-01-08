@@ -1,10 +1,14 @@
 import jwt from "jsonwebtoken";
 
 export const createAccessToken = (payload) => {
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "30m" });
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+    });
 };
 export const createRefershToken = (payload) => {
-    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "1d" });
+    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: "1d",
+    });
 };
 
 export const createActivationToken = (userCredentials) => {
