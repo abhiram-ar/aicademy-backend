@@ -307,7 +307,8 @@ export const earnignByCourseNmonths = async (
 export const fetchTeacherSalesList = async (req: TRequest, res: Response) => {
     try {
         const { limit = 10, page = 1 } = req.query;
-        const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
+        const skip =
+            (parseInt(page as string) - 1) * parseInt(limit as string) || 0;
 
         const salesList = await orderModel.aggregate([
             {
@@ -343,7 +344,7 @@ export const fetchTeacherSalesList = async (req: TRequest, res: Response) => {
                 $sort: { createdAt: -1 },
             },
             {
-                $skip: skip || 0,
+                $skip: skip,
             },
             {
                 $limit: parseInt(limit as string),
@@ -362,16 +363,6 @@ export const fetchTeacherSalesList = async (req: TRequest, res: Response) => {
             },
             { $count: "total" },
         ]);
-
-        // const prettySalesList = salesList.flatMap((sale) =>
-        //     sale.coursesBought.map((course) => ({
-        //         _id: course.courseId._id,
-        //         courseName: (course.courseId as ICourse).title,
-        //         soldPrice: course.soldPrice,
-        //         revenue: course.teacherEarning,
-        //         createdAt: sale.createdAt,
-        //     }))
-        // );
 
         res.status(200).json({
             success: true,
