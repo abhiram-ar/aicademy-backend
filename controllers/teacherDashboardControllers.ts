@@ -179,3 +179,33 @@ export const lastTwoMonthPurchaseCount = async (
         });
     }
 };
+
+export const lifetimeEarning = async (req: TRequest, res: Response) => {
+    try {
+        const teacherId = new mongoose.Types.ObjectId(req.user.teacherId);
+        const result = await orderModel.aggregate([
+            { $unwind: "$coursesBought" },
+            { $match: { "coursesBought.teacherId": teacherId } },
+            {
+                $group: {
+                    _id: null,
+                    lifetimeEarning: { $sum: "$coursesBought.teacherEarning" },
+                },
+            },
+        ]);
+
+        res.status(200).json({
+            success: true,
+            message: "lifetime earning successfully calculated",
+            lifetimeEarning: result[0]?.lifetimeEarning || 0,
+        });
+    } catch (error) {
+        logErrorMessage("error while calcualing lifetime earning of teacher");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while calculating life time earning",
+        });
+    }
+};

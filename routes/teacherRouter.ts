@@ -11,6 +11,7 @@ import { authorizedRoles, isAuthenticated } from "../middlewares/auth.ts";
 import {
     lastTwoMonthPurchaseCount,
     lastTwoMonthRevenue,
+    lifetimeEarning,
     TRequest,
 } from "../controllers/teacherDashboardControllers.ts";
 
@@ -40,6 +41,9 @@ teacherRouter.get("/dashboard/revenue", (req, res) =>
 );
 teacherRouter.get("/dashboard/purchase", (req, res) =>
     lastTwoMonthPurchaseCount(req as TRequest, res)
+);
+teacherRouter.get("/dashboard/lifetime-earning", (req, res) =>
+    lifetimeEarning(req as TRequest, res)
 );
 
 export default teacherRouter;
