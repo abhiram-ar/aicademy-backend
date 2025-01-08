@@ -209,3 +209,23 @@ export const lifetimeEarning = async (req: TRequest, res: Response) => {
         });
     }
 };
+
+export const earnignByCourseNmonths = (req: TRequest, res: Response) => {
+    try {
+        res.status(200).json({
+            success: true,
+            message:
+                "earnig by course for last 6 months calulated successfully",
+        });
+    } catch (error) {
+        logErrorMessage(
+            "error while calculating earning by course for 6 months"
+        );
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while calculalating earning by course",
+        });
+    }
+};
