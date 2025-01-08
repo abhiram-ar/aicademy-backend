@@ -343,7 +343,7 @@ export const fetchTeacherSalesList = async (req: TRequest, res: Response) => {
                 $sort: { createdAt: -1 },
             },
             {
-                $skip: skip,
+                $skip: skip || 0,
             },
             {
                 $limit: parseInt(limit as string),
