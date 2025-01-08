@@ -1,9 +1,10 @@
 import mongoose, { Document, Model, Schema, Types } from "mongoose";
+import { ICourse } from "./course.model";
 
 interface IOrder extends Document {
     userId: mongoose.Types.ObjectId;
     coursesBought: {
-        courseId: mongoose.Types.ObjectId;
+        courseId: mongoose.Types.ObjectId | ICourse;
         soldPrice: number;
         teacherId: mongoose.Types.ObjectId;
         teacherEarning: number;
@@ -29,6 +30,8 @@ interface IOrder extends Document {
     orderValue: number;
     totalDiscount: number;
     platformFee: number;
+
+    createdAt: Date;
 }
 
 const orderSchema = new mongoose.Schema<IOrder>(

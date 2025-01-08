@@ -10,6 +10,7 @@ import { upload } from "../middlewares/upload.multer.ts";
 import { authorizedRoles, isAuthenticated } from "../middlewares/auth.ts";
 import {
     earnignByCourseNmonths,
+    fetchTeacherSalesList,
     lastTwoMonthPurchaseCount,
     lastTwoMonthRevenue,
     lifetimeEarning,
@@ -48,6 +49,9 @@ teacherRouter.get("/dashboard/lifetime-earning", (req, res) =>
 );
 teacherRouter.get("/dashboard/earning/monthly", (req, res) =>
     earnignByCourseNmonths(req as TRequest, res)
+);
+teacherRouter.get("/dashboard/sales-list", (req, res) =>
+    fetchTeacherSalesList(req as TRequest, res)
 );
 
 export default teacherRouter;

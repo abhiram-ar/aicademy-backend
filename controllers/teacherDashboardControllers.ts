@@ -3,6 +3,7 @@ import { logErrorMessage, logWarning } from "../utils/log";
 import orderModel from "./../models/orderModel";
 import mongoose from "mongoose";
 import { fullMonthName } from "../utils/constants";
+import { ICourse } from "../models/course.model";
 
 export interface TRequest extends Request {
     user: { teacherId: string; username: string; role: string };
@@ -298,6 +299,45 @@ export const earnignByCourseNmonths = async (
         res.status(400).json({
             success: false,
             message: "error while calculalating earning by course",
+        });
+    }
+};
+
+export const fetchTeacherSalesList = async (req: TRequest, res: Response) => {
+    try {
+        const { limit = 0, page = 1 } = req.query;
+
+        const salesList = await orderModel
+            .find(
+                {
+                    "coursesBought.teacherId": req.user.teacherId,
+                },
+                { coursesBought: 1, createdAt: 1 }
+            )
+            .populate({ path: "coursesBought.courseId", select: "title" });
+
+        const prettySalesList = salesList.flatMap((sale) =>
+            sale.coursesBought.map((course) => ({
+                _id: course.courseId._id,
+                courseName: (course.courseId as ICourse).title,
+                soldPrice: course.soldPrice,
+                revenue: course.teacherEarning,
+                createdAt: sale.createdAt,
+            }))
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "sales list successuly fetched",
+            salesList: prettySalesList,
+        });
+    } catch (error) {
+        logErrorMessage("error while fetching teacher course sales list");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while fething teacher sales list",
         });
     }
 };
