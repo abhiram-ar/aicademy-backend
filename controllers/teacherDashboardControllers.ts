@@ -1,7 +1,8 @@
-import e, { Request, Response } from "express";
-import { log, logErrorMessage, logWarning } from "../utils/log";
+import { Request, Response } from "express";
+import { logErrorMessage, logWarning } from "../utils/log";
 import orderModel from "./../models/orderModel";
 import mongoose from "mongoose";
+import { fullMonthName } from "../utils/constants";
 
 export interface TRequest extends Request {
     user: { teacherId: string; username: string; role: string };
@@ -210,12 +211,83 @@ export const lifetimeEarning = async (req: TRequest, res: Response) => {
     }
 };
 
-export const earnignByCourseNmonths = (req: TRequest, res: Response) => {
+export const earnignByCourseNmonths = async (
+    req: TRequest,
+    res: Response
+): Promise<any> => {
     try {
+        const { months } = req.query as unknown as { months?: number };
+        if (!months) {
+            logWarning(
+                "months filed missing in requset query to calculate earnings"
+            );
+            return res.status(400).json({
+                success: false,
+                message: "required parameter missinging in request",
+            });
+        }
+        if (months < 0 || months > 12) {
+            logWarning(
+                "invalid invalid month value to calcualte earniing by months"
+            );
+            return res
+                .status(400)
+                .json({ success: false, message: "Invalid month" });
+        }
+
+        const now = new Date();
+        const sixMonthAgo = new Date(
+            now.getFullYear(),
+            now.getMonth() - months + 1,
+            1
+        );
+
+        const result = await orderModel.aggregate([
+            { $match: { createdAt: { $gt: sixMonthAgo } } },
+            { $unwind: "$coursesBought" },
+            {
+                $group: {
+                    _id: {
+                        courseId: "$coursesBought.courseId",
+                        month: { $month: "$createdAt" },
+                        year: { $year: "$createdAt" },
+                    },
+                    totalRevenue: { $sum: "$coursesBought.teacherEarning" },
+                },
+            },
+            {
+                $sort: { "_id.year": 1, "_id.month": 1 },
+            },
+            {
+                $lookup: {
+                    from: "courses",
+                    let: { courseId: "$_id.courseId" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$_id", "$$courseId"] } } },
+                        { $project: { title: 1 } },
+                    ],
+                    as: "course",
+                },
+            },
+        ]);
+
+        const prettyfiedResult = result.map((entry) => {
+            console.log(entry);
+            return {
+                _id: entry._id.courseId,
+                courseName: entry.course[0]?.title,
+                time: entry._id.year + "-" + fullMonthName[entry._id.month - 1],
+                revenue: entry.totalRevenue,
+            };
+        });
+
+        // console.log(prettyfiedResult);
+
         res.status(200).json({
             success: true,
             message:
                 "earnig by course for last 6 months calulated successfully",
+            result: prettyfiedResult,
         });
     } catch (error) {
         logErrorMessage(
