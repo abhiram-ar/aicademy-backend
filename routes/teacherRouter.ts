@@ -8,7 +8,11 @@ import {
 } from "../controllers/teacherAuthControllers.ts";
 import { upload } from "../middlewares/upload.multer.ts";
 import { authorizedRoles, isAuthenticated } from "../middlewares/auth.ts";
-import { lastTwoMonthRevenue } from "../controllers/teacherDashboardControllers.ts";
+import {
+    lastTwoMonthPurchaseCount,
+    lastTwoMonthRevenue,
+    TRequest,
+} from "../controllers/teacherDashboardControllers.ts";
 
 const teacherRouter = express.Router();
 
@@ -31,6 +35,11 @@ teacherRouter.post(
 //protected rotues
 teacherRouter.use(isAuthenticated, authorizedRoles("teacher"));
 
-teacherRouter.get("/dashboard/revenue", lastTwoMonthRevenue);
+teacherRouter.get("/dashboard/revenue", (req, res) =>
+    lastTwoMonthRevenue(req as TRequest, res)
+);
+teacherRouter.get("/dashboard/purchase", (req, res) =>
+    lastTwoMonthPurchaseCount(req as TRequest, res)
+);
 
 export default teacherRouter;
