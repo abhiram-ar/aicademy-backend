@@ -7,7 +7,7 @@ interface IOrder extends Document {
         soldPrice: number;
         teacherId: mongoose.Types.ObjectId;
         teacherEarning: number;
-    };
+    }[];
 
     coupon: {
         couponApplied: Boolean;

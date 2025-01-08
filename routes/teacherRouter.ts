@@ -4,17 +4,18 @@ import {
     onboading,
     register,
     login,
-    logout
+    logout,
 } from "../controllers/teacherAuthControllers.ts";
 import { upload } from "../middlewares/upload.multer.ts";
-import { isAuthenticated } from "../middlewares/auth.ts";
+import { authorizedRoles, isAuthenticated } from "../middlewares/auth.ts";
+import { lastTwoMonthRevenue } from "../controllers/teacherDashboardControllers.ts";
 
 const teacherRouter = express.Router();
 
 teacherRouter.post("/auth/register", register);
 teacherRouter.post("/auth/activate", activateAccount);
 teacherRouter.post("/auth/login", login);
-teacherRouter.post("/auth/logout", logout)
+teacherRouter.post("/auth/logout", logout);
 
 teacherRouter.post(
     "/onboard",
@@ -26,5 +27,10 @@ teacherRouter.post(
     ]),
     onboading
 );
+
+//protected rotues
+teacherRouter.use(isAuthenticated, authorizedRoles("teacher"));
+
+teacherRouter.get("/dashboard/revenue", lastTwoMonthRevenue);
 
 export default teacherRouter;
