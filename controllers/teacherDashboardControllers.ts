@@ -83,7 +83,6 @@ export const lastTwoMonthRevenue = async (req: TRequest, res: Response) => {
                 },
             },
         ]);
-        console.log(req.user, result);
         res.status(200).json({
             success: true,
             message: "revenue calculated successfully",
@@ -274,7 +273,6 @@ export const earnignByCourseNmonths = async (
         ]);
 
         const prettyfiedResult = result.map((entry) => {
-            console.log(entry);
             return {
                 _id: entry._id.courseId,
                 courseName: entry.course[0]?.title,
