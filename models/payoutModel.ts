@@ -4,6 +4,7 @@ import { ITeacher } from "./teacherModel";
 interface IPayout extends Document {
     to: mongoose.Types.ObjectId | ITeacher;
     amount: number;
+    message: String;
     isApproved: boolean;
     status: "initiated" | "deposited" | "failed";
 }
@@ -11,7 +12,8 @@ interface IPayout extends Document {
 const payoutSchema = new mongoose.Schema<IPayout>(
     {
         to: { type: Schema.Types.ObjectId, ref: "Teacher", required: true },
-        amount: { type: Number, required: true, min: 1000 },
+        amount: { type: Number, required: true, min: 1 },
+        message: String,
         isApproved: { type: Boolean, default: false },
         status: {
             type: String,

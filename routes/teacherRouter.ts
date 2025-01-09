@@ -16,7 +16,10 @@ import {
     lifetimeEarning,
     TRequest,
 } from "../controllers/teacherDashboardControllers.ts";
-import { createBankVerificationOrder } from "../controllers/teacherPayoutControllers.ts";
+import {
+    createBankVerificationOrder,
+    verifyPaymentAndTecherBankAccount,
+} from "../controllers/teacherPayoutControllers.ts";
 
 const teacherRouter = express.Router();
 
@@ -57,6 +60,13 @@ teacherRouter.get("/dashboard/sales-list", (req, res) =>
 );
 
 // payouts
-teacherRouter.post("/payout/verification/create-order", createBankVerificationOrder);
+teacherRouter.post(
+    "/payout/verification/create-order",
+    createBankVerificationOrder
+);
+teacherRouter.post(
+    "/payout/verification/verify",
+    verifyPaymentAndTecherBankAccount
+);
 
 export default teacherRouter;

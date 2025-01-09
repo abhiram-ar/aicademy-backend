@@ -27,8 +27,12 @@ export interface ITeacher extends Document {
     qualificationProof?: { url: string; public_id: string };
     remark?: string;
     comparePassword(enteredPassword: string): Promise<boolean>;
+
     earnings: number;
     totalAmountCheckedOut: number;
+
+    isBankVerified: Boolean;
+    vpa?: string;
 }
 
 const teacherSchema = new mongoose.Schema<ITeacher>(
@@ -82,6 +86,9 @@ const teacherSchema = new mongoose.Schema<ITeacher>(
 
         earnings: Number,
         totalAmountCheckedOut: Number,
+
+        isBankVerified: { type: Boolean, default: false },
+        vpa: { type: String },
     },
     { timestamps: true }
 );
