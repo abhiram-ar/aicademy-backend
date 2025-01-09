@@ -19,7 +19,9 @@ import {
 import {
     createBankVerificationOrder,
     getBankVerificationStatus,
+    teacherPayoutHistoryList,
     verifyPaymentAndTecherBankAccount,
+    withdrawableAmountAndTotalCashedout,
 } from "../controllers/teacherPayoutControllers.ts";
 
 const teacherRouter = express.Router();
@@ -70,5 +72,7 @@ teacherRouter.post(
     verifyPaymentAndTecherBankAccount
 );
 teacherRouter.get("/payout/verification", getBankVerificationStatus);
+teacherRouter.get("/payout/history", teacherPayoutHistoryList);
+teacherRouter.get("/withdrawable-amount", withdrawableAmountAndTotalCashedout);
 
 export default teacherRouter;

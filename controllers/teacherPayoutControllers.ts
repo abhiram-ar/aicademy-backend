@@ -143,3 +143,60 @@ export const getBankVerificationStatus = async (
         });
     }
 };
+
+export const teacherPayoutHistoryList = async (req: Request, res: Response) => {
+    try {
+        const teacherId = (req as TRequest).user.teacherId;
+        const result = await payoutModel.find({ to: teacherId });
+
+        res.status(200).json({
+            success: false,
+            message: "teacher payoutlist successfully fetched",
+            payoutHistroy: result,
+        });
+    } catch (error) {
+        logErrorMessage("error while fetching techer payout histoy");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while fetching teacher payout histoty",
+        });
+    }
+};
+
+export const withdrawableAmountAndTotalCashedout = async (
+    req: Request,
+    res: Response
+) => {
+    try {
+        const teacherId = (req as TRequest).user.teacherId;
+        const result = await teacherModel.findById(teacherId, {
+            totalAmountCheckedOut: 1,
+            earnings: 1,
+        });
+
+        if (!result) {
+            logWarning("no teacher found for calculating withdrawable amount");
+            res.status(404).json({
+                success: false,
+                message: "Invalid teacher",
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "withdraw amount and total cashedout successfully fetched",
+            withdrawable: result?.earnings || 0,
+            totalAmountCheckedout: result?.totalAmountCheckedOut || 0,
+        });
+    } catch (error) {
+        logErrorMessage("error while caculating withdaw amounts");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while feching withdraw amounts",
+        });
+    }
+};
