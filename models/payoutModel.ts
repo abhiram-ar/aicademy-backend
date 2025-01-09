@@ -25,7 +25,5 @@ const payoutSchema = new mongoose.Schema<IPayout>(
 
 payoutSchema.index({ to: 1 });
 
-export const transactionModel: Model<IPayout> = mongoose.model(
-    "Payout",
-    payoutSchema
-);
+const transactionModel: Model<IPayout> = mongoose.model("Payout", payoutSchema);
+export default transactionModel;
