@@ -5,6 +5,7 @@ import { logErrorMessage, logWarning } from "../utils/log";
 import razorpayInstance from "../config/razorpay";
 import { TRequest } from "./teacherDashboardControllers";
 import crypto from "crypto";
+import mongoose from "mongoose";
 
 export const createBankVerificationOrder = async (
     req: Request | TRequest,
@@ -197,6 +198,87 @@ export const withdrawableAmountAndTotalCashedout = async (
         res.status(400).json({
             success: false,
             message: "error while feching withdraw amounts",
+        });
+    }
+};
+
+export const withdraw = async (req: TRequest, res: Response): Promise<any> => {
+    try {
+        const { withdrawAmount } = req.body;
+        if (!withdrawAmount) {
+            logWarning("no withdarawAmount in request");
+            return res.status(400).json({
+                success: false,
+                message: "withdraw amount is missing in request",
+            });
+        }
+
+        const teacher = await teacherModel.findById(req.user.teacherId);
+        if (!teacher) {
+            logWarning("no teacher found for withdrawing amount");
+            return res.status(404).json({
+                success: false,
+                message: "Invalid teacher",
+            });
+        }
+
+        if (
+            withdrawAmount < 1000 ||
+            withdrawAmount > (teacher?.earnings || 0)
+        ) {
+            logWarning("Invalid withdraw amount");
+            return res.status(400).json({
+                success: false,
+                message: "Invalid withdraw amount",
+            });
+        }
+
+        const session = await mongoose.startSession();
+        try {
+            session.startTransaction();
+
+            // decrement the earnings from teacher and increment totalCheckedout
+            await teacher.updateOne(
+                {
+                    $inc: {
+                        earnings: -withdrawAmount,
+                        totalAmountCheckedOut: withdrawAmount,
+                    },
+                },
+                { session } //incude this update in this session, since teacher is reference outside of this session
+            );
+
+            // create a transaction
+            await payoutModel.create({
+                to: teacher.id,
+                amount: withdrawAmount,
+                message: `Payout requested by teacher`,
+            });
+
+            await session.commitTransaction();
+            await session.endSession();
+            res.status(200).json({
+                success: true,
+                message: "withdraw successful",
+            });
+        } catch (error) {
+            await session.abortTransaction();
+            await session.endSession();
+            logErrorMessage("error while withdraw transaction");
+            logErrorMessage(error.message);
+            console.log(error);
+            res.status(400).json({
+                success: false,
+                message: "error while withdraw transaction",
+            });
+        }
+    } catch (error) {
+        logErrorMessage("error while withdrawing");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while withdrawing",
         });
     }
 };

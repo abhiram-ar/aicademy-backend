@@ -21,6 +21,7 @@ import {
     getBankVerificationStatus,
     teacherPayoutHistoryList,
     verifyPaymentAndTecherBankAccount,
+    withdraw,
     withdrawableAmountAndTotalCashedout,
 } from "../controllers/teacherPayoutControllers.ts";
 
@@ -63,6 +64,7 @@ teacherRouter.get("/dashboard/sales-list", (req, res) =>
 );
 
 // payouts
+teacherRouter.get("/withdrawable-amount", withdrawableAmountAndTotalCashedout);
 teacherRouter.post(
     "/payout/verification/create-order",
     createBankVerificationOrder
@@ -71,8 +73,11 @@ teacherRouter.post(
     "/payout/verification/verify",
     verifyPaymentAndTecherBankAccount
 );
-teacherRouter.get("/payout/verification", getBankVerificationStatus);
+teacherRouter.get("/payout/verification/isVerified", getBankVerificationStatus);
 teacherRouter.get("/payout/history", teacherPayoutHistoryList);
-teacherRouter.get("/withdrawable-amount", withdrawableAmountAndTotalCashedout);
+
+teacherRouter.post("/payout/withdraw", (req, res) =>
+    withdraw(req as TRequest, res)
+);
 
 export default teacherRouter;
