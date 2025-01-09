@@ -6,7 +6,7 @@ interface IPayout extends Document {
     amount: number;
     message: String;
     isApproved: boolean;
-    status: "initiated" | "deposited" | "failed";
+    status: "processing" | "deposited" | "failed";
 }
 
 const payoutSchema = new mongoose.Schema<IPayout>(
@@ -18,8 +18,8 @@ const payoutSchema = new mongoose.Schema<IPayout>(
         status: {
             type: String,
             required: true,
-            enum: ["initiated", "deposited", "failed"],
-            default: "initiated",
+            enum: ["processing", "deposited", "failed"],
+            default: "processing",
         },
     },
     { timestamps: true }
