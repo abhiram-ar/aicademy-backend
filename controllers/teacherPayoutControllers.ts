@@ -148,7 +148,9 @@ export const getBankVerificationStatus = async (
 export const teacherPayoutHistoryList = async (req: Request, res: Response) => {
     try {
         const teacherId = (req as TRequest).user.teacherId;
-        const result = await payoutModel.find({ to: teacherId });
+        const result = await payoutModel
+            .find({ to: teacherId })
+            .sort({ createdAt: -1 });
 
         res.status(200).json({
             success: false,
