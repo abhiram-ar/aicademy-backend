@@ -110,3 +110,36 @@ export const verifyPaymentAndTecherBankAccount = async (
         });
     }
 };
+
+export const getBankVerificationStatus = async (
+    req: Request,
+    res: Response
+) => {
+    try {
+        const result = await teacherModel.findById(
+            (req as TRequest).user.teacherId,
+            { isBankVerified: 1 }
+        );
+
+        if (!result) {
+            logWarning("getBankVerification: no teacher found");
+            return res
+                .status(404)
+                .json({ success: false, message: "invalid teacherID" });
+        }
+
+        res.status(200).json({
+            success: true,
+            messsage: "veficication staus successfully fetched",
+            isVerified: result.isBankVerified ?? false,
+        });
+    } catch (error) {
+        logErrorMessage("error while fethcing bankverification status");
+        logErrorMessage(error.message);
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "error while fetching bank verfication status",
+        });
+    }
+};

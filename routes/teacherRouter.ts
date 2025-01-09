@@ -18,6 +18,7 @@ import {
 } from "../controllers/teacherDashboardControllers.ts";
 import {
     createBankVerificationOrder,
+    getBankVerificationStatus,
     verifyPaymentAndTecherBankAccount,
 } from "../controllers/teacherPayoutControllers.ts";
 
@@ -68,5 +69,6 @@ teacherRouter.post(
     "/payout/verification/verify",
     verifyPaymentAndTecherBankAccount
 );
+teacherRouter.get("/payout/verification", getBankVerificationStatus);
 
 export default teacherRouter;
