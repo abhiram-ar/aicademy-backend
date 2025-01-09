@@ -16,6 +16,7 @@ import {
     lifetimeEarning,
     TRequest,
 } from "../controllers/teacherDashboardControllers.ts";
+import { createBankVerificationOrder } from "../controllers/teacherPayoutControllers.ts";
 
 const teacherRouter = express.Router();
 
@@ -38,6 +39,7 @@ teacherRouter.post(
 //protected rotues
 teacherRouter.use(isAuthenticated, authorizedRoles("teacher"));
 
+// dashboard
 teacherRouter.get("/dashboard/revenue", (req, res) =>
     lastTwoMonthRevenue(req as TRequest, res)
 );
@@ -53,5 +55,8 @@ teacherRouter.get("/dashboard/earning/monthly", (req, res) =>
 teacherRouter.get("/dashboard/sales-list", (req, res) =>
     fetchTeacherSalesList(req as TRequest, res)
 );
+
+// payouts
+teacherRouter.post("/payout/verification/create-order", createBankVerificationOrder);
 
 export default teacherRouter;
