@@ -114,7 +114,7 @@ export const verifyPaymentAndTecherBankAccount = async (
 export const getBankVerificationStatus = async (
     req: Request,
     res: Response
-) => {
+): Promise<any> => {
     try {
         const result = await teacherModel.findById(
             (req as TRequest).user.teacherId,
