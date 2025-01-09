@@ -147,15 +147,25 @@ export const getBankVerificationStatus = async (
 
 export const teacherPayoutHistoryList = async (req: Request, res: Response) => {
     try {
+        const { page = 1, limit = 10 } = req.query;
+        const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
+
         const teacherId = (req as TRequest).user.teacherId;
         const result = await payoutModel
             .find({ to: teacherId })
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit as string));
+
+        const totalEntries = await payoutModel.countDocuments({
+            to: teacherId,
+        });
 
         res.status(200).json({
             success: false,
             message: "teacher payoutlist successfully fetched",
             payoutHistroy: result,
+            pages: Math.ceil(totalEntries / parseInt(limit as string)),
         });
     } catch (error) {
         logErrorMessage("error while fetching techer payout histoy");
