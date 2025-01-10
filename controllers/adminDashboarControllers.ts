@@ -82,12 +82,78 @@ export const calculateRevenueAndProfit: RequestHandler<
     {},
     {},
     {},
-    { id: string }
+    { interval?: "monthly" | "daily" }
 > = async (req, res) => {
     try {
+        const { interval } = req.query;
+        if (!interval) {
+            throw { message: "interval mising in request query", status: 400 };
+        }
+        if (!(interval === "monthly" || interval === "daily")) {
+            throw {
+                message: "interval should be 'monthly' or 'daily'",
+                status: 404,
+            };
+        }
+
+        // aggregation query cofigs
+        const now = new Date();
+        let startDate: Date;
+        let groupBy: any;
+
+        if (interval === "monthly") {
+            startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+            groupBy = {
+                year: { $year: "$createdAt" },
+                month: { $month: "$createdAt" },
+            };
+        } else {
+            // 28 days before
+            startDate = new Date();
+            startDate.setDate(now.getDate() - 27);
+            groupBy = {
+                year: { $year: "$createdAt" },
+                month: { $month: "$createdAt" },
+                day: { $dayOfMonth: "$createdAt" },
+            };
+        }
+
+        const result = await orderModel.aggregate([
+            { $match: { createdAt: { $gte: startDate, $lte: now } } },
+            { $project: { createdAt: 1, orderValue: 1, platformFee: 1 } },
+            {
+                $group: {
+                    _id: groupBy,
+                    revenue: { $sum: "$orderValue" },
+                    profit: { $sum: "$platformFee" },
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    period: {
+                        $concat: [
+                            { $toString: "$_id.year" },
+                            "-",
+                            { $toString: "$_id.month" },
+                            interval === "daily"
+                                ? { $concat: ["-", { $toString: "$_id.day" }] }
+                                : "",
+                        ],
+                    },
+                    revenue: 1,
+                    profit: 1,
+                },
+            },
+            {
+                $sort: { period: 1 },
+            },
+        ]);
+
         res.status(200).json({
             success: true,
             message: "platform earning calulated successfully",
+            data: result,
         });
     } catch (error) {
         logErrorMessage("error while calculating admin revenue and profit");
