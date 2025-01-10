@@ -145,7 +145,6 @@ export const editReview = async (
             throw { message: "Rating should be in range 0-5", status: 400 };
         }
 
-        // check if user had purchased the course
         const reviewDetails = await reviewModel.findOne({
             _id: reviewId,
             createdBy: req.user.userId,
@@ -185,7 +184,7 @@ export const editReview = async (
             rating: newRating.toFixed(2),
         });
 
-        await reviewModel.updateOne({
+        await reviewDetails.updateOne({
             rating: rating,
             review: review,
         });
