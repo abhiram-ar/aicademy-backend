@@ -25,6 +25,10 @@ import {
     fetchCourseReports,
     updateReportStatus,
 } from "../controllers/adminCourseReportControllers.ts";
+import {
+    calculateRevenueAndProfit,
+    overviewReportLastTwoMonth,
+} from "../controllers/adminDashboarControllers.ts";
 
 const adminRouter = express.Router();
 
@@ -54,5 +58,9 @@ adminRouter.patch("/user/course/report/status", updateReportStatus);
 adminRouter.get("/course/coupon", fetchCoupons);
 adminRouter.post("/course/coupon", createCoupon);
 adminRouter.patch("/course/coupon/state", changeCouponStatus);
+
+// overview controllers
+adminRouter.get("/dashboard/overview", overviewReportLastTwoMonth);
+adminRouter.get("/dashboard/revenue-profit", calculateRevenueAndProfit);
 
 export default adminRouter;
