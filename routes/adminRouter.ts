@@ -30,7 +30,10 @@ import {
     overviewReportLastTwoMonth,
     reveueList,
 } from "../controllers/adminDashboarControllers.ts";
-import { getPayoutList } from "../controllers/adminTeachePayoutControllers.ts";
+import {
+    getPayoutList,
+    updatePayoutApprovalStatus,
+} from "../controllers/adminTeachePayoutControllers.ts";
 
 const adminRouter = express.Router();
 
@@ -49,6 +52,7 @@ adminRouter.patch("/teacher/reject-onboarding", rejectOnboarding);
 
 // payout controllers
 adminRouter.get("/teacher/payout-list", getPayoutList);
+adminRouter.patch("/teacher/payout/approval", updatePayoutApprovalStatus);
 
 // user management routes
 adminRouter.get("/user/list", getUserList);
