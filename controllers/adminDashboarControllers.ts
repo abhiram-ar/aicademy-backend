@@ -168,13 +168,25 @@ export const calculateRevenueAndProfit: RequestHandler<
     }
 };
 
-export const reveueList = (req: Request, res: Response) => {
+export const reveueList = async (req: Request, res: Response) => {
     try {
         const { page = 1, limit = 10 } = req.query;
-        // await orderModel.find({});
+        const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
+
+        const result = await orderModel
+            .find({}, { createdAt: 1, orderValue: 1, platformFee: 1 })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit as string))
+            .lean();
+
+        const totalEntries = await orderModel.countDocuments();
+
         res.status(200).json({
             success: true,
             messsage: "revenue list successfully fetched",
+            pages: Math.ceil(totalEntries / parseInt(limit as string)),
+            result,
         });
     } catch (error) {
         logErrorMessage("error while fetching revenue list");
