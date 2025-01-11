@@ -185,6 +185,7 @@ export const reveueList = async (req: Request, res: Response) => {
         res.status(200).json({
             success: true,
             messsage: "revenue list successfully fetched",
+            length: result.length,
             pages: Math.ceil(totalEntries / parseInt(limit as string)),
             data: result,
         });
