@@ -143,3 +143,29 @@ export const allCourseReportList = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const takeDownCourse = async (req: Request, res: Response) => {
+    try {
+        const { courseId } = req.body;
+        if (!courseId)
+            throw { message: "courseId mising in request", status: 400 };
+
+        const result = await courseModel.findByIdAndUpdate(courseId, {
+            courseState: "unpublished",
+        });
+        if (!result) {
+            throw { message: "Invalid courseId", status: 404 };
+        }
+        res.status(200).json({ success: true, messsage: "course unpublished" });
+    } catch (error) {
+        logErrorMessage("error while taking down course");
+        logErrorMessage(error.message);
+        if (!error.status) console.log(error);
+        res.status(error.status ?? 400).json({
+            success: false,
+            messsage: error.status
+                ? error.message
+                : "error while cousrse takedown",
+        });
+    }
+};

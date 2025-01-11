@@ -34,7 +34,10 @@ import {
     getPayoutList,
     updatePayoutApprovalStatus,
 } from "../controllers/adminTeachePayoutControllers.ts";
-import { allCourseReportList } from "../controllers/adminCourseManagementControllers.ts";
+import {
+    allCourseReportList,
+    takeDownCourse,
+} from "../controllers/adminCourseManagementControllers.ts";
 
 const adminRouter = express.Router();
 
@@ -71,6 +74,7 @@ adminRouter.patch("/course/coupon/state", changeCouponStatus);
 
 // course management routes
 adminRouter.get("/course", allCourseReportList);
+adminRouter.patch("/course/takedown", takeDownCourse);
 
 // overview controllers
 adminRouter.get("/dashboard/overview", overviewReportLastTwoMonth);
