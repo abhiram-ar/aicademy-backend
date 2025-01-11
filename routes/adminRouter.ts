@@ -28,6 +28,7 @@ import {
 import {
     calculateRevenueAndProfit,
     overviewReportLastTwoMonth,
+    reveueList,
 } from "../controllers/adminDashboarControllers.ts";
 
 const adminRouter = express.Router();
@@ -62,5 +63,6 @@ adminRouter.patch("/course/coupon/state", changeCouponStatus);
 // overview controllers
 adminRouter.get("/dashboard/overview", overviewReportLastTwoMonth);
 adminRouter.get("/dashboard/revenue-profit", calculateRevenueAndProfit);
+adminRouter.get("/revenue-list", reveueList);
 
 export default adminRouter;
