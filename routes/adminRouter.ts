@@ -30,6 +30,7 @@ import {
     overviewReportLastTwoMonth,
     reveueList,
 } from "../controllers/adminDashboarControllers.ts";
+import { getPayoutList } from "../controllers/adminTeachePayoutControllers.ts";
 
 const adminRouter = express.Router();
 
@@ -45,6 +46,9 @@ adminRouter.use(isAuthenticated, authorizedRoles("admin"));
 adminRouter.get("/teacher/onboarding-list", onboardingTeacherList);
 adminRouter.patch("/teacher/approve-onboarding", approveOnboarding);
 adminRouter.patch("/teacher/reject-onboarding", rejectOnboarding);
+
+// payout controllers
+adminRouter.get("/teacher/payout-list", getPayoutList);
 
 // user management routes
 adminRouter.get("/user/list", getUserList);
