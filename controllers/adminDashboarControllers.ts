@@ -186,7 +186,7 @@ export const reveueList = async (req: Request, res: Response) => {
             success: true,
             messsage: "revenue list successfully fetched",
             pages: Math.ceil(totalEntries / parseInt(limit as string)),
-            result,
+            data: result,
         });
     } catch (error) {
         logErrorMessage("error while fetching revenue list");
