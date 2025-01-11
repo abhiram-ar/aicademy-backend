@@ -254,7 +254,6 @@ export const withdraw = async (req: TRequest, res: Response): Promise<any> => {
                 {
                     $inc: {
                         earnings: -withdrawAmount,
-                        totalAmountCheckedOut: withdrawAmount,
                     },
                 },
                 { session } //incude this update in this session, since teacher is reference outside of this session
