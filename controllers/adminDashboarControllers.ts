@@ -167,3 +167,24 @@ export const calculateRevenueAndProfit: RequestHandler<
         });
     }
 };
+
+export const reveueList = (req: Request, res: Response) => {
+    try {
+        const { page = 1, limit = 10 } = req.query;
+        // await orderModel.find({});
+        res.status(200).json({
+            success: true,
+            messsage: "revenue list successfully fetched",
+        });
+    } catch (error) {
+        logErrorMessage("error while fetching revenue list");
+        logErrorMessage(error.message);
+        if (!error.status) console.log(error);
+        res.status(error.status ?? 400).json({
+            success: false,
+            messsage: error.status
+                ? error.message
+                : "error calculating fething revenue list",
+        });
+    }
+};
