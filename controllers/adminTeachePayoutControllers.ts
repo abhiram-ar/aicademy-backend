@@ -79,8 +79,10 @@ export const updatePayoutApprovalStatus: RequestHandler<
 
             if (result.status === "cancelled" || result.status === "failed") {
                 await teacherModel.findByIdAndUpdate(result.to, {
-                    earnings: { $inc: result.amount },
-                    totalAmountCheckedOut: { $inc: -result.amount },
+                    $inc: {
+                        earnings: result.amount,
+                        totalAmountCheckedOut: -result.amount,
+                    },
                 });
             } else if (result.status === "deposited") {
                 await teacherModel.findByIdAndUpdate(result.to, {
@@ -89,8 +91,8 @@ export const updatePayoutApprovalStatus: RequestHandler<
             } else {
                 throw { message: "invalid payout status ", status: 400 };
             }
-            session.commitTransaction();
-            session.endSession();
+            await session.commitTransaction();
+            await session.endSession();
 
             res.status(200).json({
                 success: true,
