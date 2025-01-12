@@ -3,6 +3,7 @@ import {
     addToCart,
     applyCoupon,
     getCart,
+    moveToWishlist,
     removeCouponFromCart,
     removeFromCart,
     URequest,
@@ -69,6 +70,9 @@ userRouter.patch("/password", (req, res) =>
 userRouter.get("/cart", (req, res) => getCart(req as URequest, res));
 userRouter.post("/cart", (req, res) => addToCart(req as URequest, res));
 userRouter.delete("/cart", (req, res) => removeFromCart(req as URequest, res));
+userRouter.post("/cart/move-to-wishlist", (req, res) =>
+    moveToWishlist(req as URequest, res)
+);
 userRouter.post("/cart/apply-coupon", (req, res) =>
     applyCoupon(req as URequest, res)
 );
