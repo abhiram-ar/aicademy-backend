@@ -3,6 +3,7 @@ import { logErrorMessage, logWarning } from "../utils/log";
 import cartModel, { ICart } from "../models/cartModel";
 import courseModel, { ICourse } from "../models/course.model";
 import couponModel, { ICoupon } from "../models/couponModel";
+import userModel from "../models/userModel";
 
 export interface URequest extends Request {
     file: any;
@@ -102,6 +103,23 @@ export const addToCart = async (req: URequest, res: Response): Promise<any> => {
             return res
                 .status(404)
                 .json({ success: false, message: "Invalid courseId" });
+        }
+
+        const hasUserBoughtThisCourse = await userModel.findOne(
+            {
+                _id: req.user.userId,
+                coursesBought: courseId,
+            },
+            { coursesBought: 1 }
+        );
+        console.log(hasUserBoughtThisCourse);
+
+        if (hasUserBoughtThisCourse) {
+            logWarning("cannot add to cart courses alredy bought by the user");
+            return res.status(400).json({
+                success: false,
+                message: "cannot add courses that is alredy bought by the user",
+            });
         }
 
         const cartUpdateResult = await cartModel.findOneAndUpdate(
