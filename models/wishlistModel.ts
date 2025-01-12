@@ -1,12 +1,12 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 import { ICourse } from "./course.model";
 
-export interface ICart extends Document {
+export interface IWishlist extends Document {
     userId: mongoose.Types.ObjectId;
     courses: Array<mongoose.Types.ObjectId | ICourse>;
 }
 
-const wishlistSchema = new mongoose.Schema<ICart>(
+const wishlistSchema = new mongoose.Schema<IWishlist>(
     {
         userId: {
             type: Schema.Types.ObjectId,
@@ -21,5 +21,8 @@ const wishlistSchema = new mongoose.Schema<ICart>(
 
 wishlistSchema.index({ userId: 1 });
 
-const wishlistModel: Model<ICart> = mongoose.model("Wishlist", wishlistSchema);
+const wishlistModel: Model<IWishlist> = mongoose.model(
+    "Wishlist",
+    wishlistSchema
+);
 export default wishlistModel;

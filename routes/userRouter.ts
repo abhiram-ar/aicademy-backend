@@ -37,6 +37,11 @@ import {
     editReview,
     fetchUserReview,
 } from "../controllers/userReviewControllers.js";
+import {
+    addToWishlist,
+    getWishlist,
+    removeFromWishlist,
+} from "../controllers/userWishlistControllets.js";
 
 const userRouter = express.Router();
 
@@ -68,6 +73,13 @@ userRouter.post("/cart/apply-coupon", (req, res) =>
 );
 userRouter.patch("/cart/remove-coupon", (req, res) =>
     removeCouponFromCart(req as URequest, res)
+);
+
+// wishlist controllers
+userRouter.get("/wishlist", (req, res) => getWishlist(req as URequest, res));
+userRouter.post("/wishlist", (req, res) => addToWishlist(req as URequest, res));
+userRouter.delete("/wishlist", (req, res) =>
+    removeFromWishlist(req as URequest, res)
 );
 
 // checkout routes
