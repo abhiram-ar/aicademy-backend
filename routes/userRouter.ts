@@ -40,6 +40,7 @@ import {
 import {
     addToWishlist,
     getWishlist,
+    moveToCart,
     removeFromWishlist,
 } from "../controllers/userWishlistControllets.js";
 
@@ -80,6 +81,9 @@ userRouter.get("/wishlist", (req, res) => getWishlist(req as URequest, res));
 userRouter.post("/wishlist", (req, res) => addToWishlist(req as URequest, res));
 userRouter.delete("/wishlist", (req, res) =>
     removeFromWishlist(req as URequest, res)
+);
+userRouter.post("/wishlist/move-to-cart", (req, res) =>
+    moveToCart(req as URequest, res)
 );
 
 // checkout routes
