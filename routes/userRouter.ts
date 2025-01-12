@@ -3,6 +3,7 @@ import {
     addToCart,
     applyCoupon,
     getCart,
+    moveToWishlist,
     removeCouponFromCart,
     removeFromCart,
     URequest,
@@ -37,6 +38,12 @@ import {
     editReview,
     fetchUserReview,
 } from "../controllers/userReviewControllers.js";
+import {
+    addToWishlist,
+    getWishlist,
+    moveToCart,
+    removeFromWishlist,
+} from "../controllers/userWishlistControllets.js";
 
 const userRouter = express.Router();
 
@@ -63,11 +70,24 @@ userRouter.patch("/password", (req, res) =>
 userRouter.get("/cart", (req, res) => getCart(req as URequest, res));
 userRouter.post("/cart", (req, res) => addToCart(req as URequest, res));
 userRouter.delete("/cart", (req, res) => removeFromCart(req as URequest, res));
+userRouter.post("/cart/move-to-wishlist", (req, res) =>
+    moveToWishlist(req as URequest, res)
+);
 userRouter.post("/cart/apply-coupon", (req, res) =>
     applyCoupon(req as URequest, res)
 );
 userRouter.patch("/cart/remove-coupon", (req, res) =>
     removeCouponFromCart(req as URequest, res)
+);
+
+// wishlist controllers
+userRouter.get("/wishlist", (req, res) => getWishlist(req as URequest, res));
+userRouter.post("/wishlist", (req, res) => addToWishlist(req as URequest, res));
+userRouter.delete("/wishlist", (req, res) =>
+    removeFromWishlist(req as URequest, res)
+);
+userRouter.post("/wishlist/move-to-cart", (req, res) =>
+    moveToCart(req as URequest, res)
 );
 
 // checkout routes

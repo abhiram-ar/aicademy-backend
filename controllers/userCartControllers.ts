@@ -4,6 +4,7 @@ import cartModel, { ICart } from "../models/cartModel";
 import courseModel, { ICourse } from "../models/course.model";
 import couponModel, { ICoupon } from "../models/couponModel";
 import userModel from "../models/userModel";
+import wishlistModel from "../models/wishlistModel";
 
 export interface URequest extends Request {
     file: any;
@@ -174,6 +175,82 @@ export const removeFromCart = async (
         return res.status(400).json({
             success: false,
             message: "errro while removing course from cart",
+        });
+    }
+};
+
+export const moveToWishlist = async (
+    req: URequest,
+    res: Response
+): Promise<any> => {
+    try {
+        const { courseId } = req.body;
+        if (!courseId) {
+            logWarning(`courseId not provided for moving to wishlist`);
+            return res.status(400).json({
+                success: false,
+                message: "courseId is not provided in request",
+            });
+        }
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            logWarning(`move to wishlist: Invalid courseId`);
+            return res
+                .status(404)
+                .json({ success: false, message: "Invalid courseId" });
+        }
+
+        const hasUserBoughtThisCourse = await userModel.findOne(
+            {
+                _id: req.user.userId,
+                coursesBought: courseId,
+            },
+            { coursesBought: 1 }
+        );
+
+        if (hasUserBoughtThisCourse) {
+            logWarning(
+                "cannot move to wishlist. courses alredy bought by the user, removing course from cart"
+            );
+            await cartModel.findOneAndUpdate(
+                { userId: req.user.userId },
+                { $pull: { courses: courseId } }
+            );
+            return res.status(400).json({
+                success: false,
+                message: "cannot add courses that is alredy bought by the user",
+            });
+        }
+
+        const wishlistUpdateResult = await wishlistModel.findOneAndUpdate(
+            { userId: req.user.userId },
+            { $addToSet: { courses: courseId } },
+            { upsert: true } //create the cart if it does not exist
+        );
+
+        if (!wishlistUpdateResult) {
+            return res.status(404).json({
+                success: false,
+                message: "Invalid courseId",
+            });
+        }
+
+        await cartModel.findOneAndUpdate(
+            { userId: req.user.userId },
+            { $pull: { courses: courseId } }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "course added to cart successfully",
+        });
+    } catch (error) {
+        logErrorMessage(`error while adding to wishlist`);
+        logErrorMessage(error.message);
+        return res.status(400).json({
+            success: false,
+            message: "error while adding to wishlist",
         });
     }
 };
