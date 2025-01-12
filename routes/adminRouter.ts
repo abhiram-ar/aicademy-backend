@@ -34,6 +34,10 @@ import {
     getPayoutList,
     updatePayoutApprovalStatus,
 } from "../controllers/adminTeachePayoutControllers.ts";
+import {
+    allCourseReportList,
+    updateCourseState,
+} from "../controllers/adminCourseManagementControllers.ts";
 
 const adminRouter = express.Router();
 
@@ -63,10 +67,14 @@ adminRouter.patch("/user/unblock", unBlockUser);
 adminRouter.get("/user/course/reports", fetchCourseReports);
 adminRouter.patch("/user/course/report/status", updateReportStatus);
 
-// course management rooutes
+// coupon management routes
 adminRouter.get("/course/coupon", fetchCoupons);
 adminRouter.post("/course/coupon", createCoupon);
 adminRouter.patch("/course/coupon/state", changeCouponStatus);
+
+// course management routes
+adminRouter.get("/course", allCourseReportList);
+adminRouter.patch("/course/state", updateCourseState);
 
 // overview controllers
 adminRouter.get("/dashboard/overview", overviewReportLastTwoMonth);
