@@ -14,7 +14,14 @@ export const allCourseReportList = async (req: Request, res: Response) => {
             (parseInt(page as string) - 1) * (parseInt(limit as string) ?? 0);
 
         const result = await courseModel.aggregate([
-            { $match: { title: { $regex: search, $options: "i" } } },
+            {
+                $match: {
+                    title: { $regex: search, $options: "i" },
+                    courseState: {
+                        $in: ["published", "blocked"],
+                    },
+                },
+            },
 
             // 1st major stage - to find total revenue
             {
@@ -124,7 +131,11 @@ export const allCourseReportList = async (req: Request, res: Response) => {
             },
         ]);
 
-        const totalEntries = await courseModel.countDocuments({});
+        const totalEntries = await courseModel.countDocuments({
+            courseState: {
+                $in: ["published", "blocked"],
+            },
+        });
 
         res.status(200).json({
             success: true,
@@ -144,14 +155,21 @@ export const allCourseReportList = async (req: Request, res: Response) => {
     }
 };
 
-export const takeDownCourse = async (req: Request, res: Response) => {
+export const updateCourseState = async (req: Request, res: Response) => {
     try {
-        const { courseId } = req.body;
+        const { courseId, newState } = req.body;
         if (!courseId)
-            throw { message: "courseId mising in request", status: 400 };
+            throw {
+                message: "required paremeter mising in request",
+                status: 400,
+            };
+
+        if (!(newState === "blocked" || newState === "published")) {
+            throw { message: "invalid course state", status: 400 };
+        }
 
         const result = await courseModel.findByIdAndUpdate(courseId, {
-            courseState: "unpublished",
+            courseState: newState,
         });
         if (!result) {
             throw { message: "Invalid courseId", status: 404 };
