@@ -8,6 +8,7 @@ import {
 import s3 from "./aws.S3Client";
 import { donwloadFileFromS3 } from "../utils/downloadFileFromS3";
 import path from "path";
+import { extractAudio } from "../utils/extractAudioFromvideo";
 
 const handleTranscriptAndEmbedding = async () => {
     try {
@@ -38,7 +39,7 @@ const handleTranscriptAndEmbedding = async () => {
             async (message) => {
                 if (message) {
                     const content = JSON.parse(message.content.toString());
-                    logSuccess(`Received job: ${JSON.stringify(content)}`);
+                    logSuccess(`Received new job: ${JSON.stringify(content)}`);
 
                     try {
                         await processJob(content.key);
@@ -88,6 +89,8 @@ const processJob = async (key: string) => {
                 path.join(__dirname, "..", "temp", "downloads")
             );
 
+            const audioPath = await extractAudio(videoPath as string);
+            console.log("audio path ", audioPath);
             resolve("");
         } catch (error) {
             reject(error);
