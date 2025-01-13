@@ -1,5 +1,5 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { logErrorMessage } from "./log";
+import { logErrorMessage, logSuccess } from "./log";
 import path from "path";
 import fs from "fs";
 import * as dotenv from "dotenv";
@@ -38,10 +38,7 @@ export const donwloadFileFromS3 = async (
             responseStream.pipe(fileStream);
 
             fileStream.on("finish", () => {
-                console.log(
-                    "file downloded successfully",
-                    path.basename(fileKey)
-                );
+                logSuccess("file downloded successfully");
                 resolve(filePath);
             });
 
