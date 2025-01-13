@@ -82,12 +82,16 @@ const handleTranscriptAndEmbedding = async () => {
 const processJob = async (key: string) => {
     console.log("started processing job.....");
     return new Promise(async (resolve, reject) => {
-        const videoPath = await donwloadFileFromS3(
-            key,
-            path.join(__dirname, "..", "temp", "downloads")
-        );
+        try {
+            const videoPath = await donwloadFileFromS3(
+                key,
+                path.join(__dirname, "..", "temp", "downloads")
+            );
 
-        resolve("");
+            resolve("");
+        } catch (error) {
+            reject(error);
+        }
     });
 };
 

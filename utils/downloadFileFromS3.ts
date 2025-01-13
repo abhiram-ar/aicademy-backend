@@ -6,6 +6,7 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
 import { Readable } from "stream";
 
+// cleanup and use s3 from config
 const s3 = new S3Client({
     region: process.env.AWS_REGION,
     credentials: {
