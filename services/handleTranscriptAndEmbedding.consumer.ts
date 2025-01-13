@@ -5,6 +5,9 @@ import {
     trancscriptAndEmbeddingQueue,
     transcriptAndEmbeddingRoutingKey,
 } from "./createTranscriptAndEmbeddingJob.publisher";
+import s3 from "./aws.S3Client";
+import { donwloadFileFromS3 } from "../utils/downloadFileFromS3";
+import path from "path";
 
 const handleTranscriptAndEmbedding = async () => {
     try {
@@ -23,7 +26,7 @@ const handleTranscriptAndEmbedding = async () => {
             transcriptAndEmbeddingRoutingKey
         );
 
-        logSuccess(
+        logWarning(
             `Waiting for messages in queue: ${trancscriptAndEmbeddingQueue}`
         );
 
@@ -38,7 +41,9 @@ const handleTranscriptAndEmbedding = async () => {
                     logSuccess(`Received job: ${JSON.stringify(content)}`);
 
                     try {
-                        await processJob(content);
+                        await processJob(content.key);
+                        logSuccess(`Completed job: ${JSON.stringify(content)}`);
+                        console.log("");
                         channel.ack(message);
                     } catch (error) {
                         logErrorMessage(
@@ -46,7 +51,8 @@ const handleTranscriptAndEmbedding = async () => {
                         );
                         logErrorMessage(error.message);
                         console.log(error);
-                        channel.nack(message, false, true);
+                        // requue true in production
+                        channel.nack(message, false, false);
                     }
                 }
             },
@@ -73,8 +79,16 @@ const handleTranscriptAndEmbedding = async () => {
     }
 };
 
-const processJob = (content) => {
-    console.log("processing job", content);
+const processJob = async (key: string) => {
+    console.log("started processing job.....");
+    return new Promise(async (resolve, reject) => {
+        const videoPath = await donwloadFileFromS3(
+            key,
+            path.join(__dirname, "..", "temp", "downloads")
+        );
+
+        resolve("");
+    });
 };
 
 handleTranscriptAndEmbedding();

@@ -48,4 +48,4 @@ const createTranscriptAndEmbeddingJob = async (key: string) => {
     }
 };
 
-createTranscriptAndEmbeddingJob("hello world 3");
+createTranscriptAndEmbeddingJob("6762d2e79e4e6d9d0f66202d/Elon.mp4");
