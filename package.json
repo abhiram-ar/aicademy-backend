@@ -13,6 +13,7 @@
         "@aws-sdk/client-s3": "^3.716.0",
         "@aws-sdk/s3-request-presigner": "^3.716.0",
         "@types/express": "^5.0.0",
+        "amqplib": "^0.10.5",
         "bcrypt": "^5.1.1",
         "chalk": "^5.3.0",
         "cloudinary": "^2.5.1",
