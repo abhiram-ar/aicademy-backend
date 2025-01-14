@@ -1,5 +1,5 @@
-import amqp from 'amqplib';
-import { logErrorMessage, logSuccess, logWarning } from '../utils/log';
+import amqp from "amqplib";
+import { logErrorMessage, logSuccess, logWarning } from './../../utils/log';
 
 // becareful when exporting these constancts as the function at end of this file will get executed
 const jobExchange = 'jobExchange';
@@ -51,4 +51,4 @@ const createTranscriptAndEmbeddingJob = async (key: string) => {
     }
 };
 
-// createTranscriptAndEmbeddingJob('6762d2e79e4e6d9d0f66202d/Elon.mp4');
+createTranscriptAndEmbeddingJob('6762d2e79e4e6d9d0f66202d/Elon.mp4');

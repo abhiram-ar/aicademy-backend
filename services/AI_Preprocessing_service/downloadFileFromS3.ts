@@ -1,9 +1,9 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { logErrorMessage, logSuccess } from "./log";
+import { logErrorMessage, logSuccess } from "../../utils/log";
 import path from "path";
 import fs from "fs";
 import * as dotenv from "dotenv";
-dotenv.config({ path: path.join(__dirname, "..", ".env") });
+dotenv.config({ path: path.join(__dirname,"..", "..", ".env") });
 import { Readable } from "stream";
 
 // cleanup and use s3 from config

@@ -1,6 +1,6 @@
 import ffmpeg from "fluent-ffmpeg";
 import path from "path";
-import { logErrorMessage, logSuccess } from "./log";
+import { logErrorMessage, logSuccess } from "../../utils/log";
 import fs from "fs/promises";
 
 interface AudioOptions {
