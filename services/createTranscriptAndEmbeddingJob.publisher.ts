@@ -1,9 +1,10 @@
 import amqp from 'amqplib';
 import { logErrorMessage, logSuccess, logWarning } from '../utils/log';
 
-export const jobExchange = 'jobExchange';
-export const transcriptAndEmbeddingRoutingKey = 'transcriptAndEmbeddingJob';
-export const trancscriptAndEmbeddingQueue = 'createTranscriptAndEmbeddingJobQueue';
+// becareful when exporting these constancts as the function at end of this file will get executed
+const jobExchange = 'jobExchange';
+const transcriptAndEmbeddingRoutingKey = 'transcriptAndEmbeddingJob';
+const trancscriptAndEmbeddingQueue = 'createTranscriptAndEmbeddingJobQueue';
 
 const createTranscriptAndEmbeddingJob = async (key: string) => {
     const connection = await amqp.connect('amqp://localhost');
@@ -50,4 +51,4 @@ const createTranscriptAndEmbeddingJob = async (key: string) => {
     }
 };
 
-createTranscriptAndEmbeddingJob('6762d2e79e4e6d9d0f66202d/Elon.mp4');
+// createTranscriptAndEmbeddingJob('6762d2e79e4e6d9d0f66202d/Elon.mp4');

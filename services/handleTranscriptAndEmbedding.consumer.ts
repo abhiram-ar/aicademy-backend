@@ -1,14 +1,13 @@
 import amqp, { Channel, Connection } from 'amqplib';
 import { logErrorMessage, logSuccess, logWarning } from '../utils/log';
-import {
-    jobExchange,
-    trancscriptAndEmbeddingQueue,
-    transcriptAndEmbeddingRoutingKey,
-} from './createTranscriptAndEmbeddingJob.publisher';
 import s3 from './aws.S3Client';
 import { donwloadFileFromS3 } from '../utils/downloadFileFromS3';
 import path from 'path';
 import { extractAudio } from '../utils/extractAudioFromvideo';
+
+export const jobExchange = 'jobExchange';
+export const transcriptAndEmbeddingRoutingKey = 'transcriptAndEmbeddingJob';
+export const trancscriptAndEmbeddingQueue = 'createTranscriptAndEmbeddingJobQueue';
 
 const handleTranscriptAndEmbedding = async () => {
     let connection: Connection;
@@ -33,7 +32,7 @@ const handleTranscriptAndEmbedding = async () => {
         logWarning(`Waiting for messages in queue: ${trancscriptAndEmbeddingQueue}`);
 
         // handle one job at a time - increase this in production
-        channel.prefetch(1);
+        // channel.prefetch(1);
 
         channel.consume(
             trancscriptAndEmbeddingQueue,
