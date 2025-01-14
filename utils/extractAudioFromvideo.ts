@@ -37,7 +37,9 @@ export const extractAudio = async (
 
             // handling reformat
             .on("progress", (progress) =>
-                console.log(`Audio extraction: ${progress.percent}% done`)
+                console.log(
+                    `Audio extraction: ${progress.percent?.toFixed(2)}% done`
+                )
             )
             .on("end", () => {
                 logSuccess("Audio extraction complete");
