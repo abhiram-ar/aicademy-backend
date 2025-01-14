@@ -16,9 +16,9 @@ const handleTranscriptAndEmbedding = async () => {
         console.log("consumer: Rabitmq connected successfully");
 
         const channel = await connection.createChannel();
-        await channel.assertExchange(jobExchange, "direct", { durable: false });
+        await channel.assertExchange(jobExchange, "direct", { durable: true });
         await channel.assertQueue(trancscriptAndEmbeddingQueue, {
-            durable: false,
+            durable: true,
         });
 
         await channel.bindQueue(
@@ -43,9 +43,9 @@ const handleTranscriptAndEmbedding = async () => {
 
                     try {
                         await processJob(content.key);
+                        channel.ack(message);
                         logSuccess(`Completed job: ${JSON.stringify(content)}`);
                         console.log("");
-                        channel.ack(message);
                     } catch (error) {
                         logErrorMessage(
                             "error while proceesing transcript and embeddiing job"

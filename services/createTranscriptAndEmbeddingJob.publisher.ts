@@ -16,11 +16,11 @@ const createTranscriptAndEmbeddingJob = async (key: string) => {
         const message = { key };
 
         // create exchange if not exist
-        await channel.assertExchange(jobExchange, "direct", { durable: false });
+        await channel.assertExchange(jobExchange, "direct", { durable: true });
 
         // create job queue
         await channel.assertQueue(trancscriptAndEmbeddingQueue, {
-            durable: false,
+            durable: true,
         });
 
         // bind the transctiandEmbedding job to trasnsciptAndEmbeding queue with routing key as the binding key
@@ -30,11 +30,17 @@ const createTranscriptAndEmbeddingJob = async (key: string) => {
             transcriptAndEmbeddingRoutingKey
         );
 
+        // add logging for returend messages
+        channel.on("return", (msg) => {
+            logErrorMessage("Message returned: " + msg.content.toString());
+        });
+
         // schedule job
         channel.publish(
             jobExchange,
             transcriptAndEmbeddingRoutingKey,
-            Buffer.from(JSON.stringify(message))
+            Buffer.from(JSON.stringify(message)),
+            { mandatory: true } //handle unrouteable message
         );
 
         setTimeout(async () => {
@@ -47,5 +53,8 @@ const createTranscriptAndEmbeddingJob = async (key: string) => {
         console.log(error);
     }
 };
+
+// test
+// createTranscriptAndEmbeddingJob("6762d2e79e4e6d9d0f66202d/Elon.mp4");
 
 createTranscriptAndEmbeddingJob("6762d2e79e4e6d9d0f66202d/Elon.mp4");
