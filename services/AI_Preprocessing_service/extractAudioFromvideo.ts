@@ -10,7 +10,10 @@ interface AudioOptions {
     channels?: number;
 }
 
-export const extractAudio = async (inputPath: string, options: AudioOptions = {}) => {
+export const extractAudio = async (
+    inputPath: string,
+    options: AudioOptions = {}
+): Promise<string> => {
     const {
         format = 'opus', // compressed but, good for realtime audio processing
         bitrate = '32k', // opus retain good speech quality even at low bit rate

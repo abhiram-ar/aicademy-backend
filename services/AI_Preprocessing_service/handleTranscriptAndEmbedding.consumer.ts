@@ -3,6 +3,7 @@ import { logErrorMessage, logSuccess, logWarning } from './../../utils/log';
 import { donwloadFileFromS3 } from './downloadFileFromS3';
 import path from 'path';
 import { extractAudio } from './extractAudioFromvideo';
+import { extractTranscriptFromAudio } from './extractTranscriptFromAudio';
 // import s3 from '../aws.S3Client'; //use when integration is live integration
 
 export const jobExchange = 'jobExchange';
@@ -87,10 +88,10 @@ const processJob = async (key: string) => {
         key,
         path.join(__dirname, '..', '..', 'temp', 'downloads')
     );
-
     const audioPath = await extractAudio(videoPath as string);
-    console.log('audio path ', audioPath);
-    return '';
+    const transcript = await extractTranscriptFromAudio(audioPath);
+    console.log(transcript);
+    return 'transcript';
 };
 
 handleTranscriptAndEmbedding();

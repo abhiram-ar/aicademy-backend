@@ -1,10 +1,9 @@
 import { logErrorMessage, logSuccess } from '../../utils/log';
 import assemblyAIClient from './AssemblyAIConfig';
-import { Error } from 'assemblyai';
 
 export const extractTranscriptFromAudio = async (
     audioPath: string
-): Promise<{ transcript: string; transcriptId: string }> => {
+): Promise<{ text: string; id: string }> => {
     console.log('extracting transcript...');
 
     const startTime = Date.now();
@@ -24,7 +23,7 @@ export const extractTranscriptFromAudio = async (
         throw new Error('transcript is null or undefined');
     }
 
-    return { transcript: transcript.text, transcriptId: transcript.id };
+    return { text: transcript.text, id: transcript.id };
 };
 
 // // testing
