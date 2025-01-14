@@ -1,10 +1,10 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { logErrorMessage, logSuccess } from "../../utils/log";
-import path from "path";
-import fs from "fs";
-import * as dotenv from "dotenv";
-dotenv.config({ path: path.join(__dirname,"..", "..", ".env") });
-import { Readable } from "stream";
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { logErrorMessage, logSuccess } from '../../utils/log';
+import path from 'path';
+import fs from 'fs';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
+import { Readable } from 'stream';
 
 // cleanup and use s3 from config
 const s3 = new S3Client({
@@ -15,40 +15,37 @@ const s3 = new S3Client({
     },
 });
 
-export const donwloadFileFromS3 = async (
-    fileKey: string,
-    downloadPath: string
-) => {
+export const donwloadFileFromS3 = async (fileKey: string, downloadPath: string) => {
     try {
         const command = new GetObjectCommand({
             Bucket: process.env.AWS_S3_BUCKET_NAME as string,
             Key: fileKey,
         });
 
-        console.log("downloading file....", path.basename(fileKey));
+        console.log('downloading file....', path.basename(fileKey));
         const response = await s3.send(command);
 
         return new Promise((resolve, reject) => {
             const filePath = path.resolve(downloadPath, path.basename(fileKey));
             const fileStream = fs.createWriteStream(filePath);
 
-            if (!response.Body) reject(new Error("no responnse body from AWS"));
+            if (!response.Body) reject(new Error('no responnse body from AWS'));
 
             const responseStream = response.Body as Readable;
             responseStream.pipe(fileStream);
 
-            fileStream.on("finish", () => {
-                logSuccess("file downloded successfully");
+            fileStream.on('finish', () => {
+                logSuccess('file downloded successfully');
                 resolve(filePath);
             });
 
-            fileStream.on("error", (error) => {
-                console.log("error while writing file", error);
+            fileStream.on('error', (error) => {
+                console.log('error while writing file', error);
                 reject(error);
             });
         });
     } catch (error) {
-        logErrorMessage("error while downloading from s3");
+        logErrorMessage('error while downloading from s3');
         logErrorMessage(error.message);
         console.log(error);
     }
