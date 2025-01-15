@@ -225,7 +225,8 @@ export const fetchPublicCourseReviewList = async (
         const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
 
         const result = await reviewModel
-            .find({ courseId })
+            .find({ courseId, review: { $exists: true, $ne: "" } })
+            .sort({ updatedAt: -1 })
             .skip(skip)
             .limit(parseInt(limit as string)) // 0 means no limit in mongoDB
             .populate({
