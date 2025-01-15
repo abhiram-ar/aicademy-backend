@@ -5,6 +5,7 @@ import courseModel, { ICourse } from "../models/course.model";
 import couponModel, { ICoupon } from "../models/couponModel";
 import userModel from "../models/userModel";
 import wishlistModel from "../models/wishlistModel";
+import mongoose from "mongoose";
 
 export interface URequest extends Request {
     file: any;
@@ -273,6 +274,17 @@ export const applyCoupon = async (
             throw { message: "Invalid coupon", type: "checked" };
         }
         console.log(coupon);
+
+        // user cannot use the coupon they alredy used
+        if (
+            coupon.usedBy.includes(new mongoose.Types.ObjectId(req.user.userId))
+        ) {
+            logWarning("User trying to use coupon they alredy use");
+            throw {
+                message: "You already claimed this coupon",
+                type: "checked",
+            };
+        }
 
         // check coupon validity
         const validationResult = coupon.validateCoupon();

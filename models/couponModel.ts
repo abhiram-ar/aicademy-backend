@@ -1,4 +1,5 @@
 import mongoose, { Document, Model } from "mongoose";
+import { IUser } from "./userModel";
 
 export interface ICoupon extends Document {
     code: string;
@@ -7,7 +8,7 @@ export interface ICoupon extends Document {
     discount: number;
     expiryDate: Date;
     usageLimit: number;
-    usedBy: mongoose.Types.ObjectId;
+    usedBy: mongoose.Types.ObjectId[];
     maxDiscountAmount: number;
     minPurchaseAmount: number;
     validateCoupon: () => {
