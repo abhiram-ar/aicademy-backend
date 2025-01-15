@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import reviewModel, { IReview } from "../models/reviewModel";
 import { URequest } from "./userCartControllers";
 import { logErrorMessage } from "../utils/log";
@@ -208,12 +208,12 @@ export const editReview = async (
     }
 };
 
-export const fetchPublicReview = async (req: URequest, res: Response) => {
+export const fetchPublicCourseReviewList = async (
+    req: Request,
+    res: Response
+): Promise<any> => {
     try {
-        const { courseId, limit = "" } = req.query as {
-            courseId: string;
-            limit?: string;
-        };
+        const { courseId, limit = 8, page = 1 } = req.query;
 
         if (!courseId) {
             return res.status(400).json({
@@ -222,9 +222,29 @@ export const fetchPublicReview = async (req: URequest, res: Response) => {
             });
         }
 
-        await reviewModel
-            .find({ courseId })
-            .limit(limit !== "" ? parseInt(limit) : 0); // 0 means no limit in mongoDB
+        const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
+
+        const result = await reviewModel
+            .find({ courseId, review: { $exists: true, $ne: "" } })
+            .sort({ updatedAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit as string)) // 0 means no limit in mongoDB
+            .populate({
+                path: "createdBy",
+                select: "firstName lastName profilePicture.url",
+            });
+
+        const totalMatch = await reviewModel.find({ courseId });
+
+        res.status(200).json({
+            success: true,
+            message: "course review list fetched sucessfully",
+            length: result.length,
+            pages: Math.ceil(
+                totalMatch.length / parseInt(limit as string) || 1
+            ),
+            reviews: result,
+        });
     } catch (error) {
         logErrorMessage("errro while fething coursr review");
         logErrorMessage(error.message);
