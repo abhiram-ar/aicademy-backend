@@ -25,7 +25,7 @@ export const fetchCourses = async (
             limit = 5,
         } = req.query;
 
-        const filter: FilterQuery<ICourse> = {};
+        const filter: FilterQuery<ICourse> = { courseState: "published" };
 
         if (search) {
             filter.title = { $regex: search as string, $options: "i" };
