@@ -79,7 +79,7 @@ export const fetchCoupons = async (
         const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
         const couponList = await couponModel
             .find(filter)
-            .sort({ [sortBy as string]: -1 })
+            .sort({ expiryDate: -1 })
             .skip(skip)
             .limit(parseInt(limit as string));
 
