@@ -32,7 +32,7 @@ export const createOrder = async (
         // get cart sum
         let amount = cart.totalAmount().totalPrice;
 
-        // todo: deduce amoount for coupon
+        // deduce amoount for coupon
         const couponDetails: { code?: string; couponDiscount?: number } = {};
         if (cart.couponApplied) {
             const appliedCoupon = cart.couponApplied as ICoupon;
