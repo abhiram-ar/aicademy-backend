@@ -94,19 +94,25 @@ const handleTranscriptAndEmbedding = async () => {
 };
 
 const processJob = async (key: string) => {
-    const videoPath = await donwloadFileFromS3(
-        key,
-        path.join(__dirname, '..', '..', 'temp', 'downloads')
-    );
-    const audioPath = await extractAudio(videoPath as string);
-    const transcriptResult = await extractTranscriptFromAudio(audioPath);
-    const isSuccessful = await preComputeEmbedding(transcriptResult.text, key);
+    let videoPath: unknown | undefined;
+    let audioPath: string | undefined;
+    try {
+        videoPath = await donwloadFileFromS3(
+            key,
+            path.join(__dirname, '..', '..', 'temp', 'downloads')
+        );
+        const audioPath = await extractAudio(videoPath as string);
+        const transcriptResult = await extractTranscriptFromAudio(audioPath);
+        const isSuccessful = await preComputeEmbedding(transcriptResult.text, key);
 
-    // cleanup
-    await fs.unlink(videoPath as string).then(() => console.log(`Deleted video ${videoPath}`)); //async in production
-    await fs.unlink(audioPath as string).then(() => console.log(`Deleted Audio ${audioPath}`)); //async in production
-
-    return isSuccessful;
+        return isSuccessful;
+    } catch (error) {
+        throw error;
+    } finally {
+        // cleanup
+        await fs.unlink(videoPath as string).then(() => console.log(`Deleted video ${videoPath}`)); //async in production
+        await fs.unlink(audioPath as string).then(() => console.log(`Deleted Audio ${audioPath}`)); //async in production
+    }
 };
 
 handleTranscriptAndEmbedding();
