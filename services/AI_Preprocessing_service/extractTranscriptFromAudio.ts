@@ -1,10 +1,10 @@
-import { logErrorMessage, logSuccess } from '../../utils/log';
+import { logErrorMessage, logSuccessWithTimestamp, logWithTimestamp } from '../../utils/log';
 import assemblyAIClient from './AssemblyAIConfig';
 
 export const extractTranscriptFromAudio = async (
     audioPath: string
 ): Promise<{ text: string; id: string }> => {
-    console.log('extracting transcript...');
+    logWithTimestamp('extracting transcript...');
 
     const startTime = Date.now();
     const transcript = await assemblyAIClient.transcripts.transcribe({
@@ -12,7 +12,7 @@ export const extractTranscriptFromAudio = async (
         speech_model: 'nano', //change to 'best' in production
     });
     const timeTaken = Date.now() - startTime;
-    logSuccess(`transcript extraction completed in ${timeTaken}ms`);
+    logSuccessWithTimestamp(`transcript extraction completed in ${timeTaken}ms`);
 
     if (transcript.error) {
         logErrorMessage('error while extracting transcript');
