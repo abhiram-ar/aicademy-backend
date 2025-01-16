@@ -1,5 +1,10 @@
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { logErrorMessage, logSuccess } from '../../utils/log';
+import {
+    logErrorMessage,
+    logSuccess,
+    logSuccessWithTimestamp,
+    logWithTimestamp,
+} from '../../utils/log';
 import path from 'path';
 import fs from 'fs';
 import * as dotenv from 'dotenv';
@@ -22,7 +27,7 @@ export const donwloadFileFromS3 = async (fileKey: string, downloadPath: string) 
             Key: fileKey,
         });
 
-        console.log('downloading file....', path.basename(fileKey));
+        logWithTimestamp('downloading file.... ' + path.basename(fileKey));
         const response = await s3.send(command);
 
         return new Promise((resolve, reject) => {
@@ -35,7 +40,7 @@ export const donwloadFileFromS3 = async (fileKey: string, downloadPath: string) 
             responseStream.pipe(fileStream);
 
             fileStream.on('finish', () => {
-                logSuccess('file downloded successfully');
+                logSuccessWithTimestamp('file downloded successfully');
                 resolve(filePath);
             });
 
