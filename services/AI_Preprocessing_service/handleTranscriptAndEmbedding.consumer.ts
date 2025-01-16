@@ -1,9 +1,17 @@
 import amqp, { Channel, Connection } from 'amqplib';
-import { logErrorMessage, logSuccess, logWarning } from './../../utils/log';
+import {
+    logErrorMessage,
+    logSuccess,
+    logSuccessWithTimestamp,
+    logWarning,
+    logWithTimestamp,
+} from './../../utils/log';
 import { donwloadFileFromS3 } from './downloadFileFromS3';
 import path from 'path';
 import { extractAudio } from './extractAudioFromvideo';
 import { extractTranscriptFromAudio } from './extractTranscriptFromAudio';
+import { preComputeEmbedding } from './preComputeEmbedding';
+import fs from 'fs/promises';
 // import s3 from '../aws.S3Client'; //use when integration is live integration
 
 export const jobExchange = 'jobExchange';
@@ -41,7 +49,7 @@ const handleTranscriptAndEmbedding = async () => {
                 if (!message) return;
 
                 const content = JSON.parse(message.content.toString());
-                logSuccess(`Received new job: ${JSON.stringify(content)}`);
+                logWithTimestamp(`Received new job: ${JSON.stringify(content)}`);
 
                 try {
                     const startTime = Date.now();
@@ -49,7 +57,9 @@ const handleTranscriptAndEmbedding = async () => {
                     const timeTaken = Date.now() - startTime;
 
                     channel.ack(message);
-                    logSuccess(`Completed job: ${JSON.stringify(content)} in ${timeTaken}ms \n`);
+                    logSuccessWithTimestamp(
+                        `Completed job: ${JSON.stringify(content)} in ${timeTaken}ms \n`
+                    );
                 } catch (error) {
                     logErrorMessage('error while proceesing transcript and embeddiing job');
                     logErrorMessage(error.message);
@@ -89,9 +99,14 @@ const processJob = async (key: string) => {
         path.join(__dirname, '..', '..', 'temp', 'downloads')
     );
     const audioPath = await extractAudio(videoPath as string);
-    const transcript = await extractTranscriptFromAudio(audioPath);
-    console.log(transcript);
-    return 'transcript';
+    const transcriptResult = await extractTranscriptFromAudio(audioPath);
+    const isSuccessful = await preComputeEmbedding(transcriptResult.text, key);
+
+    // cleanup
+    await fs.unlink(videoPath as string).then(() => console.log(`Deleted video ${videoPath}`)); //async in production
+    await fs.unlink(audioPath as string).then(() => console.log(`Deleted Audio ${audioPath}`)); //async in production
+
+    return isSuccessful;
 };
 
 handleTranscriptAndEmbedding();
