@@ -110,8 +110,15 @@ const processJob = async (key: string) => {
         throw error;
     } finally {
         // cleanup
-        await fs.unlink(videoPath as string).then(() => console.log(`Deleted video ${videoPath}`)); //async in production
-        await fs.unlink(audioPath as string).then(() => console.log(`Deleted Audio ${audioPath}`)); //async in production
+        if (videoPath)
+            await fs
+                .unlink(videoPath as string)
+                .then(() => console.log(`Deleted video ${videoPath}`)); //async in production
+
+        if (audioPath)
+            await fs
+                .unlink(audioPath as string)
+                .then(() => console.log(`Deleted Audio ${audioPath}`)); //async in production
     }
 };
 
