@@ -1,11 +1,3 @@
-import amqp, { Channel, Connection } from 'amqplib';
-import {
-    logErrorMessage,
-    logSuccess,
-    logSuccessWithTimestamp,
-    logWarning,
-    logWithTimestamp,
-} from './../../utils/log';
 import { donwloadFileFromS3 } from './downloadFileFromS3';
 import path from 'path';
 import { extractAudio } from './extractAudioFromvideo';
@@ -14,6 +6,14 @@ import { preComputeEmbedding } from './preComputeEmbedding';
 import fs from 'fs/promises';
 import videoModel from '../../models/video.model';
 import connectDB from '../../config/mongoose';
+import amqp, { Channel, Connection } from 'amqplib';
+import {
+    logErrorMessage,
+    logSuccess,
+    logSuccessWithTimestamp,
+    logWarning,
+    logWithTimestamp,
+} from './../../utils/log';
 
 export const jobExchange = 'jobExchange';
 export const transcriptAndEmbeddingRoutingKey = 'transcriptAndEmbeddingJob';
