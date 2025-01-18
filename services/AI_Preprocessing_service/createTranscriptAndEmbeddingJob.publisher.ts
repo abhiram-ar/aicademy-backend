@@ -1,4 +1,4 @@
-import amqp from "amqplib";
+import amqp from 'amqplib';
 import { logErrorMessage, logSuccess, logWarning } from './../../utils/log';
 
 // becareful when exporting these constancts as the function at end of this file will get executed
@@ -6,14 +6,14 @@ const jobExchange = 'jobExchange';
 const transcriptAndEmbeddingRoutingKey = 'transcriptAndEmbeddingJob';
 const trancscriptAndEmbeddingQueue = 'createTranscriptAndEmbeddingJobQueue';
 
-const createTranscriptAndEmbeddingJob = async (key: string) => {
+export const createTranscriptAndEmbeddingJob = async (key: string, videoId: string) => {
     const connection = await amqp.connect('amqp://localhost');
     logSuccess('rabbitmq connected');
 
     const channel = await connection.createChannel();
 
     try {
-        const message = { key };
+        const message = { key, videoId };
 
         await channel.assertExchange(jobExchange, 'direct', { durable: true });
 
@@ -51,4 +51,5 @@ const createTranscriptAndEmbeddingJob = async (key: string) => {
     }
 };
 
-createTranscriptAndEmbeddingJob('6762d2e79e4e6d9d0f66202d/Elon.mp4');
+// test
+// createTranscriptAndEmbeddingJob('6762d2e79e4e6d9d0f66202d/Elon.mp4');

@@ -1,3 +1,11 @@
+import { donwloadFileFromS3 } from './downloadFileFromS3';
+import path from 'path';
+import { extractAudio } from './extractAudioFromvideo';
+import { extractTranscriptFromAudio } from './extractTranscriptFromAudio';
+import { preComputeEmbedding } from './preComputeEmbedding';
+import fs from 'fs/promises';
+import videoModel from '../../models/video.model';
+import connectDB from '../../config/mongoose';
 import amqp, { Channel, Connection } from 'amqplib';
 import {
     logErrorMessage,
@@ -6,13 +14,6 @@ import {
     logWarning,
     logWithTimestamp,
 } from './../../utils/log';
-import { donwloadFileFromS3 } from './downloadFileFromS3';
-import path from 'path';
-import { extractAudio } from './extractAudioFromvideo';
-import { extractTranscriptFromAudio } from './extractTranscriptFromAudio';
-import { preComputeEmbedding } from './preComputeEmbedding';
-import fs from 'fs/promises';
-// import s3 from '../aws.S3Client'; //use when integration is live integration
 
 export const jobExchange = 'jobExchange';
 export const transcriptAndEmbeddingRoutingKey = 'transcriptAndEmbeddingJob';
@@ -41,7 +42,7 @@ const handleTranscriptAndEmbedding = async () => {
         logWarning(`Waiting for messages in queue: ${trancscriptAndEmbeddingQueue}`);
 
         // handle one job at a time - increase this in production
-        // channel.prefetch(1);
+        channel.prefetch(1);
 
         channel.consume(
             trancscriptAndEmbeddingQueue,
@@ -53,7 +54,7 @@ const handleTranscriptAndEmbedding = async () => {
 
                 try {
                     const startTime = Date.now();
-                    await processJob(content.key);
+                    await processJob(content.key, content.videoId);
                     const timeTaken = Date.now() - startTime;
 
                     channel.ack(message);
@@ -93,20 +94,31 @@ const handleTranscriptAndEmbedding = async () => {
     }
 };
 
-const processJob = async (key: string) => {
+const processJob = async (key: string, videoId: string) => {
     let videoPath: unknown | undefined;
     let audioPath: string | undefined;
     try {
-        videoPath = await donwloadFileFromS3(
-            key,
-            path.join(__dirname, '..', '..', 'temp', 'downloads')
-        );
-        const audioPath = await extractAudio(videoPath as string);
+        const downloadPath = path.join(__dirname, '..', '..', 'temp', 'downloads');
+        // each function can be further separted in to individual jobs in future
+        videoPath = await donwloadFileFromS3(key, downloadPath);
+        audioPath = await extractAudio(videoPath as string);
         const transcriptResult = await extractTranscriptFromAudio(audioPath);
-        const isSuccessful = await preComputeEmbedding(transcriptResult.text, key);
+        await preComputeEmbedding(transcriptResult.text, key);
+
+        const isSuccessful = await videoModel.findByIdAndUpdate(videoId, {
+            aiStatus: 'ready',
+            transcriptId: transcriptResult.id,
+        });
+        if (!isSuccessful) {
+            throw new Error('Unable update the video DB record');
+        }
+        logSuccessWithTimestamp('Updated video status in DB');
 
         return isSuccessful;
     } catch (error) {
+        await videoModel.findByIdAndUpdate(videoId, {
+            aiStatus: 'failed',
+        });
         throw error;
     } finally {
         // cleanup
@@ -122,4 +134,5 @@ const processJob = async (key: string) => {
     }
 };
 
+connectDB();
 handleTranscriptAndEmbedding();

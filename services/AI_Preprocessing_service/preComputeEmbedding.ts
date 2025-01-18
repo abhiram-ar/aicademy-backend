@@ -20,7 +20,10 @@ export const preComputeEmbedding = async (transcript: string, videoKey: string) 
     });
     logSuccessWithTimestamp('completed computing embedding and saved to Vector store');
 
-    return vectorStore ? true : false;
+    if (!vectorStore) {
+        throw new Error('Unable to create vector store from transctipt');
+    }
+    return;
 };
 
 const embedding = new OpenAIEmbeddings({
