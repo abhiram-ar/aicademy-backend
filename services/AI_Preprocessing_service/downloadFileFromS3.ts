@@ -1,24 +1,21 @@
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import {
-    logErrorMessage,
-    logSuccess,
-    logSuccessWithTimestamp,
-    logWithTimestamp,
-} from '../../utils/log';
+import { logErrorMessage, logSuccessWithTimestamp, logWithTimestamp } from '../../utils/log';
 import path from 'path';
 import fs from 'fs';
-import * as dotenv from 'dotenv';
-dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
+import s3 from './../../services/aws.S3Client';
 import { Readable } from 'stream';
 
-// cleanup and use s3 from config
-const s3 = new S3Client({
-    region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY as string,
-        secretAccessKey: process.env.AWS_SECRET_KEY as string,
-    },
-});
+// import * as dotenv from 'dotenv';
+// dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
+
+// // cleanup and use s3 from config
+// const s3 = new S3Client({
+//     region: process.env.AWS_REGION,
+//     credentials: {
+//         accessKeyId: process.env.AWS_ACCESS_KEY as string,
+//         secretAccessKey: process.env.AWS_SECRET_KEY as string,
+//     },
+// });
 
 export const donwloadFileFromS3 = async (fileKey: string, downloadPath: string) => {
     try {
