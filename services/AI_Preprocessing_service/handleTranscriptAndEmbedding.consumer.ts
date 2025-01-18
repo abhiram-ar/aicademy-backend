@@ -12,6 +12,8 @@ import { extractAudio } from './extractAudioFromvideo';
 import { extractTranscriptFromAudio } from './extractTranscriptFromAudio';
 import { preComputeEmbedding } from './preComputeEmbedding';
 import fs from 'fs/promises';
+import videoModel from '../../models/video.model';
+import connectDB from '../../config/mongoose';
 
 export const jobExchange = 'jobExchange';
 export const transcriptAndEmbeddingRoutingKey = 'transcriptAndEmbeddingJob';
@@ -96,13 +98,21 @@ const processJob = async (key: string, videoId: string) => {
     let videoPath: unknown | undefined;
     let audioPath: string | undefined;
     try {
-        videoPath = await donwloadFileFromS3(
-            key,
-            path.join(__dirname, '..', '..', 'temp', 'downloads')
-        );
-        const audioPath = await extractAudio(videoPath as string);
+        const downloadPath = path.join(__dirname, '..', '..', 'temp', 'downloads');
+        // each function can be further separted in to individual jobs in future
+        videoPath = await donwloadFileFromS3(key, downloadPath);
+        audioPath = await extractAudio(videoPath as string);
         const transcriptResult = await extractTranscriptFromAudio(audioPath);
-        const isSuccessful = await preComputeEmbedding(transcriptResult.text, key);
+        await preComputeEmbedding(transcriptResult.text, key);
+
+        const isSuccessful = await videoModel.findByIdAndUpdate(videoId, {
+            isAiReady: true,
+            transcriptId: transcriptResult.id,
+        });
+        if (!isSuccessful) {
+            throw new Error('Unable update the video DB record');
+        }
+        logSuccessWithTimestamp('Updated video status in DB');
 
         return isSuccessful;
     } catch (error) {
@@ -121,4 +131,5 @@ const processJob = async (key: string, videoId: string) => {
     }
 };
 
+connectDB();
 handleTranscriptAndEmbedding();

@@ -7,6 +7,8 @@ interface IVideo extends Document {
     key: string;
     originalFileSize: number;
     originalFileType: number;
+    isAiReady: boolean;
+    transcriptId?: string;
 }
 
 const videoSchema = new mongoose.Schema<IVideo>(
@@ -30,6 +32,9 @@ const videoSchema = new mongoose.Schema<IVideo>(
         },
         originalFileSize: { type: Number },
         originalFileType: String,
+
+        isAiReady: { type: Boolean, default: false },
+        transcriptId: { type: String },
     },
     { timestamps: true }
 );
