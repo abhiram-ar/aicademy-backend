@@ -106,7 +106,7 @@ const processJob = async (key: string, videoId: string) => {
         await preComputeEmbedding(transcriptResult.text, key);
 
         const isSuccessful = await videoModel.findByIdAndUpdate(videoId, {
-            isAiReady: true,
+            aiStatus: 'ready',
             transcriptId: transcriptResult.id,
         });
         if (!isSuccessful) {
@@ -116,6 +116,9 @@ const processJob = async (key: string, videoId: string) => {
 
         return isSuccessful;
     } catch (error) {
+        await videoModel.findByIdAndUpdate(videoId, {
+            aiStatus: 'failed',
+        });
         throw error;
     } finally {
         // cleanup
