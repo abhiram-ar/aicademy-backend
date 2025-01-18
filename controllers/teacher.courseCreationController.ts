@@ -300,7 +300,7 @@ export const saveVideoMetadata = async (req: TRequest, res: Response): Promise<a
 
         console.log('saved video', result);
         // schedule the video to be processed for AI
-        createTranscriptAndEmbeddingJob(result.key);
+        await createTranscriptAndEmbeddingJob(result.key, result.id);
 
         return res.status(200).json({
             success: true,

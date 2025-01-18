@@ -12,7 +12,6 @@ import { extractAudio } from './extractAudioFromvideo';
 import { extractTranscriptFromAudio } from './extractTranscriptFromAudio';
 import { preComputeEmbedding } from './preComputeEmbedding';
 import fs from 'fs/promises';
-// import s3 from '../aws.S3Client'; //use when integration is live integration
 
 export const jobExchange = 'jobExchange';
 export const transcriptAndEmbeddingRoutingKey = 'transcriptAndEmbeddingJob';
@@ -41,7 +40,7 @@ const handleTranscriptAndEmbedding = async () => {
         logWarning(`Waiting for messages in queue: ${trancscriptAndEmbeddingQueue}`);
 
         // handle one job at a time - increase this in production
-        // channel.prefetch(1);
+        channel.prefetch(1);
 
         channel.consume(
             trancscriptAndEmbeddingQueue,
@@ -53,7 +52,7 @@ const handleTranscriptAndEmbedding = async () => {
 
                 try {
                     const startTime = Date.now();
-                    await processJob(content.key);
+                    await processJob(content.key, content.videoId);
                     const timeTaken = Date.now() - startTime;
 
                     channel.ack(message);
@@ -93,7 +92,7 @@ const handleTranscriptAndEmbedding = async () => {
     }
 };
 
-const processJob = async (key: string) => {
+const processJob = async (key: string, videoId: string) => {
     let videoPath: unknown | undefined;
     let audioPath: string | undefined;
     try {

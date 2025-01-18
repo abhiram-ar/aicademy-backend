@@ -6,14 +6,14 @@ const jobExchange = 'jobExchange';
 const transcriptAndEmbeddingRoutingKey = 'transcriptAndEmbeddingJob';
 const trancscriptAndEmbeddingQueue = 'createTranscriptAndEmbeddingJobQueue';
 
-export const createTranscriptAndEmbeddingJob = async (key: string) => {
+export const createTranscriptAndEmbeddingJob = async (key: string, videoId: string) => {
     const connection = await amqp.connect('amqp://localhost');
     logSuccess('rabbitmq connected');
 
     const channel = await connection.createChannel();
 
     try {
-        const message = { key };
+        const message = { key, videoId };
 
         await channel.assertExchange(jobExchange, 'direct', { durable: true });
 
