@@ -1,21 +1,30 @@
-import mongoose from "mongoose";
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
-const videoSchema = new mongoose.Schema(
+interface IVideo extends Document {
+    uploadedBy: mongoose.Types.ObjectId;
+    courseId: mongoose.Types.ObjectId;
+    displayName: string;
+    key: string;
+    originalFileSize: number;
+    originalFileType: number;
+}
+
+const videoSchema = new mongoose.Schema<IVideo>(
     {
         uploadedBy: {
-            type: mongoose.Types.ObjectId,
-            ref: "Teacher",
+            type: Schema.Types.ObjectId,
+            ref: 'Teacher',
             required: true,
         },
         courseId: {
-            type: mongoose.Types.ObjectId,
-            ref: "Course",
+            type: Schema.Types.ObjectId,
+            ref: 'Course',
             required: true,
         },
         displayName: { type: String, required: true },
         key: {
             type: String,
-            required: [true, "video s3 required"],
+            required: [true, 'video s3 required'],
             unique: true,
             index: true,
         },
@@ -25,5 +34,5 @@ const videoSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-const videoModel = mongoose.model("Video", videoSchema);
+const videoModel: Model<IVideo> = mongoose.model('Video', videoSchema);
 export default videoModel;
