@@ -45,7 +45,7 @@ wss.on('connection', (ws: WebSocket, request: IncomingMessage, connectingClientU
         console.error('Websocket error', { message: err.message, client: connectingClientUserId });
     });
 
-    ws.on('message', handleRAGQuestion);
+    ws.on('message', (msg) => handleRAGQuestion(msg, ws));
 
     ws.on('close', () => {
         console.log(`Closing websocket connection for {userId:${connectingClientUserId}}`);
