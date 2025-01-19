@@ -12,17 +12,13 @@ const wishlistSchema = new mongoose.Schema<IWishlist>(
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true,
-            unique: true,
         },
         courses: [{ type: mongoose.Types.ObjectId, ref: "Course" }],
     },
     { timestamps: true }
 );
 
-wishlistSchema.index({ userId: 1 });
+wishlistSchema.index({ userId: 1 }, { unique: true });
 
-const wishlistModel: Model<IWishlist> = mongoose.model(
-    "Wishlist",
-    wishlistSchema
-);
+const wishlistModel: Model<IWishlist> = mongoose.model("Wishlist", wishlistSchema);
 export default wishlistModel;
