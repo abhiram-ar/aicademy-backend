@@ -10,7 +10,7 @@ export const handleRAGQuestion = async (msg, ws: WebSocket) => {
             title: data.title,
             key: data.key,
         });
-        console.log(response);
+        // console.log(response);
 
         if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(response.answer)); //send answer.content to save bandwidth
     } catch (error) {
