@@ -4,6 +4,8 @@ import connectDB from './config/mongoose.ts';
 import { WebSocketServer, WebSocket } from 'ws';
 import { authenticateWSClient } from './Websocket/authenticateClient.ts';
 import { onPreSocketError } from './Websocket/onPreSocketError.ts';
+import { IncomingMessage } from 'http';
+import { logErrorMessage, logSuccess } from './utils/log.ts';
 
 connectDB();
 
@@ -15,6 +17,7 @@ const httpServer = app.listen(PORT, () => {
 const wss = new WebSocketServer({ noServer: true });
 
 httpServer.on('upgrade', async (req, socket, head) => {
+    // listen for error events which might occur during connection updrade process
     socket.on('error', (error) => onPreSocketError(error, socket));
 
     let client: string | undefined;
@@ -22,6 +25,7 @@ httpServer.on('upgrade', async (req, socket, head) => {
         client = await authenticateWSClient(req);
         if (!client) throw new Error('no client found');
     } catch (error) {
+        console.log(error);
         socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
         socket.destroy();
         return;
@@ -33,19 +37,27 @@ httpServer.on('upgrade', async (req, socket, head) => {
     });
 });
 
-wss.on('connection', (ws, request) => {
-    ws.on('error', console.error);
+wss.on('connection', (ws: WebSocket, request: IncomingMessage, connectingClient: string) => {
+    logSuccess(`New connection established: userId:${connectingClient}`);
+
+    ws.on('error', (err) => {
+        console.error('Websocket error', { message: err.message, client: connectingClient });
+    });
+
     ws.on('message', (msg, isBinary) => {
-        console.log('recived message:' + msg);
-        wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send('hello from server');
-            }
-        });
+        try {
+            const data = JSON.parse(msg as unknown as string);
+            // response function
+            if (ws.readyState === WebSocket.OPEN) ws.send('This is your new response', data);
+        } catch (error) {
+            logErrorMessage('failed to parse of send message');
+            console.log(error);
+            ws.send('Something went wrong!');
+        }
     });
 
     ws.on('close', () => {
-        console.log('closing  ws connection');
-        //cleanup
+        console.log(`Closing websocket connection for {userId:${connectingClient}}`);
+        //furthur cleanup if necessary
     });
 });
