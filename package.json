@@ -2,6 +2,7 @@
     "name": "aicademy-backend",
     "version": "1.0.0",
     "description": "",
+    "type": "module",
     "main": "server.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -13,6 +14,7 @@
         "@aws-sdk/client-s3": "^3.716.0",
         "@aws-sdk/s3-request-presigner": "^3.716.0",
         "@langchain/core": "^0.3.30",
+        "@langchain/langgraph": "^0.2.41",
         "@langchain/openai": "^0.3.17",
         "@langchain/qdrant": "^0.1.1",
         "@types/amqplib": "^0.10.6",
@@ -36,12 +38,15 @@
         "morgan": "^1.10.0",
         "multer": "^1.4.5-lts.1",
         "nodemailer": "^6.9.16",
-        "razorpay": "^2.9.5"
+        "razorpay": "^2.9.5",
+        "ws": "^8.18.0"
     },
     "devDependencies": {
         "@types/cookie-parser": "^1.4.8",
+        "@types/jsonwebtoken": "^9.0.7",
         "@types/morgan": "^1.9.9",
         "@types/node": "^22.10.5",
+        "@types/ws": "^8.5.13",
         "tsx": "^4.19.2"
     }
 }
