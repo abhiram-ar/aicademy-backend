@@ -19,7 +19,7 @@ export interface ICoupon extends Document {
 
 const couponSchema = new mongoose.Schema<ICoupon>(
     {
-        code: { type: String, required: true, index: true, unique: true },
+        code: { type: String, required: true },
         description: String,
         isActive: { type: Boolean, default: true },
         discount: { type: Number, required: true },
@@ -56,7 +56,7 @@ couponSchema.methods.validateCoupon = function () {
     return { success: true };
 };
 
-couponSchema.index({ code: 1 });
+couponSchema.index({ code: 1 }, { unique: true });
 
 const couponModel: Model<ICoupon> = mongoose.model("Coupon", couponSchema);
 export default couponModel;

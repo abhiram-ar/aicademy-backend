@@ -15,7 +15,6 @@ const cartSchema = new mongoose.Schema<ICart>(
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true,
-            unique: true,
         },
         courses: [{ type: mongoose.Types.ObjectId, ref: "Course" }],
         couponApplied: { type: mongoose.Types.ObjectId, ref: "Coupon" },
@@ -23,7 +22,7 @@ const cartSchema = new mongoose.Schema<ICart>(
     { timestamps: true }
 );
 
-cartSchema.index({ userId: 1 });
+cartSchema.index({ userId: 1 }, { unique: true });
 
 cartSchema.methods.totalAmount = function () {
     return this.courses.reduce(
@@ -31,8 +30,7 @@ cartSchema.methods.totalAmount = function () {
             const course = current as unknown as ICourse;
             return {
                 totalPrice: total.totalPrice + (course.price ?? 0),
-                estimatedTotal:
-                    total.estimatedTotal + (course.estimatedPrice ?? 0),
+                estimatedTotal: total.estimatedTotal + (course.estimatedPrice ?? 0),
             };
         },
         { totalPrice: 0, estimatedTotal: 0 }

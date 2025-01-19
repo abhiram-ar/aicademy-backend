@@ -80,7 +80,7 @@ const courseSchema = new Schema<ICourse>(
     { timestamps: true }
 );
 
-courseSchema.index({ title: "text" });
+courseSchema.index({ title: 1 });
 courseSchema.index({ category: 1 });
 courseSchema.index({ price: 1 });
 
