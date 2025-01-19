@@ -6,6 +6,7 @@ import { authenticateWSClient } from './Websocket/authenticateClient.ts';
 import { onPreSocketError } from './Websocket/onPreSocketError.ts';
 import { IncomingMessage } from 'http';
 import { logErrorMessage, logSuccess } from './utils/log.ts';
+import graph from './Websocket/RAG-agent.ts';
 
 connectDB();
 
@@ -44,11 +45,18 @@ wss.on('connection', (ws: WebSocket, request: IncomingMessage, connectingClientU
         console.error('Websocket error', { message: err.message, client: connectingClientUserId });
     });
 
-    ws.on('message', (msg) => {
+    ws.on('message', async (msg) => {
         try {
             const data = JSON.parse(msg as unknown as string);
-            // response function
-            if (ws.readyState === WebSocket.OPEN) ws.send('This is your new response', data);
+            const response = await graph.invoke({
+                question: data.question,
+                title: data.title,
+                key: data.key,
+            });
+            console.log(response);
+
+            if (ws.readyState === WebSocket.OPEN)
+                ws.send('This is your new response:' + response.answer.content);
         } catch (error) {
             logErrorMessage('failed to parse of send message');
             console.log(error);
