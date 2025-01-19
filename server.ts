@@ -37,14 +37,14 @@ httpServer.on('upgrade', async (req, socket, head) => {
     });
 });
 
-wss.on('connection', (ws: WebSocket, request: IncomingMessage, connectingClient: string) => {
-    logSuccess(`New connection established: userId:${connectingClient}`);
+wss.on('connection', (ws: WebSocket, request: IncomingMessage, connectingClientUserId: string) => {
+    logSuccess(`New connection established: userId:${connectingClientUserId}`);
 
     ws.on('error', (err) => {
-        console.error('Websocket error', { message: err.message, client: connectingClient });
+        console.error('Websocket error', { message: err.message, client: connectingClientUserId });
     });
 
-    ws.on('message', (msg, isBinary) => {
+    ws.on('message', (msg) => {
         try {
             const data = JSON.parse(msg as unknown as string);
             // response function
@@ -57,7 +57,7 @@ wss.on('connection', (ws: WebSocket, request: IncomingMessage, connectingClient:
     });
 
     ws.on('close', () => {
-        console.log(`Closing websocket connection for {userId:${connectingClient}}`);
+        console.log(`Closing websocket connection for {userId:${connectingClientUserId}}`);
         //furthur cleanup if necessary
     });
 });
