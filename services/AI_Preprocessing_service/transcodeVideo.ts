@@ -1,7 +1,6 @@
 import fs, { glob, globSync } from "fs";
 import path from "path";
 import ffmpeg from "fluent-ffmpeg";
-import fsPromises from "fs/promises";
 
 type Resolution = { height: number; bitrate: string; name: string };
 
@@ -129,10 +128,7 @@ class TranscodingJob {
     //     return Math.round((height * 16) / 9);
     // }
 
-    async uploadToS3() {
-        const files = fs.readdirSync(this.outputDir);
-        console.log(files);
-    }
+    async uploadToS3() {}
 }
 
 const job = new TranscodingJob(
