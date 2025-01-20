@@ -1,6 +1,10 @@
-import fs, { glob, globSync } from "fs";
+import fs, { readFileSync } from "fs";
 import path from "path";
 import ffmpeg from "fluent-ffmpeg";
+import { glob } from "glob";
+import mime from "mime";
+import s3 from "../aws.S3Client";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 
 type Resolution = { height: number; bitrate: string; name: string };
 
@@ -14,10 +18,10 @@ class TranscodingJob {
     inputPath: string;
     outputDir: string;
     jobId: string;
-    s3Bucket: "pending" | "failed" | "completed";
-    status: string;
+    s3Bucket: string;
+    status: "pending" | "failed" | "completed";
     s3Prefix: any;
-    uploadedFiles: never[];
+    uploadedFiles: { localPath: string; s3Key: string }[];
     completedStreams: number;
 
     constructor(inputPath, outputDir, jobId, s3Bucket, s3Prefix) {
@@ -37,15 +41,16 @@ class TranscodingJob {
         }
 
         //masterplaylist
-        // const masterplaylist = this.createMasterPlaylist();
-        // fs.writeFileSync(path.join(this.outputDir, "master.m3u8"), masterplaylist);
+        const masterplaylist = this.createMasterPlaylist();
+        fs.writeFileSync(path.join(this.outputDir, "master.m3u8"), masterplaylist);
 
         // single thread for the entire process
         // for (let resolution of RESOLUTIONS) {
         //     await this.transcodeToResulution(resolution);
         // }
-        //-a thread for a resolution - do if this service is running on separate instance
-        // await Promise.all(RESOLUTIONS.map((resolution) => this.transcodeToResulution(resolution)));
+
+        // -a thread for a resolution - do if this service is running on separate instance - microservice
+        await Promise.all(RESOLUTIONS.map((resolution) => this.transcodeToResulution(resolution)));
 
         // upload all files to s3
         await this.uploadToS3();
@@ -128,15 +133,46 @@ class TranscodingJob {
     //     return Math.round((height * 16) / 9);
     // }
 
-    async uploadToS3() {}
+    async uploadToS3() {
+        const files = await glob("**/*", { cwd: this.outputDir, nodir: true });
+        // console.log(files);
+
+        for (let [index, file] of files.entries()) {
+            const filePath = path.join(this.outputDir, file);
+            const s3Key = path.join(this.s3Prefix, file);
+            const contentType = mime.lookup(filePath) || "application/octet-stream";
+            const fileContent = readFileSync(filePath);
+
+            console.log(`uploading: ${index}/${files.length}`);
+            await s3.send(
+                new PutObjectCommand({
+                    Bucket: this.s3Bucket,
+                    Key: s3Key,
+                    Body: fileContent,
+                    ContentType: contentType,
+                    CacheControl: this.getCacheControl(file),
+                })
+            );
+
+            this.uploadedFiles.push({
+                localPath: filePath,
+                s3Key,
+            });
+        }
+    }
+
+    getCacheControl(file: string) {
+        if (file.endsWith(".m3u8")) return "no-cache";
+        else "public, max-age:2628000"; //one month
+    }
 }
 
 const job = new TranscodingJob(
     "/home/abhiram/Bootcamp/week-10/AIcademy/backend/temp/downloads/elon.mp4",
-    "/home/abhiram/Bootcamp/week-10/AIcademy/backend/temp/downloads/transcoded",
+    "/home/abhiram/Bootcamp/week-10/AIcademy/backend/temp/downloads/transcoded2/",
     "",
-    "",
-    ""
+    process.env.AWS_S3_BUCKET_NAME,
+    "elon"
 );
 
 job.start();
