@@ -1,6 +1,6 @@
-import { WebSocket } from 'ws';
-import { logErrorMessage } from '../utils/log';
-import graph from './RAG-agent';
+import { WebSocket } from "ws";
+import { logErrorMessage } from "../utils/log";
+import graph from "./RAG-agent";
 
 export const handleRAGQuestion = async (msg, ws: WebSocket) => {
     try {
@@ -10,12 +10,13 @@ export const handleRAGQuestion = async (msg, ws: WebSocket) => {
             title: data.title,
             key: data.key,
         });
-        // console.log(response);
+        // console.log(response); //full response with usage
 
-        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(response.answer)); //send answer.content to save bandwidth
+        if (ws.readyState === WebSocket.OPEN)
+            ws.send((response.answer as unknown as { content: string }).content);
     } catch (error) {
-        logErrorMessage('failed to parse of send message');
+        logErrorMessage("failed to parse of send message");
         console.log(error);
-        ws.send('Something went wrong!');
+        ws.send("Something went wrong!");
     }
 };
