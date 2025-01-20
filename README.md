@@ -4,3 +4,4 @@ production changes,
 - [ ] increase the concurront ai preprocessing by increasing prefetch of rabbitmq
 - [ ] change file cleanup after processing video and audio to async
 - [ ] user production collection for qdrant
+- [ ] ws authication, change auth protorol to https in `authenticate client.ts`
