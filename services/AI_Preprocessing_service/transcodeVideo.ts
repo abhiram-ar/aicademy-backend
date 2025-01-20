@@ -1,6 +1,7 @@
-import fs from "fs";
+import fs, { glob, globSync } from "fs";
 import path from "path";
 import ffmpeg from "fluent-ffmpeg";
+import fsPromises from "fs/promises";
 
 type Resolution = { height: number; bitrate: string; name: string };
 
@@ -37,18 +38,18 @@ class TranscodingJob {
         }
 
         //masterplaylist
-        const masterplaylist = this.createMasterPlaylist();
-        fs.writeFileSync(path.join(this.outputDir, "master.m3u8"), masterplaylist);
+        // const masterplaylist = this.createMasterPlaylist();
+        // fs.writeFileSync(path.join(this.outputDir, "master.m3u8"), masterplaylist);
 
         // single thread for the entire process
         // for (let resolution of RESOLUTIONS) {
         //     await this.transcodeToResulution(resolution);
         // }
         //-a thread for a resolution - do if this service is running on separate instance
-        await Promise.all(RESOLUTIONS.map((resolution) => this.transcodeToResulution(resolution)));
+        // await Promise.all(RESOLUTIONS.map((resolution) => this.transcodeToResulution(resolution)));
 
         // upload all files to s3
-
+        await this.uploadToS3();
         //try catch
     }
 
@@ -124,8 +125,13 @@ class TranscodingJob {
         return playlist;
     }
 
-    calculateWidth(height: number) {
-        return Math.round((height * 16) / 9);
+    // calculateWidth(height: number) {
+    //     return Math.round((height * 16) / 9);
+    // }
+
+    async uploadToS3() {
+        const files = fs.readdirSync(this.outputDir);
+        console.log(files);
     }
 }
 
