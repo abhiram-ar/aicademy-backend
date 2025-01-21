@@ -98,6 +98,7 @@ const handleTranscriptAndEmbedding = async () => {
 const processJob = async (key: string, videoId: string) => {
     let videoPath: unknown | undefined;
     let audioPath: string | undefined;
+    let transcodeVideoAndUpload: TranscodingJob | undefined;
     const downloadPath = path.join(
         __dirname,
         "..",
@@ -120,13 +121,19 @@ const processJob = async (key: string, videoId: string) => {
         // each function can be further separted in to individual jobs in future
         videoPath = await donwloadFileFromS3(key, downloadPath);
 
-        const transcodeVideo = new TranscodingJob(
+        transcodeVideoAndUpload = new TranscodingJob(
             videoPath as string,
-            downloadPath,
+            path.join(downloadPath, "transcoded"),
             process.env.AWS_S3_BUCKET_NAME as string,
             path.join("transcoded", videoId)
         );
-        await transcodeVideo.start();
+        await transcodeVideoAndUpload.start();
+        if (transcodeVideoAndUpload.status === "completed") {
+            await videoModel.findByIdAndUpdate(videoId, {
+                transcodedVideoMasterFileKey: transcodeVideoAndUpload.masterFileKey,
+                transcodingStatus: "completed",
+            });
+        }
 
         audioPath = await extractAudio(videoPath as string);
         const transcriptResult = await extractTranscriptFromAudio(audioPath);
@@ -137,14 +144,20 @@ const processJob = async (key: string, videoId: string) => {
             transcriptId: transcriptResult.id,
         });
         if (!isSuccessful) throw new Error("Unable update the video DB record");
-
         logSuccessWithTimestamp("Updated video status in DB");
 
         return isSuccessful;
     } catch (error) {
+        if (transcodeVideoAndUpload && transcodeVideoAndUpload.status !== "completed") {
+            await videoModel.findByIdAndUpdate(videoId, {
+                transcodingStatus: "failed",
+            });
+        }
+
         await videoModel.findByIdAndUpdate(videoId, {
             aiStatus: "failed",
         });
+
         throw error;
     } finally {
         // cleanup

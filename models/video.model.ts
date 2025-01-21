@@ -9,7 +9,7 @@ interface IVideo extends Document {
     originalFileType: number;
     aiStatus: "processing" | "ready" | "failed";
     transcriptId?: string;
-    transcodingStatus: "processing" | "ready" | "failed";
+    transcodingStatus: "processing" | "completed" | "failed";
     transcodedVideoMasterFileKey?: string;
 }
 
@@ -40,7 +40,7 @@ const videoSchema = new mongoose.Schema<IVideo>(
 
         transcodingStatus: {
             type: String,
-            enum: ["processing", "ready", "failed"],
+            enum: ["processing", "completed", "failed"],
             default: "processing",
         },
         transcodedVideoMasterFileKey: { type: String },
