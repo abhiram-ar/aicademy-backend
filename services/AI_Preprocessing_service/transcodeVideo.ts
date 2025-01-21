@@ -170,12 +170,14 @@ class TranscodingJob {
     }
 }
 
-const job = new TranscodingJob(
-    "/home/abhiram/Bootcamp/week-10/AIcademy/backend/temp/downloads/elon.mp4",
-    "/home/abhiram/Bootcamp/week-10/AIcademy/backend/temp/downloads/transcoded2/",
-    process.env.AWS_S3_BUCKET_NAME as string,
-    "elon2"
-);
+export { TranscodingJob };
 
-job.start();
+// const job = new TranscodingJob(
+//     "/home/abhiram/Bootcamp/week-10/AIcademy/backend/temp/downloads/elon.mp4",
+//     "/home/abhiram/Bootcamp/week-10/AIcademy/backend/temp/downloads/transcoded2/",
+//     process.env.AWS_S3_BUCKET_NAME as string,
+//     "elon2"
+// );
+
+// job.start();
 // job.createMasterPlaylist();
