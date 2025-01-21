@@ -5,6 +5,7 @@ import { glob } from "glob";
 import mime from "mime";
 import s3 from "../aws.S3Client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { logErrorMessage } from "../../utils/log";
 
 type Resolution = { height: number; bitrate: string; name: string };
 
@@ -17,44 +18,54 @@ const RESOLUTIONS: Resolution[] = [
 class TranscodingJob {
     inputPath: string;
     outputDir: string;
-    jobId: string;
     s3Bucket: string;
     status: "pending" | "failed" | "completed";
-    s3Prefix: any;
+    s3Prefix: string;
     uploadedFiles: { localPath: string; s3Key: string }[];
     completedStreams: number;
+    masterFileKey: string | undefined;
 
-    constructor(inputPath, outputDir, jobId, s3Bucket, s3Prefix) {
+    constructor(inputPath: string, outputDir: string, s3Bucket: string, s3Prefix: string) {
         this.inputPath = inputPath;
         this.outputDir = outputDir;
-        this.jobId = jobId;
         this.s3Bucket = s3Bucket;
         this.status = "pending";
         this.s3Prefix = s3Prefix;
         this.completedStreams = 0;
         this.uploadedFiles = [];
+        this.masterFileKey = undefined;
     }
 
     async start() {
-        if (!fs.existsSync(this.outputDir)) {
-            fs.mkdirSync(this.outputDir, { recursive: true });
+        try {
+            if (!fs.existsSync(this.outputDir)) {
+                fs.mkdirSync(this.outputDir, { recursive: true });
+            }
+
+            // single thread for the entire process
+            // for (let resolution of RESOLUTIONS) {
+            //     await this.transcodeToResulution(resolution);
+            // }
+
+            // a thread for a resolution - do if this service is running on separate instance - microservice
+            await Promise.all(
+                RESOLUTIONS.map((resolution) => this.transcodeToResulution(resolution))
+            );
+
+            //masterplaylist
+            const masterplaylist = this.createMasterPlaylist();
+            fs.writeFileSync(path.join(this.outputDir, "master.m3u8"), masterplaylist);
+
+            // upload all files to s3
+            await this.uploadToS3();
+
+            this.masterFileKey = path.join(this.s3Prefix, "master.m3u8");
+            this.status = "completed";
+        } catch (error) {
+            this.status = "failed";
+            logErrorMessage("error while trancoding video");
+            throw error;
         }
-
-        //masterplaylist
-        const masterplaylist = this.createMasterPlaylist();
-        fs.writeFileSync(path.join(this.outputDir, "master.m3u8"), masterplaylist);
-
-        // single thread for the entire process
-        // for (let resolution of RESOLUTIONS) {
-        //     await this.transcodeToResulution(resolution);
-        // }
-
-        // -a thread for a resolution - do if this service is running on separate instance - microservice
-        await Promise.all(RESOLUTIONS.map((resolution) => this.transcodeToResulution(resolution)));
-
-        // upload all files to s3
-        await this.uploadToS3();
-        //try catch
     }
 
     transcodeToResulution(resolution: Resolution) {
@@ -67,7 +78,7 @@ class TranscodingJob {
             ffmpeg(this.inputPath)
                 .outputOption([
                     "-c:v libx264", // Use H.264 codec for video
-                    "-threads 8", // limit ffmpeg to use one thread
+                    "-threads 8", // limit ffmpeg to use one thread in monolith
                     "-profile:v baseline", // Baseline profile for compatibility
                     "-preset fast", // Encoding speed/quality tradeoff
                     "-crf 23", // Constant Rate Factor for quality control (lower = better)
@@ -109,29 +120,21 @@ class TranscodingJob {
     }
 
     createMasterPlaylist() {
-        const playlist = [
-            "#EXTM3U",
-            "#EXT-X-VERSION:3",
-            "",
-            // 1080p variant
-            '#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080,CODECS="avc1.42e01e,mp4a.40.2",AUDIO="audio-aac-128k"',
-            "1080p/playlist.m3u8",
-            "",
-            // 720p variant
-            '#EXT-X-STREAM-INF:BANDWIDTH=2800000,RESOLUTION=1280x720,CODECS="avc1.42e01e,mp4a.40.2",AUDIO="audio-aac-128k"',
-            "720p/playlist.m3u8",
-            "",
-            // 320p variant
-            '#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=568x320,CODECS="avc1.42e01e,mp4a.40.2",AUDIO="audio-aac-128k"',
-            "320p/playlist.m3u8",
-        ].join("\n");
-
+        const individualPlaylistInto = RESOLUTIONS.flatMap((resolution) => [
+            `#EXT-X-STREAM-INF:BANDWIDTH=${
+                parseInt(resolution.bitrate) * 1000
+            },RESOLUTION=${this.calculateWidth(resolution.height)}x${
+                resolution.height
+            },CODECS="avc1.42e01e,mp4a.40.2",AUDIO="audio-aac-128k"`,
+            `${resolution.name}/playlist.m3u8\n`,
+        ]);
+        const playlist = ["#EXTM3U", "#EXT-X-VERSION:3", "", ...individualPlaylistInto].join("\n");
         return playlist;
     }
 
-    // calculateWidth(height: number) {
-    //     return Math.round((height * 16) / 9);
-    // }
+    calculateWidth(height: number) {
+        return Math.round((height * 16) / 9);
+    }
 
     async uploadToS3() {
         const files = await glob("**/*", { cwd: this.outputDir, nodir: true });
@@ -170,9 +173,8 @@ class TranscodingJob {
 const job = new TranscodingJob(
     "/home/abhiram/Bootcamp/week-10/AIcademy/backend/temp/downloads/elon.mp4",
     "/home/abhiram/Bootcamp/week-10/AIcademy/backend/temp/downloads/transcoded2/",
-    "",
-    process.env.AWS_S3_BUCKET_NAME,
-    "elon"
+    process.env.AWS_S3_BUCKET_NAME as string,
+    "elon2"
 );
 
 job.start();
