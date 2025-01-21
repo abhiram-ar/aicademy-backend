@@ -1,10 +1,31 @@
-import { QdrantVectorStore } from '@langchain/qdrant';
-import { embedding } from '../services/OpenAI';
+import { QdrantVectorStore } from "@langchain/qdrant";
+import { embedding } from "../services/OpenAI";
+import { logErrorMessage } from "../utils/log";
 
-const vectorStore = await QdrantVectorStore.fromExistingCollection(embedding, {
-    url: process.env.QDRANT_URL,
-    apiKey: process.env.QDRANT_API_KEY,
-    collectionName: 'langchainjs-test2',
-});
+let cachedVectorStore: QdrantVectorStore | null = null;
 
-export default vectorStore;
+async function connectToVectorStore() {
+    try {
+        if (!cachedVectorStore) {
+            console.log("Initializing vector store connection...");
+            cachedVectorStore = await QdrantVectorStore.fromExistingCollection(embedding, {
+                url: process.env.QDRANT_URL,
+                apiKey: process.env.QDRANT_API_KEY,
+                collectionName: "langchainjs-test2",
+            });
+            if (!cachedVectorStore.client) throw new Error("failed to connect to qdrant");
+
+            return cachedVectorStore;
+        } else {
+            console.log("using the cached vector store connection");
+            return cachedVectorStore;
+        }
+    } catch (error) {
+        logErrorMessage("Error connecting to qdrant");
+        console.log(error);
+        console.log("trying to reconnect to qdrant...");
+        setTimeout(connectToVectorStore, 3000);
+    }
+}
+
+export default connectToVectorStore();

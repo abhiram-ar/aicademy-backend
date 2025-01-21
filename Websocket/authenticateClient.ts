@@ -6,10 +6,9 @@ import { URL } from "url";
 export const authenticateWSClient = async (
     request: IncomingMessage
 ): Promise<string | undefined> => {
-    console.log(request.url);
     const url = new URL(request.url as string, `http://${request.headers.host}`); //chaange to use HTTPs in productions
     const authHeader = url.searchParams.get("authorization");
-    console.log(authHeader);
+    // console.log(authHeader);
 
     if (!authHeader) {
         logErrorMessage("ws auth: authication searchparam missing in request");
