@@ -30,6 +30,10 @@ export const getCourseContent = async (req: Request, res: Response): Promise<any
                 select: "key aiStatus transcodedVideoMasterFileKey",
             });
 
+        if (!result) {
+            throw { message: "invalid courseId", status: 404 };
+        }
+
         res.status(200).json({
             success: true,
             message: "course content successfully fetched",
