@@ -24,10 +24,7 @@ import {
     updateProfilePic,
 } from "../controllers/userProfileControllers.js";
 import { upload } from "../middlewares/upload.multer.js";
-import {
-    createOrder,
-    verifyPaymentAndCheckout,
-} from "../controllers/userCheckoutControllers.js";
+import { createOrder, verifyPaymentAndCheckout } from "../controllers/userCheckoutControllers.js";
 import {
     fetchOrderHistory,
     fetchUserBoughtCourseList,
@@ -44,6 +41,7 @@ import {
     moveToCart,
     removeFromWishlist,
 } from "../controllers/userWishlistControllets.js";
+import { getCourseContent } from "../controllers/userLearnControllers.js";
 
 const userRouter = express.Router();
 
@@ -62,61 +60,38 @@ userRouter.patch("/profile", (req, res) => updateProfile(req as URequest, res));
 userRouter.patch("/profilePic", upload.single("newProfilePic"), (req, res) =>
     updateProfilePic(req as URequest, res)
 );
-userRouter.patch("/password", (req, res) =>
-    changePassword(req as URequest, res)
-);
+userRouter.patch("/password", (req, res) => changePassword(req as URequest, res));
 
 // cart routes
 userRouter.get("/cart", (req, res) => getCart(req as URequest, res));
 userRouter.post("/cart", (req, res) => addToCart(req as URequest, res));
 userRouter.delete("/cart", (req, res) => removeFromCart(req as URequest, res));
-userRouter.post("/cart/move-to-wishlist", (req, res) =>
-    moveToWishlist(req as URequest, res)
-);
-userRouter.post("/cart/apply-coupon", (req, res) =>
-    applyCoupon(req as URequest, res)
-);
-userRouter.patch("/cart/remove-coupon", (req, res) =>
-    removeCouponFromCart(req as URequest, res)
-);
+userRouter.post("/cart/move-to-wishlist", (req, res) => moveToWishlist(req as URequest, res));
+userRouter.post("/cart/apply-coupon", (req, res) => applyCoupon(req as URequest, res));
+userRouter.patch("/cart/remove-coupon", (req, res) => removeCouponFromCart(req as URequest, res));
 
 // wishlist controllers
 userRouter.get("/wishlist", (req, res) => getWishlist(req as URequest, res));
 userRouter.post("/wishlist", (req, res) => addToWishlist(req as URequest, res));
-userRouter.delete("/wishlist", (req, res) =>
-    removeFromWishlist(req as URequest, res)
-);
-userRouter.post("/wishlist/move-to-cart", (req, res) =>
-    moveToCart(req as URequest, res)
-);
+userRouter.delete("/wishlist", (req, res) => removeFromWishlist(req as URequest, res));
+userRouter.post("/wishlist/move-to-cart", (req, res) => moveToCart(req as URequest, res));
 
 // checkout routes
-userRouter.post("/checkout/create-order", (req, res) =>
-    createOrder(req as URequest, res)
-);
+userRouter.post("/checkout/create-order", (req, res) => createOrder(req as URequest, res));
 userRouter.post("/checkout/verify-payment", (req, res) =>
     verifyPaymentAndCheckout(req as URequest, res)
 );
 
 // bought course routes
-userRouter.get("/course/list", (req, res) =>
-    fetchUserBoughtCourseList(req as URequest, res)
-);
-userRouter.post("/course/report", (req, res) =>
-    reportACourse(req as URequest, res)
-);
-userRouter.get("/order-history", (req, res) =>
-    fetchOrderHistory(req as URequest, res)
-);
+userRouter.get("/course/list", (req, res) => fetchUserBoughtCourseList(req as URequest, res));
+userRouter.post("/course/report", (req, res) => reportACourse(req as URequest, res));
+userRouter.get("/order-history", (req, res) => fetchOrderHistory(req as URequest, res));
 
-userRouter.get("/course/review", (req, res) =>
-    fetchUserReview(req as URequest, res)
-);
-userRouter.post("/course/review", (req, res) =>
-    addReviewToCourse(req as URequest, res)
-);
-userRouter.patch("/course/review", (req, res) =>
-    editReview(req as URequest, res)
-);
+userRouter.get("/course/review", (req, res) => fetchUserReview(req as URequest, res));
+userRouter.post("/course/review", (req, res) => addReviewToCourse(req as URequest, res));
+userRouter.patch("/course/review", (req, res) => editReview(req as URequest, res));
+
+// learn routes
+userRouter.get("/course/learn/:courseId", getCourseContent);
 
 export default userRouter;
