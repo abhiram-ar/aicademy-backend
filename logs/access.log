@@ -1,0 +1,3 @@
+[0mGET /api/auth/refresh [32m200[0m 145.667 ms - 225[0m
+[0mGET /api/user/cart [36m304[0m 63.798 ms - -[0m
+[0mGET /api/course/list?search=&category=&level=&minPrice=&maxPrice=&sortBy=price&sortOrder=-1&page=1&limit=5 [36m304[0m 180.364 ms - -[0m
