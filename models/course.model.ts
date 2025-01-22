@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { IVideo } from "./video.model";
 
 export interface ICourse extends Document {
     title: string;
@@ -20,7 +21,7 @@ export interface ICourse extends Document {
         chapterTitle: string;
         lessons?: Array<{
             lessonTitle?: string;
-            videoKey?: string;
+            videoKey?: mongoose.Types.ObjectId | IVideo;
             videoURL?: string;
             videoDuration?: number;
         }>;
@@ -69,8 +70,7 @@ const courseSchema = new Schema<ICourse>(
                 lessons: [
                     {
                         lessonTitle: String,
-                        videoKey: String,
-                        videoURL: String,
+                        videoKey: { type: Schema.Types.ObjectId, ref: "Video" },
                         videoDuration: Number,
                     },
                 ],
