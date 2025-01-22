@@ -9,11 +9,8 @@ import adminRouter from "./routes/adminRouter.ts";
 import { updateAccessToken } from "./controllers/globalRefresh.ts";
 import { googleAuth } from "./controllers/socialAuth.ts";
 import courseRouter from "./routes/courseRouter.ts";
-import fs from "fs";
-import path from "path";
 import { accessLogStream } from "./utils/HTTPFileloger.ts";
 import { logErrorMessage } from "./utils/log.ts";
-import { error } from "console";
 
 const app = express();
 app.use(express.json());
