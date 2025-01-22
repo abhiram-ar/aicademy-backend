@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import userRouter from "./routes/userRouter.ts";
@@ -12,6 +12,8 @@ import courseRouter from "./routes/courseRouter.ts";
 import fs from "fs";
 import path from "path";
 import { accessLogStream } from "./utils/HTTPFileloger.ts";
+import { logErrorMessage } from "./utils/log.ts";
+import { error } from "console";
 
 const app = express();
 app.use(express.json());
@@ -35,6 +37,12 @@ app.use("/api/user", userRouter);
 app.use("/api/teacher", teacherRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/course", courseRouter);
+
 //todo: global catch for production
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    logErrorMessage(`global catch:${err.message}`);
+    console.log(err);
+    res.status(500).send("something went wrong");
+});
 
 export default app;
