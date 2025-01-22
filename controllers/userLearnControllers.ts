@@ -17,7 +17,7 @@ export const getCourseContent = async (req: Request, res: Response): Promise<any
             _id: userId,
             coursesBought: courseId,
         });
-        if (!courseBoughtByUser) throw { message: "you didnt bought this course", status: 404 };
+        if (!courseBoughtByUser) throw { message: "you didnt bought this course", status: 403 };
 
         const result = await courseModel
             .findById(courseId, {
@@ -25,12 +25,15 @@ export const getCourseContent = async (req: Request, res: Response): Promise<any
                 description: 1,
                 chapters: 1,
             })
-            .populate({ path: "chapters.lessons.videoKey" });
+            .populate({
+                path: "chapters.lessons.videoKey",
+                select: "key aiStatus transcodedVideoMasterFileKey",
+            });
 
         res.status(200).json({
             success: true,
             message: "course content successfully fetched",
-            result,
+            content: result,
         });
     } catch (error) {
         logErrorMessage("error while fetching course content");
