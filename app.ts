@@ -38,7 +38,7 @@ app.use("/api/teacher", teacherRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/course", courseRouter);
 
-//todo: global catch for production
+// global catch for production
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     logErrorMessage(`global catch:${err.message}`);
     console.log(err);
