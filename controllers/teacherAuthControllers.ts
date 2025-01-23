@@ -1,13 +1,8 @@
 import teacherModel from "../models/teacherModel.js";
 import { logErrorMessage, logWarning } from "../utils/log.js";
-import {
-    createActivationToken,
-    createAccessToken,
-    createRefershToken,
-} from "../utils/jwt.js";
+import { createActivationToken, createAccessToken, createRefershToken } from "../utils/jwt.js";
 import sendMail from "../utils/sendMail.js";
 import jwt from "jsonwebtoken";
-import sessionModel from "../models/sessionModel.js";
 import cloudinary from "../config/cloudinary.js";
 
 export const register = async (req, res) => {
@@ -17,9 +12,7 @@ export const register = async (req, res) => {
         const isEmailExist = await teacherModel.findOne({ email });
         if (isEmailExist) {
             console.log(false, "teacher email alreay exist");
-            return res
-                .status(400)
-                .json({ success: false, message: "Email alreay exists" });
+            return res.status(400).json({ success: false, message: "Email alreay exists" });
         }
 
         const teacher = {
@@ -29,8 +22,7 @@ export const register = async (req, res) => {
             password,
         };
 
-        const { activationCode, activationToken } =
-            createActivationToken(teacher);
+        const { activationCode, activationToken } = createActivationToken(teacher);
 
         //data for email verification
         const data = { name: teacher.firstName, activationCode };
@@ -69,12 +61,11 @@ export const register = async (req, res) => {
 //teacehr activativation
 export const activateAccount = async (req, res) => {
     try {
-        const { activationCode: recievedActivationCode, activationToken } =
-            req.body;
+        const { activationCode: recievedActivationCode, activationToken } = req.body;
 
         const { activationCode, userCredentials: teacher } = jwt.verify(
             activationToken,
-            process.env.ACTIVATION_CODE_SECRET
+            process.env.ACTIVATION_CODE_SECRET as string
         );
 
         if (recievedActivationCode !== activationCode) {
@@ -129,14 +120,10 @@ export const login = async (req, res) => {
             });
         }
 
-        const teacher = await teacherModel
-            .findOne({ email })
-            .select("+password");
+        const teacher = await teacherModel.findOne({ email }).select("+password");
         if (!teacher) {
             logWarning("login: invalid email, didnt find teacher in DB");
-            return res
-                .status(400)
-                .json({ success: false, message: "Invalid email or password" });
+            return res.status(400).json({ success: false, message: "Invalid email or password" });
         }
 
         if (teacher.isBlocked) {
@@ -159,9 +146,7 @@ export const login = async (req, res) => {
         const isPasswordMatch = await teacher.comparePassword(password);
         if (!isPasswordMatch) {
             logWarning("login: password don't match");
-            return res
-                .status(400)
-                .json({ success: false, message: "Invaid password" });
+            return res.status(400).json({ success: false, message: "Invaid password" });
         }
 
         const tokenPayload = {
@@ -176,13 +161,6 @@ export const login = async (req, res) => {
         });
         const refreshToken = createRefershToken(tokenPayload);
 
-        //save refreshtoken in session DB
-        await sessionModel.create({
-            role: "teacher",
-            userId: teacher._id,
-            email: teacher.email,
-            refreshToken,
-        });
         res.cookie("refreshJWT", refreshToken, {
             httpOnly: true,
             secure: false,
@@ -206,9 +184,7 @@ export const login = async (req, res) => {
         logErrorMessage("error while logging teacher");
         logErrorMessage(error.message);
         console.log(error);
-        return res
-            .status(400)
-            .json({ success: false, message: "login failed" });
+        return res.status(400).json({ success: false, message: "login failed" });
     }
 };
 
@@ -217,9 +193,7 @@ export const onboading = async (req, res) => {
     try {
         const teacher = await teacherModel.findById(req.user.teacherId);
         if (!teacher) {
-            return res
-                .status(404)
-                .json({ success: false, message: "Invalid teacher" });
+            return res.status(404).json({ success: false, message: "Invalid teacher" });
         }
 
         if (teacher.isApproved === "success") {
@@ -230,14 +204,12 @@ export const onboading = async (req, res) => {
         }
 
         console.log(req.body);
-        const uploadProfilePic = cloudinary.uploader.upload(
-            req.files.profilePic[0].path,
-            { asset_folder: `onboading-details/${req.user?.teacherId || ""}` }
-        );
-        const uploadLegalNameProof = cloudinary.uploader.upload(
-            req.files.legalNameProof[0].path,
-            { asset_folder: `onboading-details/${req.user?.teacherId || ""}` }
-        );
+        const uploadProfilePic = cloudinary.uploader.upload(req.files.profilePic[0].path, {
+            asset_folder: `onboading-details/${req.user?.teacherId || ""}`,
+        });
+        const uploadLegalNameProof = cloudinary.uploader.upload(req.files.legalNameProof[0].path, {
+            asset_folder: `onboading-details/${req.user?.teacherId || ""}`,
+        });
         const uploadQualificationProof = cloudinary.uploader.upload(
             req.files.qualificationProof[0].path,
             { asset_folder: `onboading-details/${req.user?.teacherId || ""}` }
@@ -303,22 +275,12 @@ export const logout = async (req, res) => {
             return res.status(204).send();
         }
 
-        let result = await sessionModel.deleteOne({ refreshToken: refreshJWT });
-
         res.clearCookie("refreshJWT", {
             httpOnly: true,
             secure: false,
             sameSite: "Lax",
         });
 
-        if (result.deletedCount === 0) {
-            logWarning("logout: No session to delete");
-            return res.status(200).json({
-                success: true,
-                message:
-                    "cannot find session to logout, client is requested to clear the cookie",
-            });
-        }
         res.status(200).json({
             success: true,
             message: "teacher logged out successfully",
