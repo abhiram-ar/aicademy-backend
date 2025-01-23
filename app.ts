@@ -22,7 +22,7 @@ app.use(
     })
 );
 
-app.use(morgan("dev", { stream: accessLogStream }));
+app.use(morgan("combined", { stream: accessLogStream }));
 
 app.get("/test", isAuthenticated, authorizedRoles("admin", "user"), (req, res) => {
     res.status(200).json({ success: true, message: "API is working" });
