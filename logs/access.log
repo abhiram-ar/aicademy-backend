@@ -933,3 +933,11 @@
 [0mGET /api/course/full-details?courseId=6766c2f1040682b6bfe3b1b3 [36m304[0m 42.715 ms - -[0m
 [0mGET /api/course/draft/videos?courseId=6766c2f1040682b6bfe3b1b3 [36m304[0m 35.569 ms - -[0m
 [0mPOST /api/teacher/auth/logout [32m200[0m 0.473 ms - 60[0m
+[0mGET /api/auth/refresh [33m401[0m 2.664 ms - 57[0m
+[0mPOST /api/admin/auth/login [32m200[0m 86.800 ms - 397[0m
+[0mGET /api/admin/dashboard/overview [36m304[0m 43.189 ms - -[0m
+[0mGET /api/admin/dashboard/revenue-profit?interval=monthly [36m304[0m 52.167 ms - -[0m
+[0mGET /api/auth/refresh [32m200[0m 39.531 ms - 227[0m
+[0mGET /api/admin/dashboard/revenue-profit?interval=monthly [36m304[0m 31.139 ms - -[0m
+[0mGET /api/admin/dashboard/overview [36m304[0m 28.208 ms - -[0m
+[0mPOST /api/admin/auth/logout [32m200[0m 0.550 ms - 58[0m
