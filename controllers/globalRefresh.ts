@@ -1,8 +1,7 @@
 import adminModel from "../models/adminModel.js";
-import sessionModel from "../models/sessionModel.js";
 import teacherModel from "../models/teacherModel.js";
 import userModel from "../models/userModel.js";
-import { createAccessToken, createRefershToken } from "../utils/jwt.js";
+import { createAccessToken } from "../utils/jwt.js";
 import { logErrorMessage, logSuccess, logWarning } from "../utils/log.js";
 import jwt from "jsonwebtoken";
 
@@ -12,68 +11,43 @@ export const updateAccessToken = async (req, res) => {
     const { refreshJWT } = req.cookies;
     if (!refreshJWT) {
         logWarning("updateAccesToken: cannot find refersh token in cookies");
-        return res
-            .status(401)
-            .json({ success: false, message: "No refresh token in cookies" });
+        return res.status(401).json({ success: false, message: "No refresh token in cookies" });
     }
 
-    jwt.verify(
-        refreshJWT,
-        process.env.REFRESH_TOKEN_SECRET,
-        async (error, decoded) => {
-            if (error) {
-                logErrorMessage("error while verifying refresh token");
-                logErrorMessage(error.message);
-                return res.status(400).json({
-                    success: false,
-                    message: "error while verifying refresh token",
-                });
-            }
-
-            const sessionDetails = await sessionModel.findOne({
-                refreshToken: refreshJWT,
+    jwt.verify(refreshJWT, process.env.REFRESH_TOKEN_SECRET as string, async (error, decoded) => {
+        if (error) {
+            logErrorMessage("error while verifying refresh token");
+            logErrorMessage(error.message);
+            return res.status(400).json({
+                success: false,
+                message: "error while verifying refresh token",
             });
-
-            if (!sessionDetails) {
-                logWarning(
-                    "refresh token does not exist in DB, requesting client to clear cookies"
-                );
-                res.clearCookie("refreshJWT", {
-                    httpOnly: true,
-                    secure: false,
-                    sameSite: "Lax",
-                });
-                return res.status(403).json({
-                    success: false,
-                    message: "teacher session does't exist anymore",
-                });
-            }
-
-            switch (sessionDetails.role) {
-                case "teacher":
-                    handleTeachers(req, res, decoded);
-                    break;
-                case "admin":
-                    handleAdmin(req, res, decoded);
-                    break;
-                case "user":
-                    handleUser(req, res, decoded);
-                    break;
-                default:
-                    logErrorMessage("invalid user for global refersh");
-                    return res.status(404).json({
-                        success: false,
-                        message: "invalid user for global refresh",
-                    });
-            }
         }
-    );
+
+        switch (decoded.role) {
+            case "teacher":
+                handleTeachers(req, res, decoded);
+                break;
+            case "admin":
+                handleAdmin(req, res, decoded);
+                break;
+            case "user":
+                handleUser(req, res, decoded);
+                break;
+            default:
+                logErrorMessage("invalid user for global refersh");
+                return res.status(404).json({
+                    success: false,
+                    message: "invalid user for global refresh",
+                });
+        }
+    });
 };
 
 const handleTeachers = async (req, res, decoded) => {
     logSuccess("hit teacher refresh");
     const teacher = await teacherModel.findById(decoded.teacherId);
-    
+
     if (!teacher) {
         logWarning("teacher no longer exist in DB");
         logWarning("requesting client to clear cookies");
@@ -118,9 +92,7 @@ const handleUser = async (req, res, decoded) => {
     const userDetails = await userModel.findById(decoded.userId);
 
     if (!userDetails) {
-        logWarning(
-            "user does not exist anymore, cannot create new access token"
-        );
+        logWarning("user does not exist anymore, cannot create new access token");
         logWarning("requesting client to clear cookies");
         res.clearCookie("refreshJWT", {
             httpOnly: true,
@@ -144,8 +116,7 @@ const handleUser = async (req, res, decoded) => {
         });
         return res.status(403).json({
             success: false,
-            message:
-                "User is blocked. Cannot create new access token, requested to clear cookie",
+            message: "User is blocked. Cannot create new access token, requested to clear cookie",
         });
     }
 
@@ -161,9 +132,9 @@ const handleUser = async (req, res, decoded) => {
 const handleAdmin = async (req, res, decoded) => {
     logSuccess("hit admin refresh");
     const admin = await adminModel.findById(decoded.adminId);
-    
-    if(!admin){
-        throw new Error("admin does not exit in Db")
+
+    if (!admin) {
+        throw new Error("admin does not exit in Db");
     }
 
     if (!admin.isActive) {
@@ -176,8 +147,7 @@ const handleAdmin = async (req, res, decoded) => {
         });
         return res.status(403).json({
             success: false,
-            message:
-                "admin is inactive. Cannot create new access token, requested to clear cookie",
+            message: "admin is inactive. Cannot create new access token, requested to clear cookie",
         });
     }
 

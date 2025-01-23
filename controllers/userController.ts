@@ -4,10 +4,9 @@ import path from "path";
 import { __dirname, __filename } from "../config/esModuleScope.ts";
 import sendMail from "../utils/sendMail.ts";
 import ejs from "ejs";
-import { log, logErrorMessage, logWarning, logSuccess } from "../utils/log.ts";
+import { log, logErrorMessage, logWarning } from "../utils/log.ts";
 import chalk from "chalk";
 import { createAccessToken, createRefershToken } from "../utils/jwt.ts";
-import sessionModel from "../models/sessionModel.ts";
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 
@@ -19,9 +18,7 @@ export const registerUser = async (req, res) => {
         const isEmailExist = await userModel.findOne({ email });
         if (isEmailExist) {
             console.log(false, "user email alreay exist");
-            return res
-                .status(400)
-                .json({ success: false, message: "Email alreay exists" });
+            return res.status(400).json({ success: false, message: "Email alreay exists" });
         }
 
         const user = {
@@ -35,10 +32,7 @@ export const registerUser = async (req, res) => {
 
         //send activation code to usersEmail
         const data = { name: user.firstName, activationCode };
-        const html = ejs.renderFile(
-            path.join(__dirname, "../mails/userActivationMail.ejs"),
-            data
-        );
+        const html = ejs.renderFile(path.join(__dirname, "../mails/userActivationMail.ejs"), data);
 
         try {
             await sendMail({
@@ -62,22 +56,16 @@ export const registerUser = async (req, res) => {
         }
     } catch (error) {
         console.log(error);
-        return res
-            .status(400)
-            .json({ success: false, message: "error while registering user" });
+        return res.status(400).json({ success: false, message: "error while registering user" });
     }
 };
 
 export const createActivationToken = (user) => {
     const activationCode = Math.floor(1000 + Math.random() * 9000).toString();
     const tokenPayload = { user, activationCode };
-    const activationToken = jwt.sign(
-        tokenPayload,
-        process.env.ACTIVATION_CODE_SECRET,
-        {
-            expiresIn: "5m",
-        }
-    );
+    const activationToken = jwt.sign(tokenPayload, process.env.ACTIVATION_CODE_SECRET as string, {
+        expiresIn: "5m",
+    });
 
     return { activationToken, activationCode };
 };
@@ -85,12 +73,11 @@ export const createActivationToken = (user) => {
 //user activativation
 export const activateUser = async (req, res) => {
     try {
-        const { activationCode: recievedActivationCode, activationToken } =
-            req.body;
+        const { activationCode: recievedActivationCode, activationToken } = req.body;
 
         const { activationCode, user } = jwt.verify(
             activationToken,
-            process.env.ACTIVATION_CODE_SECRET
+            process.env.ACTIVATION_CODE_SECRET as string
         );
 
         if (recievedActivationCode !== activationCode) {
@@ -120,9 +107,7 @@ export const activateUser = async (req, res) => {
             isVerified: true,
         });
 
-        return res
-            .status(201)
-            .json({ success: true, message: "user activated sucessfully" });
+        return res.status(201).json({ success: true, message: "user activated sucessfully" });
     } catch (error) {
         log(chalk.yellow(error.message));
         console.log(error);
@@ -148,9 +133,7 @@ export const loginUser = async (req, res) => {
         const user = await userModel.findOne({ email }).select("+password");
         if (!user) {
             logWarning("login: invalid email, didnt find user in DB");
-            return res
-                .status(400)
-                .json({ success: false, message: "Invalid email or password" });
+            return res.status(400).json({ success: false, message: "Invalid email or password" });
         }
 
         if (user.isBlocked) {
@@ -173,9 +156,7 @@ export const loginUser = async (req, res) => {
         const isPasswordMatch = await user.comparePassword(password);
         if (!isPasswordMatch) {
             logWarning("login: password don't match");
-            return res
-                .status(400)
-                .json({ success: false, message: "Invaid password" });
+            return res.status(400).json({ success: false, message: "Invaid password" });
         }
 
         const tokenPayload = {
@@ -187,13 +168,6 @@ export const loginUser = async (req, res) => {
         const accessToken = createAccessToken(tokenPayload);
         const refreshToken = createRefershToken(tokenPayload);
 
-        //save refreshtoken in session DB
-        await sessionModel.create({
-            role: "user",
-            userId: user._id,
-            email: user.email,
-            refreshToken,
-        });
         res.cookie("refreshJWT", refreshToken, {
             httpOnly: true,
             secure: false,
@@ -216,9 +190,7 @@ export const loginUser = async (req, res) => {
         logErrorMessage("error while logging user");
         logErrorMessage(error.message);
         console.log(error);
-        return res
-            .status(400)
-            .json({ success: false, message: "login failed" });
+        return res.status(400).json({ success: false, message: "login failed" });
     }
 };
 
@@ -231,22 +203,12 @@ export const logout = async (req, res) => {
             return res.status(204).send();
         }
 
-        let result = await sessionModel.deleteOne({ refreshToken: refreshJWT });
-
         res.clearCookie("refreshJWT", {
             httpOnly: true,
             secure: false,
             sameSite: "Lax",
         });
 
-        if (result.deletedCount === 0) {
-            logWarning("logout: No session to delete");
-            return res.status(200).json({
-                success: true,
-                message:
-                    "cannot find session to logout, client is requested to clear the cookie",
-            });
-        }
         res.status(200).json({
             success: true,
             message: "user logged out successfully",
@@ -262,10 +224,7 @@ export const logout = async (req, res) => {
     }
 };
 
-export const generateForgetPasswordOTP = async (
-    req: Request,
-    res: Response
-): Promise<any> => {
+export const generateForgetPasswordOTP = async (req: Request, res: Response): Promise<any> => {
     try {
         const { email } = req.body;
         if (!email) {
@@ -279,14 +238,12 @@ export const generateForgetPasswordOTP = async (
         const userDetails = await userModel.findOne({ email });
         if (!userDetails) {
             logWarning("invalid email for generating password reset OTP");
-            return res
-                .status(404)
-                .json({ success: false, message: "Invalid email" });
+            return res.status(404).json({ success: false, message: "Invalid email" });
         }
 
         const resetToken = jwt.sign(
             { email: userDetails.email, role: userDetails.role },
-            process.env.ACTIVATION_CODE_SECRET,
+            process.env.ACTIVATION_CODE_SECRET as string,
             {
                 expiresIn: "5m",
             }
@@ -315,16 +272,11 @@ export const generateForgetPasswordOTP = async (
         logErrorMessage("error while generating password reset OTP");
         logErrorMessage(error.message);
         console.log(error);
-        return res
-            .status(400)
-            .json({ success: false, message: "Error while generating OTP" });
+        return res.status(400).json({ success: false, message: "Error while generating OTP" });
     }
 };
 
-export const resetPassword = async (
-    req: Request,
-    res: Response
-): Promise<any> => {
+export const resetPassword = async (req: Request, res: Response): Promise<any> => {
     try {
         const { token, newPassword } = req.body;
         if (!token || !newPassword) {
@@ -335,10 +287,7 @@ export const resetPassword = async (
             });
         }
 
-        const decoded = await jwt.verify(
-            token,
-            process.env.ACTIVATION_CODE_SECRET
-        );
+        const decoded = await jwt.verify(token, process.env.ACTIVATION_CODE_SECRET as string);
 
         const passwordHash = await bcrypt.hash(newPassword, 10);
 
@@ -347,9 +296,7 @@ export const resetPassword = async (
             { password: passwordHash, googleAuth: false }
         );
 
-        return res
-            .status(200)
-            .json({ success: true, message: "Password changed succesfully" });
+        return res.status(200).json({ success: true, message: "Password changed succesfully" });
     } catch (error) {
         logErrorMessage("error while reseting password");
         logErrorMessage(error.message);
