@@ -7,10 +7,7 @@ import userModel from "../models/userModel";
 import { reportModel } from "../models/userCourseReportModel";
 import orderModel from "./../models/orderModel";
 
-export const fetchCourses = async (
-    req: Request,
-    res: Response
-): Promise<any> => {
+export const fetchCourses = async (req: Request, res: Response): Promise<any> => {
     try {
         // todo: add logic for rating: sortby
         const {
@@ -49,8 +46,7 @@ export const fetchCourses = async (
 
         const sortOption: Record<string, -1 | 1> = sortBy
             ? {
-                  [sortBy as string]:
-                      parseInt(sortOrder as string) === -1 ? -1 : 1,
+                  [sortBy as string]: parseInt(sortOrder as string) === -1 ? -1 : 1,
               }
             : { createdAt: 1 };
 
@@ -89,10 +85,7 @@ export const fetchCourses = async (
     }
 };
 
-export const fullCourseDetails = async (
-    req: Request,
-    res: Response
-): Promise<any> => {
+export const fullCourseDetails = async (req: Request, res: Response): Promise<any> => {
     try {
         const { courseId } = req.query;
         console.log(courseId);
@@ -107,7 +100,11 @@ export const fullCourseDetails = async (
 
         const courseDetails = await courseModel
             .findOne({ _id: courseId }, { "chapters.lessons.videoKey": 0 })
-            .populate({ path: "createdBy", select: "legalName" });
+            .populate({ path: "createdBy", select: "legalName" })
+            .populate({
+                path: "demoVideoKey",
+                select: "transcodedVideoMasterFileKey",
+            });
 
         if (!courseDetails) {
             logWarning("no course found wit id:" + courseId);
@@ -132,10 +129,7 @@ export const fullCourseDetails = async (
     }
 };
 
-export const fetchUserBoughtCourseList = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const fetchUserBoughtCourseList = async (req: URequest, res: Response): Promise<any> => {
     try {
         const userdata = await userModel.findById(req.user.userId).populate({
             path: "coursesBought",
@@ -148,9 +142,7 @@ export const fetchUserBoughtCourseList = async (
 
         if (!userdata) {
             logWarning("user does not exits in DB for fetch bought course");
-            return res
-                .status(404)
-                .json({ success: false, message: "Invalid user" });
+            return res.status(404).json({ success: false, message: "Invalid user" });
         }
 
         console.log(userdata);
@@ -170,10 +162,7 @@ export const fetchUserBoughtCourseList = async (
     }
 };
 
-export const reportACourse = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const reportACourse = async (req: URequest, res: Response): Promise<any> => {
     console.log("hit");
     try {
         const { courseId, title, description } = req.body;
@@ -225,10 +214,7 @@ export const reportACourse = async (
     }
 };
 
-export const fetchOrderHistory = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const fetchOrderHistory = async (req: URequest, res: Response): Promise<any> => {
     try {
         const orderHistory = await orderModel
             .find({ userId: req.user.userId })

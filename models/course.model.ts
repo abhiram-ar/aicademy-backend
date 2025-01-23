@@ -9,7 +9,7 @@ export interface ICourse extends Document {
     price: number;
     estimatedPrice: number;
     thumbnail?: { public_id?: string; url?: string };
-    demoVideoKey?: string;
+    demoVideoKey?: mongoose.Types.ObjectId;
     rating?: number;
     totalRatingCount: number;
     boughtCount?: number;
@@ -49,7 +49,7 @@ const courseSchema = new Schema<ICourse>(
 
         estimatedPrice: { type: Number },
         thumbnail: { public_id: String, url: String },
-        demoVideoKey: String,
+        demoVideoKey: { type: Schema.Types.ObjectId, ref: "Video" },
 
         rating: Number,
         totalRatingCount: { type: Number, default: 0 },
