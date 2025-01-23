@@ -901,3 +901,8 @@
 [0mGET /api/auth/refresh [32m200[0m 40.820 ms - 225[0m
 [0mGET /api/user/cart [36m304[0m 78.646 ms - -[0m
 [0mPOST /api/user/auth/logout [32m200[0m 0.585 ms - 57[0m
+[0mPOST /api/auth/google [32m200[0m 245.838 ms - 395[0m
+[0mGET /api/user/cart [36m304[0m 87.286 ms - -[0m
+[0mGET /api/auth/refresh [32m200[0m 37.926 ms - 225[0m
+[0mGET /api/user/cart [36m304[0m 75.030 ms - -[0m
+[0mPOST /api/user/auth/logout [32m200[0m 0.700 ms - 57[0m
