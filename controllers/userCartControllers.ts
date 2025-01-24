@@ -29,7 +29,7 @@ export const getCart = async (req: URequest, res: Response): Promise<any> => {
             .findOne({ userId })
             .populate({
                 path: "courses",
-                select: "title description createdBy level price estimatedPrice thumbnail",
+                select: "title description createdBy level price estimatedPrice rating totalRatingCount category thumbnail lessonCount",
             })
             .populate("couponApplied");
 

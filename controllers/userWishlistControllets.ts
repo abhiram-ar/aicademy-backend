@@ -29,7 +29,7 @@ export const getWishlist = async (
 
         let wishlistDetails = await wishlistModel.findOne({ userId }).populate({
             path: "courses",
-            select: "title description createdBy level price estimatedPrice thumbnail",
+            select: "title description createdBy level price estimatedPrice thumbnail rating totalRatingCount category lessonCount",
         });
 
         // if cart does not exist in DB create a new cart,
