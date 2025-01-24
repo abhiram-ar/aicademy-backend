@@ -223,7 +223,7 @@ export const fetchOrderHistory = async (req: URequest, res: Response): Promise<a
             )
             .populate({
                 path: "coursesBought.courseId",
-                select: "title description createdBy level price estimatedPrice thumbnail rating totalRatingCount",
+                select: "title description createdBy level price estimatedPrice thumbnail rating totalRatingCount lessonCount",
                 populate: { path: "createdBy", select: "legalName firstName" },
             })
             .sort({ createdAt: -1 });
