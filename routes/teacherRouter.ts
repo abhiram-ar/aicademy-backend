@@ -47,9 +47,7 @@ teacherRouter.post(
 teacherRouter.use(isAuthenticated, authorizedRoles("teacher"));
 
 // dashboard
-teacherRouter.get("/dashboard/revenue", (req, res) =>
-    lastTwoMonthRevenue(req as TRequest, res)
-);
+teacherRouter.get("/dashboard/revenue", (req, res) => lastTwoMonthRevenue(req as TRequest, res));
 teacherRouter.get("/dashboard/purchase", (req, res) =>
     lastTwoMonthPurchaseCount(req as TRequest, res)
 );
@@ -65,19 +63,11 @@ teacherRouter.get("/dashboard/sales-list", (req, res) =>
 
 // payouts
 teacherRouter.get("/withdrawable-amount", withdrawableAmountAndTotalCashedout);
-teacherRouter.post(
-    "/payout/verification/create-order",
-    createBankVerificationOrder
-);
-teacherRouter.post(
-    "/payout/verification/verify",
-    verifyPaymentAndTecherBankAccount
-);
+teacherRouter.post("/payout/verification/create-order", createBankVerificationOrder);
+teacherRouter.post("/payout/verification/verify", verifyPaymentAndTecherBankAccount);
 teacherRouter.get("/payout/verification/isVerified", getBankVerificationStatus);
 teacherRouter.get("/payout/history", teacherPayoutHistoryList);
 
-teacherRouter.post("/payout/withdraw", (req, res) =>
-    withdraw(req as TRequest, res)
-);
+teacherRouter.post("/payout/withdraw", (req, res) => withdraw(req as TRequest, res));
 
 export default teacherRouter;

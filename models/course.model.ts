@@ -8,7 +8,7 @@ export interface ICourse extends Document {
     courseState?: "draft" | "published" | "blocked";
     price: number;
     estimatedPrice: number;
-    thumbnail?: { public_id?: string; url?: string };
+    thumbnail?: { url?: string; s3Key?: string };
     demoVideoKey?: mongoose.Types.ObjectId;
     rating?: number;
     totalRatingCount: number;
@@ -26,6 +26,7 @@ export interface ICourse extends Document {
             videoDuration?: number;
         }>;
     }>;
+    lessonCount: number;
 }
 
 const courseSchema = new Schema<ICourse>(
@@ -48,7 +49,7 @@ const courseSchema = new Schema<ICourse>(
         price: { type: Number },
 
         estimatedPrice: { type: Number },
-        thumbnail: { public_id: String, url: String },
+        thumbnail: { public_id: String, url: String, s3Key: String },
         demoVideoKey: { type: Schema.Types.ObjectId, ref: "Video" },
 
         rating: Number,
@@ -76,6 +77,7 @@ const courseSchema = new Schema<ICourse>(
                 ],
             },
         ],
+        lessonCount: { type: Number },
     },
     { timestamps: true }
 );

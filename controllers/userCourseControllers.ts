@@ -55,7 +55,7 @@ export const fetchCourses = async (req: Request, res: Response): Promise<any> =>
         const courses = await courseModel
             .find(filter)
             .select(
-                "title description createdBy level price estimatedPrice thumbnail rating totalRatingCount category"
+                "title description createdBy level price estimatedPrice thumbnail rating totalRatingCount category lessonCount"
             )
             .populate({
                 path: "createdBy",
@@ -223,7 +223,7 @@ export const fetchOrderHistory = async (req: URequest, res: Response): Promise<a
             )
             .populate({
                 path: "coursesBought.courseId",
-                select: "title description createdBy level price estimatedPrice thumbnail rating totalRatingCount",
+                select: "title description createdBy level price estimatedPrice thumbnail rating totalRatingCount lessonCount",
                 populate: { path: "createdBy", select: "legalName firstName" },
             })
             .sort({ createdAt: -1 });
