@@ -160,9 +160,15 @@ export const updateCourseStructure = async (req: TRequest, res: Response): Promi
             });
         }
 
+        const calculateLessonCount = (chapters) => {
+            let lessonCount = 0;
+            chapters.forEach((chapter) => (lessonCount += chapter.lessons.length));
+            return lessonCount;
+        };
+
         const updateResposne = await courseModel.findOneAndUpdate(
             { _id: courseId, createdBy: req.user.teacherId },
-            { chapters: chapters }
+            { chapters: chapters, lessonCount: calculateLessonCount(chapters) }
         );
 
         // if invalid if another teacher tries to modify the course data
