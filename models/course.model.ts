@@ -8,7 +8,7 @@ export interface ICourse extends Document {
     courseState?: "draft" | "published" | "blocked";
     price: number;
     estimatedPrice: number;
-    thumbnail?: { public_id?: string; url?: string; s3Key?: string };
+    thumbnail?: {  url?: string; s3Key?: string };
     demoVideoKey?: mongoose.Types.ObjectId;
     rating?: number;
     totalRatingCount: number;

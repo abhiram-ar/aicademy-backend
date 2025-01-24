@@ -222,6 +222,7 @@ export const updateThumbnail = async (req: TRequest, res: Response): Promise<any
             {
                 $set: {
                     thumbnail: {
+                        url: `${process.env.AWS_CLOUDFRONT_DISTRIBUTION_BASE_URL}/${s3Key}`,
                         s3Key,
                     },
                 },
