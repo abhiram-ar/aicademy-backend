@@ -188,7 +188,7 @@ export const updateCourseStructure = async (req: TRequest, res: Response): Promi
 export const updateThumbnail = async (req: TRequest, res: Response): Promise<any> => {
     try {
         const teacherId = req.user.teacherId;
-        const { courseId, thumbnailPublic_Id, thumbnailS3Key } = req.body;
+        const { courseId, thumbnailS3Key } = req.body;
         const file = req.file;
 
         if (!courseId) {
@@ -217,20 +217,27 @@ export const updateThumbnail = async (req: TRequest, res: Response): Promise<any
         //     invalidate: thumbnailPublic_Id ? true : false,
         // });
 
-        if (!thumbnailS3Key) {
-            logWarning("old thumbaildoes not exist");
-            await courseModel.findOneAndUpdate(
-                { createdBy: teacherId, _id: courseId },
-                {
-                    $set: {
-                        thumbnail: {
-                            s3Key,
-                        },
+        await courseModel.findOneAndUpdate(
+            { createdBy: teacherId, _id: courseId },
+            {
+                $set: {
+                    thumbnail: {
+                        s3Key,
                     },
                 },
-                { runValidators: true }
-            );
-            logSuccess(`new thumbail details updatedDB`);
+            },
+            { runValidators: true }
+        );
+        logSuccess(`new thumbnail details updated in DB`);
+
+        if (thumbnailS3Key) {
+            logWarning("deleting old thumbnail from S3");
+            const deleteCommand = new DeleteObjectCommand({
+                Key: thumbnailS3Key,
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+            });
+            await s3.send(deleteCommand);
+            logSuccess("deleted old thumbnail from S3");
         }
 
         res.status(200).json({
