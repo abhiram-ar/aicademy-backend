@@ -4,11 +4,11 @@ import { URequest } from "./userCartControllers";
 import userModel from "../models/userModel";
 import cloudinary from "../config/cloudinary";
 import bcrypt from "bcrypt";
-
-export const getProfile = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+import { DeleteObjectCommand, DeleteObjectsCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import path from "path";
+import fs from "fs";
+import s3 from "../services/aws.S3Client";
+export const getProfile = async (req: URequest, res: Response): Promise<any> => {
     try {
         const userId = req.user.userId;
         const userDetails = await userModel
@@ -30,10 +30,7 @@ export const getProfile = async (
     }
 };
 
-export const updateProfile = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const updateProfile = async (req: URequest, res: Response): Promise<any> => {
     try {
         const { firstName, lastName } = req.body;
         await userModel.findByIdAndUpdate(req.user.userId, {
@@ -55,34 +52,39 @@ export const updateProfile = async (
     }
 };
 
-export const updateProfilePic = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const updateProfilePic = async (req: URequest, res: Response): Promise<any> => {
     try {
         const userId = req.user.userId;
-        const { profilePicPublic_id } = req.body;
+        const { profilePicS3Key } = req.body;
         const file = req.file;
 
-        if (profilePicPublic_id) {
-            const deleteResult = await cloudinary.uploader.destroy(
-                profilePicPublic_id
-            );
-            logSuccess("old profile pic deleted");
-        }
-
-        const uploadResult = await cloudinary.uploader.upload(file.path, {
-            asset_folder: "profilePics/",
+        const fileStream = fs.createReadStream(path.join(__dirname, "..", file.path));
+        const newS3Key = path.join("user", "profilePics", file.filename);
+        const uploadCommand = new PutObjectCommand({
+            Key: newS3Key,
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            ContentType: file.mimetype,
+            Body: fileStream,
         });
-        console.log(uploadResult);
+        await s3.send(uploadCommand);
+        logSuccess("uploaded new profilePic");
+
+        if (profilePicS3Key) {
+            const deleteCommand = new DeleteObjectCommand({
+                Key: profilePicS3Key,
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+            });
+            await s3.send(deleteCommand);
+            logWarning("old profile pic deleted from s3");
+        }
 
         await userModel.findOneAndUpdate(
             { _id: userId },
             {
                 $set: {
                     profilePicture: {
-                        public_id: uploadResult.public_id,
-                        url: uploadResult.url,
+                        s3Key: newS3Key,
+                        url: `${process.env.AWS_CLOUDFRONT_DISTRIBUTION_BASE_URL}/${newS3Key}`,
                     },
                 },
             },
@@ -105,39 +107,28 @@ export const updateProfilePic = async (
     }
 };
 
-export const changePassword = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const changePassword = async (req: URequest, res: Response): Promise<any> => {
     try {
         const { oldPassword, newPassword } = req.body;
         if (!oldPassword || !newPassword) {
-            logWarning(
-                "oldPassword or newPassword is missing while changing password"
-            );
+            logWarning("oldPassword or newPassword is missing while changing password");
             return res.status(400).json({
                 success: false,
                 message: "oldPassword or newPassword missing",
             });
         }
 
-        const userDetails = await userModel
-            .findById(req.user.userId)
-            .select("+password");
+        const userDetails = await userModel.findById(req.user.userId).select("+password");
 
         if (!userDetails) {
             logWarning("change password: user email does not exist in DB");
-            return res
-                .status(404)
-                .json({ success: false, message: "Invalid credentials " });
+            return res.status(404).json({ success: false, message: "Invalid credentials " });
         }
 
         const isPasswordMatch = await userDetails.comparePassword(oldPassword);
         if (!isPasswordMatch) {
             logWarning("password does not match");
-            return res
-                .status(400)
-                .json({ success: false, message: "Wrong old password" });
+            return res.status(400).json({ success: false, message: "Wrong old password" });
         }
 
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
@@ -155,8 +146,6 @@ export const changePassword = async (
         logErrorMessage("error while changing password");
         logErrorMessage(error.message);
         console.log(error);
-        return res
-            .status(400)
-            .json({ success: false, message: "error while changing password" });
+        return res.status(400).json({ success: false, message: "error while changing password" });
     }
 };

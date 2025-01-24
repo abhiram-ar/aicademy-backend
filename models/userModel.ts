@@ -5,7 +5,7 @@ import { emailRegex } from "../utils/validators.ts";
 export interface IUser extends Document {
     firstName: string;
     lastName?: string;
-    profilePicture: { url: string; public_id: string };
+    profilePicture: { url: string; s3Key: string };
     email: string;
     googleAuth?: boolean;
     password?: string;
@@ -24,7 +24,7 @@ const userSchema = new Schema<IUser>(
             required: [true, "Please enter your first name"],
         },
         lastName: String,
-        profilePicture: { url: { type: String }, public_id: { type: String } },
+        profilePicture: { url: { type: String }, s3Key: String },
         email: {
             type: String,
             required: [true, "Please enter your email"],
