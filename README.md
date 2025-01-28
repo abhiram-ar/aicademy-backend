@@ -5,7 +5,6 @@ This repository contains the backend code for the AIcademy project. The backend 
 - Introduction
 - Features
 - Setup
-- Usage
 - Contributing
 - License
 
@@ -36,15 +35,7 @@ npm install
 Create a .env file in the root directory and add the necessary environment variables as specified in the .env.example file.
 4. Start the development server:
 ```bash
-npm run dev
-```
-## Usage
-To run the project:
-
-1. Ensure you have completed the setup steps.
-2. Run the server
-```bash
-npm start
+npm run dev-ts
 ```
 
 ## Contributing
