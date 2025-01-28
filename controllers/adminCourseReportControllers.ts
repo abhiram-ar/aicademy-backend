@@ -3,10 +3,7 @@ import { logErrorMessage, logWarning } from "../utils/log";
 import { FilterQuery } from "mongoose";
 import { IReport, reportModel } from "../models/userCourseReportModel";
 
-export const fetchCourseReports = async (
-    req: Request,
-    res: Response
-): Promise<any> => {
+export const fetchCourseReports = async (req: Request, res: Response): Promise<any> => {
     try {
         const { search, limit = 10, page = 1 } = req.query;
 
@@ -25,7 +22,8 @@ export const fetchCourseReports = async (
             .sort({ status: 1, createdAt: 1 })
             .skip(skip)
             .limit(parseInt(limit as string))
-            .populate({ path: "courseId", select: "title" });
+            .populate({ path: "courseId", select: "title" })
+            .populate({ path: "createdBy", select: "firstName lastName email" });
 
         const totalMatch = await reportModel.countDocuments(filter);
         return res.status(200).json({
@@ -46,19 +44,12 @@ export const fetchCourseReports = async (
     }
 };
 
-export const updateReportStatus = async (
-    req: Request,
-    res: Response
-): Promise<any> => {
+export const updateReportStatus = async (req: Request, res: Response): Promise<any> => {
     try {
         const { reportId, newStatus } = req.body;
         if (!reportId || !newStatus) {
-            logWarning(
-                "Required parameter missing for updating request status"
-            );
-            return res
-                .status(400)
-                .json({ success: false, message: "Required paramter missing" });
+            logWarning("Required parameter missing for updating request status");
+            return res.status(400).json({ success: false, message: "Required paramter missing" });
         }
         if (!(newStatus === "pending" || newStatus === "resolved")) {
             logWarning("invalid value for new status");

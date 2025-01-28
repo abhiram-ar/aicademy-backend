@@ -1,18 +1,12 @@
 import orderModel from "../models/orderModel";
 import { Request, RequestHandler, Response } from "express";
 import { logErrorMessage } from "../utils/log";
+import userModel from "../models/userModel";
 
-export const overviewReportLastTwoMonth = async (
-    req: Request,
-    res: Response
-) => {
+export const overviewReportLastTwoMonth = async (req: Request, res: Response) => {
     try {
         const currentTime = new Date();
-        const startingOfThisMonth = new Date(
-            currentTime.getFullYear(),
-            currentTime.getMonth(),
-            1
-        );
+        const startingOfThisMonth = new Date(currentTime.getFullYear(), currentTime.getMonth(), 1);
 
         // starting and ending of previous month
         const startingOfLastMonth = new Date(
@@ -20,11 +14,7 @@ export const overviewReportLastTwoMonth = async (
             currentTime.getMonth() - 1,
             1
         );
-        const endingOfLastMonth = new Date(
-            currentTime.getFullYear(),
-            currentTime.getMonth(),
-            0
-        );
+        const endingOfLastMonth = new Date(currentTime.getFullYear(), currentTime.getMonth(), 0);
 
         const result = await orderModel.aggregate([
             {
@@ -71,9 +61,7 @@ export const overviewReportLastTwoMonth = async (
         if (!error.status) console.log(error);
         res.status(error.status ?? 400).json({
             success: false,
-            messsage: error.status
-                ? error.message
-                : "error while fething report overview",
+            messsage: error.status ? error.message : "error while fething report overview",
         });
     }
 };
@@ -161,9 +149,7 @@ export const calculateRevenueAndProfit: RequestHandler<
         if (!error.status) console.log(error);
         res.status(error.status ?? 400).json({
             success: false,
-            messsage: error.status
-                ? error.message
-                : "error calculating admin revenue and profit",
+            messsage: error.status ? error.message : "error calculating admin revenue and profit",
         });
     }
 };
@@ -195,9 +181,61 @@ export const reveueList = async (req: Request, res: Response) => {
         if (!error.status) console.log(error);
         res.status(error.status ?? 400).json({
             success: false,
-            messsage: error.status
-                ? error.message
-                : "error calculating fething revenue list",
+            messsage: error.status ? error.message : "error calculating fething revenue list",
+        });
+    }
+};
+
+export const userCountsAndChangeInPast3months = async (req: Request, res: Response) => {
+    try {
+        const now = new Date();
+        const startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+
+        const result = await userModel.aggregate([
+            { $match: { createdAt: { $gte: startDate, $lte: now } } },
+            { $project: { createdAt: 1 } },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" },
+                        day: { $dayOfMonth: "$createdAt" },
+                    },
+                    signups: { $sum: 1 },
+                },
+            },
+
+            {
+                $project: {
+                    _id: 0,
+                    period: {
+                        $concat: [
+                            { $toString: "$_id.year" },
+                            "-",
+                            { $toString: "$_id.month" },
+                            "-",
+                            { $toString: "$_id.day" },
+                        ],
+                    },
+                    signups: 1,
+                },
+            },
+        ]);
+        const totalCount = await userModel.countDocuments();
+
+        res.status(200).json({
+            success: true,
+            message: "user count by month",
+            result,
+            totalUsers: totalCount ? totalCount : 0,
+        });
+    } catch (error) {
+        logErrorMessage("error while fetching revenue list");
+        logErrorMessage(error.message);
+        if (!error.status) console.log(error);
+        res.status(error.status ?? 400).json({
+            success: false,
+            messsage: error.status ? error.message : "error calculating fething revenue list",
         });
     }
 };
