@@ -5,11 +5,7 @@ import {
     rejectOnboarding,
 } from "../controllers/admin.teacherMangementControllers.ts";
 
-import {
-    login,
-    logout,
-    register,
-} from "../controllers/adminAuthControllers.ts";
+import { login, logout, register } from "../controllers/adminAuthControllers.ts";
 import { authorizedRoles, isAuthenticated } from "../middlewares/auth.ts";
 import {
     blockUser,
@@ -29,6 +25,7 @@ import {
     calculateRevenueAndProfit,
     overviewReportLastTwoMonth,
     reveueList,
+    userCountsAndChangeInPast3months,
 } from "../controllers/adminDashboarControllers.ts";
 import {
     getPayoutList,
@@ -80,5 +77,6 @@ adminRouter.patch("/course/state", updateCourseState);
 adminRouter.get("/dashboard/overview", overviewReportLastTwoMonth);
 adminRouter.get("/dashboard/revenue-profit", calculateRevenueAndProfit);
 adminRouter.get("/revenue-list", reveueList);
+adminRouter.get("/dashboard/user-count", userCountsAndChangeInPast3months);
 
 export default adminRouter;
