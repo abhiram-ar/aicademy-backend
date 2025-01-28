@@ -50,7 +50,9 @@ We welcome contributions to the AIcademy Backend project. To contribute:
 ## License
 This project is licensed under the MIT License.
 
-## production changes,
+
+## Misc
+### Production changes,
 - [ ] use 'best' model insted of nano for speech to text, which is 34% slower and cost almost 10x but provide better accuracy
 - [ ] increase the concurront ai preprocessing by increasing prefetch of rabbitmq
 - [ ] change file cleanup after processing video and audio to async
@@ -60,7 +62,7 @@ This project is licensed under the MIT License.
 - [ ] if the app is converted to microservice then, use full thread for transcoding the video and promisify transoding for each resolution
 
 
-## reports - 10min video transcoding and ai preprocessing
+### reports - 10min video transcoding and ai preprocessing
 - [ ] full-thread - 10500ms ~ 1.8min
 - [ ] single thread with Promise.all - 33288ms ~ 5min
 - [ ] single thread in sequence promise - 500795ms ~ 8min
