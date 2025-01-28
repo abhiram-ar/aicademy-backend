@@ -8,6 +8,9 @@ This repository contains the backend code for the AIcademy project. The backend 
 - Contributing
 - License
 
+## Introduction
+AIcademy is an LMS platform similar to Udemy, where students can access high-quality courses at affordable rates, and teachers can earn by selling their courses. AIcademy acts as a bridge between teachers and students, offering unique AI features to enhance the learning experience.
+
 ## Features
 - Authentication: Secure stateless authentication and authorization using JWT.
 - AI Preprocessing: Utilizes advanced AI models for preprocessing video for AI services.
