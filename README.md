@@ -1,6 +1,8 @@
 # aicademy-backend
 This repository contains the backend code for the AIcademy project. The backend is responsible for handling AI preprocessing, video and audio processing, authentication, and more. The project is primarily written in TypeScript and uses various third-party libraries for functionality.
 
+Looking for fontend? - [Frontend repo link](https://github.com/abhiram-ar/aicademy-fontend)
+
 ## Table of Contents
 - Introduction
 - Features
