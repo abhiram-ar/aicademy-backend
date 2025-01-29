@@ -43,14 +43,14 @@ class TranscodingJob {
             }
 
             // single thread for the entire process
-            // for (let resolution of RESOLUTIONS) {
-            //     await this.transcodeToResulution(resolution);
-            // }
+            for (let resolution of RESOLUTIONS) {
+                await this.transcodeToResulution(resolution);
+            }
 
             // a thread for a resolution - do if this service is running on separate instance - microservice
-            await Promise.all(
-                RESOLUTIONS.map((resolution) => this.transcodeToResulution(resolution))
-            );
+            // await Promise.all(
+            //     RESOLUTIONS.map((resolution) => this.transcodeToResulution(resolution))
+            // );
 
             //masterplaylist
             const masterplaylist = this.createMasterPlaylist();
@@ -78,7 +78,7 @@ class TranscodingJob {
             ffmpeg(this.inputPath)
                 .outputOption([
                     "-c:v libx264", // Use H.264 codec for video
-                    "-threads 8", // limit ffmpeg to use one thread in monolith
+                    "-threads 1", // limit ffmpeg to use one thread in monolith
                     "-profile:v baseline", // Baseline profile for compatibility
                     "-preset fast", // Encoding speed/quality tradeoff
                     "-crf 23", // Constant Rate Factor for quality control (lower = better)
