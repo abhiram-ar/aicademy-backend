@@ -23,7 +23,10 @@ AIcademy is an LMS platform similar to Udemy, where students can access high-qua
 ### Binary dependency
 1. FFmpeg - Ensure FFmegg is installed in your system
 2. Rabbitmq - Either run a local rabbitmq in a container or user cloudAMPQ services
-
+3. pm2 for process management in production environment
+```bash
+npm install pm2@latest -g
+```
 
 ### Development environment
 To set up the development environment, follow these steps:
@@ -57,6 +60,16 @@ This project is licensed under the MIT License.
 
 
 ## Misc
+#### starting produnction server
+```bash
+pm2 start ecosystem.config.js 
+```
+#### monitoring the deployemnet and process logs
+```bash
+pm2 monit
+```
+
+
 ### Production changes,
 - [ ] use 'best' model insted of nano for speech to text, which is 34% slower and cost almost 10x but provide better accuracy
 - [ ] increase the concurront ai preprocessing by increasing prefetch of rabbitmq
