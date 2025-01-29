@@ -25,7 +25,8 @@ const handleTranscriptAndEmbedding = async () => {
     let channel: Channel;
 
     try {
-        connection = await amqp.connect("amqp://localhost");
+        // dev URL: "amqp://localhost"
+        connection = await amqp.connect(process.env.RABBITMQ_URL as string);
         console.log("consumer: Rabitmq connected successfully");
 
         channel = await connection.createChannel();
