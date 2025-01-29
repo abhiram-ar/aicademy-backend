@@ -80,7 +80,7 @@ export const login = async (req, res) => {
         res.cookie("refreshJWT", refreshToken, {
             httpOnly: true,
             secure: process.env.nodeEnv === "production" ? true : false,
-            sameSite: "Lax",
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
             maxAge: 24 * 60 * 60 * 1000, //1day
         });
 
@@ -128,7 +128,7 @@ export const updateAccessToken = async (req, res) => {
             res.clearCookie("refreshJWT", {
                 httpOnly: true,
                 secure: process.env.nodeEnv === "production" ? true : false,
-                sameSite: "Lax",
+                sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
             });
             return res.status(403).json({
                 success: false,
@@ -159,7 +159,7 @@ export const logout = async (req, res) => {
         res.clearCookie("refreshJWT", {
             httpOnly: true,
             secure: process.env.nodeEnv === "production" ? true : false,
-            sameSite: "Lax",
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
 
         res.status(200).json({

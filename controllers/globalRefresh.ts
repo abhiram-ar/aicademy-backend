@@ -54,7 +54,7 @@ const handleTeachers = async (req, res, decoded) => {
         res.clearCookie("refreshJWT", {
             httpOnly: true,
             secure: process.env.nodeEnv === "production" ? true : false,
-            sameSite: "Lax",
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
         return res.status(403).json({
             success: false,
@@ -68,7 +68,7 @@ const handleTeachers = async (req, res, decoded) => {
         res.clearCookie("refreshJWT", {
             httpOnly: true,
             secure: process.env.nodeEnv === "production" ? true : false,
-            sameSite: "Lax",
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
         return res.status(403).json({
             success: false,
@@ -97,7 +97,7 @@ const handleUser = async (req, res, decoded) => {
         res.clearCookie("refreshJWT", {
             httpOnly: true,
             secure: process.env.nodeEnv === "production" ? true : false,
-            sameSite: "Lax",
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
         return res.status(403).json({
             success: false,
@@ -112,7 +112,7 @@ const handleUser = async (req, res, decoded) => {
         res.clearCookie("refreshJWT", {
             httpOnly: true,
             secure: process.env.nodeEnv === "production" ? true : false,
-            sameSite: "Lax",
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
         return res.status(403).json({
             success: false,
@@ -143,7 +143,7 @@ const handleAdmin = async (req, res, decoded) => {
         res.clearCookie("refreshJWT", {
             httpOnly: true,
             secure: process.env.nodeEnv === "production" ? true : false,
-            sameSite: "Lax",
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
         return res.status(403).json({
             success: false,

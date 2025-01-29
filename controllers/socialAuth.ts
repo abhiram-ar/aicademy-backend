@@ -71,7 +71,7 @@ const handleUser = async (req, res, payload) => {
         res.cookie("refreshJWT", refreshToken, {
             httpOnly: true,
             secure: process.env.nodeEnv === "production" ? true : false,
-            sameSite: "Lax",
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
             maxAge: 7 * 24 * 60 * 60 * 1000, //7 days
         });
 
@@ -131,7 +131,7 @@ const handleTeacher = async (req, res, payload) => {
         res.cookie("refreshJWT", refreshToken, {
             httpOnly: true,
             secure: process.env.nodeEnv === "production" ? true : false,
-            sameSite: "Lax",
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
             maxAge: 7 *  24 * 60 * 60 * 1000, //7hr
         });
 
