@@ -1,22 +1,23 @@
 import jwt from "jsonwebtoken";
 
 export const createAccessToken = (payload) => {
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET as string, {
         expiresIn: "1h",
     });
 };
 export const createRefershToken = (payload) => {
-    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
-        expiresIn: "1d",
+    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET as string, {
+        expiresIn: "7d",
     });
 };
 
+// token for OTP
 export const createActivationToken = (userCredentials) => {
     const activationCode = Math.floor(1000 + Math.random() * 9000).toString();
     const tokenPayload = { userCredentials, activationCode };
     const activationToken = jwt.sign(
         tokenPayload,
-        process.env.ACTIVATION_CODE_SECRET,
+        process.env.ACTIVATION_CODE_SECRET as string,
         {
             expiresIn: "5m",
         }

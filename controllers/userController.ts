@@ -170,9 +170,9 @@ export const loginUser = async (req, res) => {
 
         res.cookie("refreshJWT", refreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: "Lax",
-            maxAge: 60 * 60 * 1000, //1hr
+            secure: process.env.nodeEnv === "production" ? true : false,
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000, //1 week
         });
 
         return res.status(200).json({
@@ -205,8 +205,8 @@ export const logout = async (req, res) => {
 
         res.clearCookie("refreshJWT", {
             httpOnly: true,
-            secure: false,
-            sameSite: "Lax",
+            secure: process.env.nodeEnv === "production" ? true : false,
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
 
         res.status(200).json({

@@ -53,8 +53,8 @@ const handleTeachers = async (req, res, decoded) => {
         logWarning("requesting client to clear cookies");
         res.clearCookie("refreshJWT", {
             httpOnly: true,
-            secure: false,
-            sameSite: "Lax",
+            secure: process.env.nodeEnv === "production" ? true : false,
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
         return res.status(403).json({
             success: false,
@@ -67,8 +67,8 @@ const handleTeachers = async (req, res, decoded) => {
         logWarning("requesting client to clear cookies");
         res.clearCookie("refreshJWT", {
             httpOnly: true,
-            secure: false,
-            sameSite: "Lax",
+            secure: process.env.nodeEnv === "production" ? true : false,
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
         return res.status(403).json({
             success: false,
@@ -96,8 +96,8 @@ const handleUser = async (req, res, decoded) => {
         logWarning("requesting client to clear cookies");
         res.clearCookie("refreshJWT", {
             httpOnly: true,
-            secure: false,
-            sameSite: "Lax",
+            secure: process.env.nodeEnv === "production" ? true : false,
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
         return res.status(403).json({
             success: false,
@@ -111,8 +111,8 @@ const handleUser = async (req, res, decoded) => {
         logWarning("requesting client to clear cookies");
         res.clearCookie("refreshJWT", {
             httpOnly: true,
-            secure: false,
-            sameSite: "Lax",
+            secure: process.env.nodeEnv === "production" ? true : false,
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
         return res.status(403).json({
             success: false,
@@ -142,8 +142,8 @@ const handleAdmin = async (req, res, decoded) => {
         logWarning("requesting client to clear cookies");
         res.clearCookie("refreshJWT", {
             httpOnly: true,
-            secure: false,
-            sameSite: "Lax",
+            secure: process.env.nodeEnv === "production" ? true : false,
+            sameSite: process.env.nodeEnv === "production" ? "None" : "Lax",
         });
         return res.status(403).json({
             success: false,
