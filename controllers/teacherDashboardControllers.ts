@@ -217,6 +217,7 @@ export const earnignByCourseNmonths = async (
     res: Response
 ): Promise<any> => {
     try {
+        const teacherId = new mongoose.Types.ObjectId(req.user.teacherId)
         const { months } = req.query as unknown as { months?: number };
         if (!months) {
             logWarning(
@@ -244,7 +245,7 @@ export const earnignByCourseNmonths = async (
         );
 
         const result = await orderModel.aggregate([
-            { $match: { createdAt: { $gt: sixMonthAgo } } },
+            { $match: { createdAt: { $gt: sixMonthAgo,  },"coursesBought.teacherId": teacherId } },
             { $unwind: "$coursesBought" },
             {
                 $group: {
