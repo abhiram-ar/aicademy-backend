@@ -381,3 +381,24 @@ export const fetchTeacherSalesList = async (req: TRequest, res: Response) => {
         });
     }
 };
+
+export const getTeacherProfile = async (req: TRequest, res: Response): Promise<any> => {
+    try {
+        const teacherId = req.user.teacherId;
+        const teacherDetails = await teacherModel
+            .findById(teacherId)
+            .select("firstName lastName profilePic ");
+        return res.status(200).json({
+            success: true,
+            message: "teacher successfully fetched",
+            teacherDetails,
+        });
+    } catch (error) {
+        logErrorMessage("error while fetching teacher profile");
+        logErrorMessage(error.message);
+        return res.status(400).json({
+            success: false,
+            message: "Error while fetching teacher profile",
+        });
+    }
+};

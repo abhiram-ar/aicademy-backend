@@ -11,6 +11,7 @@ import { authorizedRoles, isAuthenticated } from "../middlewares/auth.ts";
 import {
     earnignByCourseNmonths,
     fetchTeacherSalesList,
+    getTeacherProfile,
     lastTwoMonthPurchaseCount,
     lastTwoMonthRevenue,
     lifetimeEarning,
@@ -47,6 +48,7 @@ teacherRouter.post(
 teacherRouter.use(isAuthenticated, authorizedRoles("teacher"));
 
 // dashboard
+teacherRouter.get("/profile", (req, res) => getTeacherProfile(req as TRequest, res));
 teacherRouter.get("/dashboard/revenue", (req, res) => lastTwoMonthRevenue(req as TRequest, res));
 teacherRouter.get("/dashboard/purchase", (req, res) =>
     lastTwoMonthPurchaseCount(req as TRequest, res)
