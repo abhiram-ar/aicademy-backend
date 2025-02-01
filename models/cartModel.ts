@@ -6,6 +6,7 @@ export interface ICart extends Document {
     userId: mongoose.Types.ObjectId;
     courses: Array<mongoose.Types.ObjectId | ICourse>;
     couponApplied: mongoose.Types.ObjectId | ICoupon | null;
+    status: "active" | "processing";
     totalAmount: () => { totalPrice: number; estimatedTotal: number };
 }
 
@@ -18,6 +19,7 @@ const cartSchema = new mongoose.Schema<ICart>(
         },
         courses: [{ type: mongoose.Types.ObjectId, ref: "Course" }],
         couponApplied: { type: mongoose.Types.ObjectId, ref: "Coupon" },
+        status: { type: String, enum: ["active", "processing"], default: "active" },
     },
     { timestamps: true }
 );
