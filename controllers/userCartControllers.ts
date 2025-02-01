@@ -75,6 +75,7 @@ export const getCart = async (req: URequest, res: Response): Promise<any> => {
             length: cartDetails.courses.length,
             cart: cartDetails?.courses,
             cartId: cartDetails._id,
+            cartStatus: cartDetails.status,
             coupon: couponDetails,
             totalAmount,
         });
@@ -102,9 +103,7 @@ export const addToCart = async (req: URequest, res: Response): Promise<any> => {
         const course = await courseModel.findById(courseId);
         if (!course) {
             logWarning(`add to cart: Invalid courseId`);
-            return res
-                .status(404)
-                .json({ success: false, message: "Invalid courseId" });
+            return res.status(404).json({ success: false, message: "Invalid courseId" });
         }
 
         const hasUserBoughtThisCourse = await userModel.findOne(
@@ -139,16 +138,11 @@ export const addToCart = async (req: URequest, res: Response): Promise<any> => {
     } catch (error) {
         logErrorMessage(`error while adding to cart`);
         logErrorMessage(error.message);
-        return res
-            .status(400)
-            .json({ success: false, message: "error while adding to cart" });
+        return res.status(400).json({ success: false, message: "error while adding to cart" });
     }
 };
 
-export const removeFromCart = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const removeFromCart = async (req: URequest, res: Response): Promise<any> => {
     try {
         const { courseId } = req.body;
         if (!courseId) {
@@ -180,10 +174,7 @@ export const removeFromCart = async (
     }
 };
 
-export const moveToWishlist = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const moveToWishlist = async (req: URequest, res: Response): Promise<any> => {
     try {
         const { courseId } = req.body;
         if (!courseId) {
@@ -197,9 +188,7 @@ export const moveToWishlist = async (
         const course = await courseModel.findById(courseId);
         if (!course) {
             logWarning(`move to wishlist: Invalid courseId`);
-            return res
-                .status(404)
-                .json({ success: false, message: "Invalid courseId" });
+            return res.status(404).json({ success: false, message: "Invalid courseId" });
         }
 
         const hasUserBoughtThisCourse = await userModel.findOne(
@@ -256,10 +245,7 @@ export const moveToWishlist = async (
     }
 };
 
-export const applyCoupon = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const applyCoupon = async (req: URequest, res: Response): Promise<any> => {
     try {
         const { code } = req.body;
         if (!code) {
@@ -276,9 +262,7 @@ export const applyCoupon = async (
         console.log(coupon);
 
         // user cannot use the coupon they alredy used
-        if (
-            coupon.usedBy.includes(new mongoose.Types.ObjectId(req.user.userId))
-        ) {
+        if (coupon.usedBy.includes(new mongoose.Types.ObjectId(req.user.userId))) {
             logWarning("User trying to use coupon they alredy use");
             throw {
                 message: "You already claimed this coupon",
@@ -327,10 +311,7 @@ export const applyCoupon = async (
     }
 };
 
-export const removeCouponFromCart = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const removeCouponFromCart = async (req: URequest, res: Response): Promise<any> => {
     console.log("hit remove");
     try {
         await cartModel.findOneAndUpdate(
