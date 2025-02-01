@@ -24,7 +24,11 @@ import {
     updateProfilePic,
 } from "../controllers/userProfileControllers.js";
 import { upload } from "../middlewares/upload.multer.js";
-import { createOrder, verifyPaymentAndCheckout } from "../controllers/userCheckoutControllers.js";
+import {
+    createOrder,
+    removeCartLock,
+    verifyPaymentAndCheckout,
+} from "../controllers/userCheckoutControllers.js";
 import {
     fetchOrderHistory,
     fetchUserBoughtCourseList,
@@ -78,6 +82,7 @@ userRouter.post("/wishlist/move-to-cart", (req, res) => moveToCart(req as UReque
 
 // checkout routes
 userRouter.post("/checkout/create-order", (req, res) => createOrder(req as URequest, res));
+userRouter.post("/checkout/clear-cart-state", (req, res) => removeCartLock(req as URequest, res));
 userRouter.post("/checkout/verify-payment", (req, res) =>
     verifyPaymentAndCheckout(req as URequest, res)
 );

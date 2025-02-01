@@ -11,23 +11,24 @@ import teacherModel from "../models/teacherModel";
 import couponModel, { ICoupon } from "../models/couponModel";
 import orderModel from "../models/orderModel";
 
-export const createOrder = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const createOrder = async (req: URequest, res: Response): Promise<any> => {
     try {
         const userId = req.user.userId;
         const cart = await cartModel
-            .findOne({ userId })
+            .findOneAndUpdate({ userId, status: "active" }, { $set: { status: "processing" } })
             .populate({ path: "courses", select: "price" })
             .populate("couponApplied");
 
         if (!cart) {
-            logWarning("cannot find user cart to create razorpay order");
-            return res
-                .status(404)
-                .json({ success: false, message: "Invaid cart" });
+            logWarning("This cart is already being checkout");
+            return res.status(404).json({
+                success: false,
+                message: "Invaid ",
+                errorMessage: "This cart is already being checkedout, please try again later",
+            });
         }
+
+        console.log(cart);
 
         // get cart sum
         let amount = cart.totalAmount().totalPrice;
@@ -39,10 +40,7 @@ export const createOrder = async (
             const validationResult = appliedCoupon.validateCoupon();
 
             // remove coupon if coupon is invalid
-            if (
-                !validationResult.success ||
-                appliedCoupon.minPurchaseAmount > amount
-            ) {
+            if (!validationResult.success || appliedCoupon.minPurchaseAmount > amount) {
                 logWarning(
                     validationResult?.error?.message ??
                         "orderCreation: cart total less than coupon minAmount, removing coupon"
@@ -72,9 +70,7 @@ export const createOrder = async (
             notes: {
                 customerId: userId as string,
                 courses: cart.courses.map((course) => course._id).join(","),
-                coupondDiscount: couponDetails.couponDiscount
-                    ? couponDetails.couponDiscount
-                    : null,
+                coupondDiscount: couponDetails.couponDiscount ? couponDetails.couponDiscount : null,
                 couponApplied: couponDetails.code ? couponDetails.code : null,
             },
         });
@@ -84,13 +80,23 @@ export const createOrder = async (
             success: true,
             message: "order created successfully",
             orderDetails,
-            couponDetails:
-                Object.keys(couponDetails).length > 0 ? couponDetails : null,
+            couponDetails: Object.keys(couponDetails).length > 0 ? couponDetails : null,
         });
+        setTimeout(async () => {
+            logWarning("clearing cart processing state");
+            await cartModel.findOneAndUpdate(
+                { userId: req.user.userId, status: "active" },
+                { $set: { status: "active" } }
+            );
+        }, 12 * 60 * 1000);
     } catch (error) {
         logErrorMessage("error while creating razorpay order");
         logErrorMessage(error.message);
         console.log(error);
+        await cartModel.findOneAndUpdate(
+            { userId: req.user.userId },
+            { $set: { status: "active" } }
+        );
         return res.status(400).json({
             success: false,
             message: "error while creating razorpay order",
@@ -118,24 +124,26 @@ type Torder = {
     };
 };
 
-export const verifyPaymentAndCheckout = async (
-    req: URequest,
-    res: Response
-): Promise<any> => {
+export const removeCartLock = async (req: URequest, res: Response): Promise<any> => {
     try {
-        const {
-            order_id,
-            razorpay_payment_id,
-            razorpay_order_id,
-            razorpay_signature,
-        } = req.body;
+        await cartModel.findOneAndUpdate(
+            { userId: req.user.userId },
+            { $set: { status: "active" } }
+        );
+    } catch (error) {
+        logErrorMessage("error while removing lock from cart");
+        console.log(error);
+        return res
+            .status(400)
+            .json({ success: false, message: "error while removing lock from cart" });
+    }
+};
 
-        if (
-            !order_id ||
-            !razorpay_payment_id ||
-            !razorpay_order_id ||
-            !razorpay_signature
-        ) {
+export const verifyPaymentAndCheckout = async (req: URequest, res: Response): Promise<any> => {
+    try {
+        const { order_id, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+
+        if (!order_id || !razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
             logWarning("required parameters missing for payment verification");
             return res.status(400).json({
                 success: false,
@@ -228,21 +236,15 @@ export const verifyPaymentAndCheckout = async (
                     ? {
                           couponApplied: true,
                           couponCode: orderDetails.couponDetails.code,
-                          couponDiscountAmount:
-                              orderDetails.couponDetails.couponDiscount,
+                          couponDiscountAmount: orderDetails.couponDetails.couponDiscount,
                       }
                     : { couponApplied: false },
                 paymentDetails: {
                     razorpayPaymentId: razorpay_payment_id,
                     razorpayOrderId: razorpay_order_id,
                     razorpaySignature: razorpay_signature,
-                    razorpayFee:
-                        ((orderDetails.orderDetails.amount / 100) * 2) / 100, // razorpay fee is included in plaftfrom fee
-                    GST:
-                        ((((orderDetails.orderDetails.amount / 100) * 2) /
-                            100) *
-                            18) /
-                        100,
+                    razorpayFee: ((orderDetails.orderDetails.amount / 100) * 2) / 100, // razorpay fee is included in plaftfrom fee
+                    GST: ((((orderDetails.orderDetails.amount / 100) * 2) / 100) * 18) / 100,
                     receipt: orderDetails.orderDetails.receipt,
                     notes: orderDetails.orderDetails.notes,
                 },
@@ -253,8 +255,7 @@ export const verifyPaymentAndCheckout = async (
                 platformFee:
                     ((orderDetails.orderDetails.amount / 100) * 30) / 100 +
                     (orderDetails.couponDetails
-                        ? (orderDetails.couponDetails.couponDiscount * -70) /
-                          100
+                        ? (orderDetails.couponDetails.couponDiscount * -70) / 100
                         : 0), // plaftform fee = 30% cart value - coupon discount
             });
 
@@ -293,6 +294,11 @@ export const verifyPaymentAndCheckout = async (
             });
         } finally {
             await session.endSession();
+            // reset cart state
+            await cartModel.findOneAndUpdate(
+                { userId: req.user.userId },
+                { $set: { status: "active" } }
+            );
         }
     } catch (error) {
         logErrorMessage("error while verifying payment");
