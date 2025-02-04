@@ -79,6 +79,9 @@ pm2 monit
 - [ ] use single thread for video tanscodin in `transcodeVideo.ts`
 - [ ] if the app is converted to microservice then, use full thread for transcoding the video and promisify transoding for each resolution
 
+### Video processing pipeline
+![system_design](System design/Video Upload Pipeline.png)
+
 
 ### reports - 10min video transcoding and ai preprocessing
 - [ ] full-thread - 10500ms ~ 1.8min
