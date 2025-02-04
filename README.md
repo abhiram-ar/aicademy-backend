@@ -80,7 +80,7 @@ pm2 monit
 - [ ] if the app is converted to microservice then, use full thread for transcoding the video and promisify transoding for each resolution
 
 ### Video processing pipeline
-![system_design](System design/Video Upload Pipeline.png)
+![systemdesign](SystemDesign/videoUploadPipeline.png)
 
 
 ### reports - 10min video transcoding and ai preprocessing
