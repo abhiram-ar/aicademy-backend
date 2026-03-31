@@ -5,7 +5,8 @@ import { glob } from "glob";
 import mime from "mime";
 import s3 from "../aws.S3Client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { logErrorMessage } from "../../utils/log";
+import { logErrorMessage, logWithTimestamp } from "../../utils/log";
+import { availableParallelism } from "os";
 
 type Resolution = { height: number; bitrate: string; name: string };
 
@@ -73,12 +74,14 @@ class TranscodingJob {
         if (!fs.existsSync(resolutionDir)) {
             fs.mkdirSync(resolutionDir, { recursive: true });
         }
+        const parallelism = Math.max(availableParallelism() - 1, 1); // leave one core free for other processes 
+        logWithTimestamp(`Starting transcoding to ${resolution.name} with parallelism: ${parallelism}`);
 
         return new Promise<void>((resolve, reject) => {
             ffmpeg(this.inputPath)
                 .outputOption([
                     "-c:v libx264", // Use H.264 codec for video
-                    "-threads 1", // limit ffmpeg to use one thread in monolith
+                    `-threads ${parallelism}`, // limit ffmpeg to use one thread in monolith
                     "-profile:v baseline", // Baseline profile for compatibility
                     "-preset fast", // Encoding speed/quality tradeoff
                     "-crf 23", // Constant Rate Factor for quality control (lower = better)
@@ -121,10 +124,8 @@ class TranscodingJob {
 
     createMasterPlaylist() {
         const individualPlaylistInto = RESOLUTIONS.flatMap((resolution) => [
-            `#EXT-X-STREAM-INF:BANDWIDTH=${
-                parseInt(resolution.bitrate) * 1000
-            },RESOLUTION=${this.calculateWidth(resolution.height)}x${
-                resolution.height
+            `#EXT-X-STREAM-INF:BANDWIDTH=${parseInt(resolution.bitrate) * 1000
+            },RESOLUTION=${this.calculateWidth(resolution.height)}x${resolution.height
             },CODECS="avc1.42e01e,mp4a.40.2",AUDIO="audio-aac-128k"`,
             `${resolution.name}/playlist.m3u8\n`,
         ]);

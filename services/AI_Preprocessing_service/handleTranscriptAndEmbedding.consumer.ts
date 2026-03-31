@@ -6,7 +6,7 @@ import { preComputeEmbedding } from "./preComputeEmbedding";
 import fs from "fs/promises";
 import videoModel from "../../models/video.model";
 import connectDB from "../../config/mongoose";
-import amqp, { Channel, Connection } from "amqplib";
+import amqp, { Channel, ChannelModel } from "amqplib";
 import { TranscodingJob } from "./transcodeVideo";
 import {
     logErrorMessage,
@@ -21,7 +21,7 @@ export const transcriptAndEmbeddingRoutingKey = "transcriptAndEmbeddingJob";
 export const trancscriptAndEmbeddingQueue = "createTranscriptAndEmbeddingJobQueue";
 
 const handleTranscriptAndEmbedding = async () => {
-    let connection: Connection;
+    let connection: ChannelModel;
     let channel: Channel;
 
     try {
@@ -63,7 +63,7 @@ const handleTranscriptAndEmbedding = async () => {
                     logSuccessWithTimestamp(
                         `Completed job: ${JSON.stringify(content)} in ${timeTaken}ms \n`
                     );
-                } catch (error) {
+                } catch (error : any) {
                     logErrorMessage("error while proceesing transcript and embeddiing job");
                     logErrorMessage(error.message);
                     console.log(error);
@@ -89,7 +89,7 @@ const handleTranscriptAndEmbedding = async () => {
         };
         process.on("SIGINT", cleanup);
         process.on("SIGTERM", cleanup);
-    } catch (error) {
+    } catch (error: any) {
         logErrorMessage("failed to start transcript and Embedding job");
         logErrorMessage(error.message);
         console.log(error);

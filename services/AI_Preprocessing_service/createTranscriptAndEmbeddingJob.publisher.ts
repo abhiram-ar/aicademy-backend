@@ -1,15 +1,39 @@
 import amqp from "amqplib";
-import { logErrorMessage, logSuccess, logWarning } from "./../../utils/log";
+import { logErrorMessage, logWarning } from "./../../utils/log";
 
 // becareful when exporting these constancts as the function at end of this file will get executed
 const jobExchange = "jobExchange";
 const transcriptAndEmbeddingRoutingKey = "transcriptAndEmbeddingJob";
 const trancscriptAndEmbeddingQueue = "createTranscriptAndEmbeddingJobQueue";
 
+let connection: amqp.ChannelModel | null = null;
+
+export async function connectToRabbitMQ() {
+    try {
+        connection = await amqp.connect(process.env.RABBITMQ_URL as string);
+        console.log("connected to rabbitmq successfully in createTranscriptAndEmbeddingJob publisher");
+        return connection;
+    } catch (error: any) {
+        logErrorMessage("error while connecting to rabbitmq in createTranscriptAndEmbeddingJob publisher");
+        logErrorMessage(error.message);
+        console.log(error);
+    }
+}
+
+
+
+
 export const createTranscriptAndEmbeddingJob = async (key: string, videoId: string) => {
-    // dev URL = 'amqp://localhost'
-    const connection = await amqp.connect(process.env.RABBITMQ_URL as string);
-    logSuccess("rabbitmq connected");
+
+    if (!connection) {
+        logWarning("no rabbitmq connection found in createTranscriptAndEmbeddingJob publisher, trying to connect...");
+        await connectToRabbitMQ();
+
+        if (!connection) {
+            logErrorMessage("failed to connect to rabbitmq in createTranscriptAndEmbeddingJob publisher");
+            return;
+        }
+    }
 
     const channel = await connection.createChannel();
 
@@ -41,14 +65,12 @@ export const createTranscriptAndEmbeddingJob = async (key: string, videoId: stri
             Buffer.from(JSON.stringify(message)),
             { mandatory: true } //handle unrouteable message
         );
-    } catch (error) {
+    } catch (error: any) {
         logErrorMessage("error while creating a transcript and embedding job");
         logErrorMessage(error.message);
         console.log(error);
     } finally {
-        logWarning("closing rabbitmq connections");
         await channel.close();
-        await connection.close();
     }
 };
 
