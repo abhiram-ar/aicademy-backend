@@ -46,7 +46,7 @@ export const donwloadFileFromS3 = async (fileKey: string, downloadPath: string) 
                 reject(error);
             });
         });
-    } catch (error) {
+    } catch (error: any) {
         logErrorMessage('error while downloading from s3');
         logErrorMessage(error.message);
         console.log(error);

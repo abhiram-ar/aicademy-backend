@@ -1,4 +1,4 @@
-import { log, logErrorMessage, logSuccess, logWarning } from "../utils/log.js";
+import { logErrorMessage, logSuccess, logWarning } from "../utils/log.js";
 import { client } from "../services/googleAuth.js";
 import userModel from "../models/userModel.js";
 import { createAccessToken, createRefershToken } from "../utils/jwt.js";
@@ -28,9 +28,9 @@ export const googleAuth = async (req, res) => {
             logWarning("Invalid role for google auth");
             return res.status(400).json({ success: false, message: "Invalid role" });
         }
-    } catch (error) {
+    } catch (error : any) {
         logErrorMessage("error while google auth");
-        logErrorMessage(error.message);
+        logErrorMessage(error?.message);
         console.log(error);
         return res.status(400).json({ success: false, message: "error while google signup" });
     }

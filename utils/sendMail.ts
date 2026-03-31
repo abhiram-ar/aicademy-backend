@@ -1,13 +1,14 @@
 import nodeMailer from "nodemailer";
 import ejs from "ejs";
 import path from "path";
-import {__dirname, __filename} from "../config/esModuleScope.js"
+import { __dirname, __filename } from "../config/esModuleScope.js"
 
 const sendMail = async (options) => {
     const transporter = nodeMailer.createTransport({
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT as string),
         service: process.env.SMTP_SERVICE,
+        secure: parseInt(process.env.SMTP_PORT as string) === 465,
         auth: {
             user: process.env.SMTP_MAIL,
             pass: process.env.SMTP_PASSWORD,
