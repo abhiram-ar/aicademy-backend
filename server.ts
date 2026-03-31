@@ -7,8 +7,10 @@ import { onPreSocketError } from "./Websocket/onPreSocketError.ts";
 import { IncomingMessage } from "http";
 import { logSuccess } from "./utils/log.ts";
 import { handleRAGQuestion } from "./Websocket/handleRAGQuestion.ts";
+import { connectToRabbitMQ } from "./services/AI_Preprocessing_service/createTranscriptAndEmbeddingJob.publisher.ts";
 
 connectDB();
+connectToRabbitMQ();
 
 const PORT = process.env.PORT || 3001;
 const httpServer = app.listen(PORT, () => {
