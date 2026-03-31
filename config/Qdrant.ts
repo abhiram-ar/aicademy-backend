@@ -12,9 +12,17 @@ async function connectToVectorStore() {
                 url: process.env.QDRANT_URL,
                 apiKey: process.env.QDRANT_API_KEY,
                 collectionName: "langchainjs-test2",
+
             });
+
+            await cachedVectorStore.client.createPayloadIndex("langchainjs-test2", {
+                field_name: "metadata.key",
+                field_schema: "keyword",
+            });
+
             if (!cachedVectorStore.client) throw new Error("failed to connect to qdrant");
 
+            console.log("connected to qdrant successfully");
             return cachedVectorStore;
         } else {
             console.log("using the cached vector store connection");

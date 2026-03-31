@@ -9,7 +9,7 @@ import adminRouter from "./routes/adminRouter.ts";
 import { updateAccessToken } from "./controllers/globalRefresh.ts";
 import { googleAuth } from "./controllers/socialAuth.ts";
 import courseRouter from "./routes/courseRouter.ts";
-import { accessLogStream } from "./utils/HTTPFileloger.ts";
+// import { accessLogStream } from "./utils/HTTPFileloger.ts";
 import { logErrorMessage } from "./utils/log.ts";
 
 const app = express();
@@ -27,7 +27,7 @@ app.use(
     })
 );
 
-app.use(morgan("combined", { stream: accessLogStream }));
+app.use(morgan("dev"));
 
 app.get("/test", isAuthenticated, authorizedRoles("admin", "user"), (req, res) => {
     res.status(200).json({ success: true, message: "API is working" });
